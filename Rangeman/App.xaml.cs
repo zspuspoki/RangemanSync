@@ -16,7 +16,10 @@ namespace Rangeman
         {
             InitializeComponent();
 
-            MainPage = new MainPage(context);
+            var tabbedPage = new Rangeman.MyTabbedPage(); //new MainPage(context);
+            tabbedPage.BindingContext = new MyTabbedPageViewModel(context);
+
+            MainPage = tabbedPage;
         }
 
         protected override void OnStart()

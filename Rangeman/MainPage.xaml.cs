@@ -2,7 +2,6 @@
 using nexus.protocols.ble;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 
@@ -15,20 +14,25 @@ namespace Rangeman
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class MainPage : ContentPage
     {
-
-        ObservableCollection<ListItem> devicelist;
         IBluetoothLowEnergyAdapter ble;
         LogPointMemoryExtractor dataExtractor = null;
         CancellationTokenSource scanCancellationTokenSource = new CancellationTokenSource();
+        MainPageViewModel viewModel = null;
 
-        public MainPage(Android.Content.Context context)
+        public MainPage()
         {
             InitializeComponent();
+            this.BindingContextChanged += MainPage_BindingContextChanged;
+        }
 
-            ble = BluetoothLowEnergyAdapter.ObtainDefaultAdapter(context);
-
-            devicelist = new ObservableCollection<ListItem>();
-            DevicesList.ItemsSource = devicelist;
+        private void MainPage_BindingContextChanged(object sender, EventArgs e)
+        {
+            var vm = this.BindingContext as MainPageViewModel;
+            if(vm != null)
+            {
+                viewModel = vm;
+                ble = BluetoothLowEnergyAdapter.ObtainDefaultAdapter(vm.Context);
+            }
         }
 
         private async void searchDevice(object sender, EventArgs e)
@@ -39,9 +43,9 @@ namespace Rangeman
                 {
                     var advertisedName = a.Advertisement.DeviceName;
 
-                    if (advertisedName != null && advertisedName.Contains("CASIO") && !devicelist.Any(e => e.Name == advertisedName))
+                    if (advertisedName != null && advertisedName.Contains("CASIO") && !viewModel.DeviceList.Any(e => e.Name == advertisedName))
                     {
-                        devicelist.Add(new ListItem { Name = advertisedName, Device = a });
+                        viewModel.DeviceList.Add(new ListItem { Name = advertisedName, Device = a });
                     }
                 }
             },scanCancellationTokenSource.Token);
@@ -73,11 +77,11 @@ namespace Rangeman
 
         private void DataExtractor_AllLogDataReceived(object sender, List<DataExtractors.Data.LogData> logDataItems)
         {
-            devicelist.Clear();
+            viewModel.DeviceList.Clear();
             foreach(var logData in logDataItems)
             {
                 var listItemText = $"Date = {logData.Date}, Latitude = {logData.Latitude}, \n Longitude = {logData.Longitude}, Pressure = {logData.Pressure},\n Temperature = {logData.Temperature}";
-                devicelist.Add(new ListItem { Name = listItemText, Device = null });
+                viewModel.DeviceList.Add(new ListItem { Name = listItemText, Device = null });
             }
         }
     }

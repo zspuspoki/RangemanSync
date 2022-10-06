@@ -5,7 +5,7 @@
     <ContentPage.Content>
         <StackLayout>
             <Button Text="Search" Clicked="searchDevice"/>
-            <ListView x:Name="DevicesList"
+            <ListView x:Name="DevicesList" ItemsSource="{Binding DeviceList}"
                       CachingStrategy="RecycleElement"
                       ItemSelected="DevicesList_OnItemSelected">
                 <ListView.ItemTemplate>

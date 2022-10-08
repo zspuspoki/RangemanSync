@@ -4,11 +4,21 @@
               xmlns:mapsui="clr-namespace:Mapsui.UI.Forms;assembly=Mapsui.UI.Forms"
              x:Class="Rangeman.MapPage">
     <ContentPage.Content>
-        <StackLayout>
-            <mapsui:MapView x:Name="mapView"
-             VerticalOptions="FillAndExpand"
-             HorizontalOptions="Fill"
-             BackgroundColor="Gray" MapClicked="mapView_MapClicked" />
-        </StackLayout>
+        <AbsoluteLayout>
+            <ContentView AbsoluteLayout.LayoutBounds="0,0,1,1"
+                       AbsoluteLayout.LayoutFlags="All" 
+                       HorizontalOptions="FillAndExpand"
+                       VerticalOptions="FillAndExpand" >
+                <mapsui:MapView x:Name="mapView"
+                     VerticalOptions="FillAndExpand"
+                     HorizontalOptions="Fill"
+                     BackgroundColor="Gray" MapClicked="mapView_MapClicked" />
+            </ContentView>
+            <Button AbsoluteLayout.LayoutBounds="0, 1, AutoSize, AutoSize"
+                      AbsoluteLayout.LayoutFlags="PositionProportional"
+                      HeightRequest="65"
+                      WidthRequest="65"
+                      CornerRadius="25" Text="Send" />
+        </AbsoluteLayout>
     </ContentPage.Content>
 </ContentPage>

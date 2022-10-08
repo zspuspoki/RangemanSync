@@ -2,6 +2,7 @@
 using Android.Webkit;
 using Mapsui;
 using Mapsui.Projection;
+using Mapsui.UI.Forms;
 using Mapsui.Utilities;
 using System;
 using Xamarin.Essentials;
@@ -18,6 +19,19 @@ namespace Rangeman
             InitializeComponent();
 
             InitalizeMap();
+        }
+
+        protected override async void OnAppearing()
+        {
+            base.OnAppearing();
+            var location = await Geolocation.GetLastKnownLocationAsync();
+
+            if (location != null)
+            {
+                Console.WriteLine($"Latitude: {location.Latitude}, Longitude: {location.Longitude}, Altitude: {location.Altitude}");
+            }
+
+            mapView.MyLocationLayer.UpdateMyLocation(new Position(location.Latitude, location.Longitude), true);
         }
 
         private async void InitalizeMap()
@@ -49,7 +63,24 @@ namespace Rangeman
 
         private async void mapView_MapClicked(object sender, Mapsui.UI.Forms.MapClickedEventArgs e)
         {
-            await DisplayAlert("Info", $"Coordinates: LOngitude: {e.Point.Longitude}, Latitude: {e.Point.Latitude}", "OK");
+            //await DisplayAlert("Info", $"Coordinates: LOngitude: {e.Point.Longitude}, Latitude: {e.Point.Latitude}", "OK");
+            var pin = new Pin(mapView)
+            {
+                Label = "Test",
+                Position = e.Point,
+                RotateWithMap = true
+            };
+            pin.Callout.Type = Mapsui.Rendering.Skia.CalloutType.Detail;
+            pin.Callout.Content = 1;
+            pin.Callout.CalloutClicked += async (s, e) =>
+            {
+                e.Callout.Type = Mapsui.Rendering.Skia.CalloutType.Single;
+                e.Callout.Title = "You clicked me";
+                e.Handled = true;
+            };
+
+            mapView.Pins.Add(pin);
+            pin.ShowCallout();
         }
     }
 }

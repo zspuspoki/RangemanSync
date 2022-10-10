@@ -14,10 +14,10 @@ namespace Rangeman
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class MainPage : ContentPage
     {
-        IBluetoothLowEnergyAdapter ble;
-        LogPointMemoryExtractor dataExtractor = null;
-        CancellationTokenSource scanCancellationTokenSource = new CancellationTokenSource();
-        MainPageViewModel viewModel = null;
+        private IBluetoothLowEnergyAdapter ble;
+        private LogPointMemoryExtractor dataExtractor = null;
+        private CancellationTokenSource scanCancellationTokenSource = new CancellationTokenSource();
+        private MainPageViewModel viewModel = null;
 
         public MainPage()
         {

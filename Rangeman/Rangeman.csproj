@@ -53,16 +53,17 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="BLEConstants.cs" />
-    <Compile Include="CasioConvoyAndCasioDataRequestObserver.cs" />
-    <Compile Include="CharChangedObserver.cs" />
-    <Compile Include="DataExtractors\Data\LogData.cs" />
-    <Compile Include="DataExtractors\Data\LogDataExtractor.cs" />
-    <Compile Include="DataExtractors\IDataExtractor.cs" />
+    <Compile Include="Common\BLEConstants.cs" />
+    <Compile Include="WatchDataReceiver\CasioConvoyAndCasioDataRequestObserver.cs" />
+    <Compile Include="WatchDataReceiver\CharChangedObserver.cs" />
+    <Compile Include="WatchDataReceiver\DataExtractors\Data\LogData.cs" />
+    <Compile Include="WatchDataReceiver\DataExtractors\Data\LogDataExtractor.cs" />
+    <Compile Include="WatchDataReceiver\DataExtractors\IDataExtractor.cs" />
+    <Compile Include="GpsCoordinates.cs" />
     <Compile Include="ListItem.cs" />
-    <Compile Include="DataExtractors\Header\LogAndPointMemoryHeaderParser.cs" />
-    <Compile Include="DataExtractors\Header\LogHeaderDataInfo.cs" />
-    <Compile Include="LogPointMemoryExtractor.cs" />
+    <Compile Include="WatchDataReceiver\DataExtractors\Header\LogAndPointMemoryHeaderParser.cs" />
+    <Compile Include="WatchDataReceiver\DataExtractors\Header\LogHeaderDataInfo.cs" />
+    <Compile Include="WatchDataReceiver\LogPointMemoryExtractor.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -70,14 +71,17 @@
     <Compile Include="MapPage.xaml.cs">
       <DependentUpon>MapPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="MapPageViewModel.cs" />
     <Compile Include="MyTabbedPage.xaml.cs">
       <DependentUpon>MyTabbedPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="MyTabbedPageViewModel.cs" />
-    <Compile Include="RemoteWatchController.cs" />
+    <Compile Include="WatchDataReceiver\RemoteWatchController.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Util.cs" />
+    <Compile Include="Common\Util.cs" />
+    <Compile Include="WatchDataSender\ConverterExtensions.cs" />
+    <Compile Include="WatchDataSender\WatchDataSenderService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />

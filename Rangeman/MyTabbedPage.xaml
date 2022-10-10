@@ -5,12 +5,12 @@
              x:Class="Rangeman.MyTabbedPage">
     <NavigationPage Title="Download">
         <x:Arguments>
-            <local:MainPage BindingContext="Binding MainPageViewModel" />
+            <local:MainPage BindingContext="{Binding MainPageViewModel}" />
         </x:Arguments>
     </NavigationPage>
     <NavigationPage Title="Map">
         <x:Arguments>
-            <local:MapPage />
+            <local:MapPage BindingContext="{Binding MapPageViewModel}" />
         </x:Arguments>
     </NavigationPage>
 </TabbedPage>

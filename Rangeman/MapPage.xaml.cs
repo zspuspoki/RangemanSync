@@ -1,10 +1,16 @@
 ﻿using Android.App;
 using Android.Webkit;
+using AndroidX.Lifecycle;
+using employeeID;
 using Mapsui;
 using Mapsui.Projection;
 using Mapsui.UI.Forms;
 using Mapsui.Utilities;
+using nexus.protocols.ble;
+using Rangeman.WatchDataSender;
 using System;
+using System.Diagnostics;
+using System.Threading;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
@@ -14,11 +20,26 @@ namespace Rangeman
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class MapPage : ContentPage
     {
+        private IBluetoothLowEnergyAdapter ble;
+        private CancellationTokenSource scanCancellationTokenSource = new CancellationTokenSource();
+        private MapPageViewModel viewModel = null;
+
         public MapPage()
         {            
             InitializeComponent();
 
+            this.BindingContextChanged += MapPage_BindingContextChanged;
             InitalizeMap();
+        }
+
+        private void MapPage_BindingContextChanged(object sender, EventArgs e)
+        {
+            var vm = this.BindingContext as MapPageViewModel;
+            if (vm != null)
+            {
+                viewModel = vm;
+                ble = BluetoothLowEnergyAdapter.ObtainDefaultAdapter(vm.Context);
+            }
         }
 
         protected override async void OnAppearing()
@@ -34,6 +55,25 @@ namespace Rangeman
             mapView.MyLocationLayer.UpdateMyLocation(new Position(location.Latitude, location.Longitude), true);
         }
 
+        private async void mapView_MapClicked(object sender, Mapsui.UI.Forms.MapClickedEventArgs e)
+        {
+            if (viewModel.HasEndCoordinate && viewModel.HasStartCoordinate)
+            {
+                return;
+            }
+
+            if (!viewModel.HasStartCoordinate)
+            {
+                viewModel.AddStartCoordinates(e.Point.Longitude, e.Point.Latitude);
+            }
+            else if (!viewModel.HasEndCoordinate)
+            {
+                viewModel.AddEndCoordinates(e.Point.Longitude, e.Point.Latitude);
+            }
+
+            ShowPinOnMap(e);
+        }
+
         private async void InitalizeMap()
         {
             var map = new Mapsui.Map
@@ -45,11 +85,11 @@ namespace Rangeman
             var tileLayer = OpenStreetMap.CreateTileLayer();
 
             map.Layers.Add(tileLayer);
-            map.Widgets.Add(new Mapsui.Widgets.ScaleBar.ScaleBarWidget(map) 
-            { 
-                TextAlignment = Mapsui.Widgets.Alignment.Center, 
-                HorizontalAlignment = Mapsui.Widgets.HorizontalAlignment.Left, 
-                VerticalAlignment = Mapsui.Widgets.VerticalAlignment.Bottom 
+            map.Widgets.Add(new Mapsui.Widgets.ScaleBar.ScaleBarWidget(map)
+            {
+                TextAlignment = Mapsui.Widgets.Alignment.Center,
+                HorizontalAlignment = Mapsui.Widgets.HorizontalAlignment.Left,
+                VerticalAlignment = Mapsui.Widgets.VerticalAlignment.Bottom
             });
 
             var location = await Geolocation.GetLocationAsync();
@@ -61,9 +101,8 @@ namespace Rangeman
             mapView.Map = map;
         }
 
-        private async void mapView_MapClicked(object sender, Mapsui.UI.Forms.MapClickedEventArgs e)
+        private void ShowPinOnMap(MapClickedEventArgs e)
         {
-            //await DisplayAlert("Info", $"Coordinates: LOngitude: {e.Point.Longitude}, Latitude: {e.Point.Latitude}", "OK");
             var pin = new Pin(mapView)
             {
                 Label = "Test",
@@ -75,12 +114,40 @@ namespace Rangeman
             pin.Callout.CalloutClicked += async (s, e) =>
             {
                 e.Callout.Type = Mapsui.Rendering.Skia.CalloutType.Single;
-                e.Callout.Title = "You clicked me";
+                e.Callout.Title = !viewModel.HasEndCoordinate ? "S" : "E";
                 e.Handled = true;
             };
 
             mapView.Pins.Add(pin);
             pin.ShowCallout();
+        }
+
+        private async void SendButton_Clicked(object sender, EventArgs e)
+        {
+            await ble.ScanForBroadcasts(async (a) =>
+            {
+                if (a.Advertisement != null)
+                {
+                    var advertisedName = a.Advertisement.DeviceName;
+
+                    if (advertisedName != null && advertisedName.Contains("CASIO"))
+                    {
+                        scanCancellationTokenSource.Cancel();
+
+                        var connection = await ble.ConnectToDevice(a);
+
+                        if (connection.IsSuccessful())
+                        {
+                            Debug.WriteLine("Map tab - Device Connection was successful");
+                            var watchDataSenderService = new WatchDataSenderService(viewModel.ToDataByteArray(), viewModel.ToHeaderByteArray());
+                        }
+                        else
+                        {
+                            Debug.WriteLine("Map tab - Device Connection wasn't successful");
+                        }
+                    }
+                }
+            }, scanCancellationTokenSource.Token);
         }
     }
 }

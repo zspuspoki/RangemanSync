@@ -51,7 +51,7 @@ namespace Rangeman
                     return;
                 }
 
-                Debug.WriteLine($"OnNext - CasioConvoyAndCasioDataRequestObserver  Guid = {value.Item1}  value = {Util.GetPrintableBytesArray(value.Item2)}");
+                Debug.WriteLine($"OnNext - CasioConvoyAndCasioDataRequestObserver  Guid = {value.Item1}  value = {Utils.GetPrintableBytesArray(value.Item2)}");
 
                 if (value.Item1 == Guid.Parse(BLEConstants.CasioConvoyCharacteristic))
                 {
@@ -145,7 +145,7 @@ namespace Rangeman
         {
             dataReceivingIsAllowed = false;
 
-            var allReceivedData = GetAllDataArray();
+            var allReceivedData = Utils.GetAllDataArray(data);
 
             if (AllDataReceived != null)
             {
@@ -171,15 +171,6 @@ namespace Rangeman
             currentSectorIndex = 0;
             currentDataIndexOnCurrentSector = 0;
             digestedByteCount = 0;
-        }
-
-        private byte[] GetAllDataArray()
-        {
-            var output = new byte[data.Sum(arr => arr.Length)];
-            using (var stream = new MemoryStream(output))
-                foreach (var bytes in data)
-                    stream.Write(bytes, 0, bytes.Length);
-            return output;
         }
     }
 }

@@ -27,7 +27,7 @@ namespace Rangeman
 
         public void OnNext(Tuple<Guid, byte[]> value)
         {
-            Debug.WriteLine($"OnNext Guid = { value.Item1}  value = { Util.GetPrintableBytesArray(value.Item2 )}");
+            Debug.WriteLine($"OnNext Guid = { value.Item1}  value = { Utils.GetPrintableBytesArray(value.Item2 )}");
         }
     }
 }

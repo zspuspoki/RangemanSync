@@ -1,5 +1,6 @@
 ﻿using nexus.protocols.ble;
 using Rangeman;
+using Rangeman.WatchDataReceiver;
 using Rangeman.DataExtractors.Data;
 using System;
 using System.Collections.Generic;
@@ -7,12 +8,12 @@ using System.Diagnostics;
 
 namespace employeeID
 {
-    internal class LogPointMemoryExtractor
+    internal class LogPointMemoryExtractorService
     {
         private readonly BlePeripheralConnectionRequest connection;
         public event EventHandler<List<LogData>> AllLogDataReceived;
 
-        public LogPointMemoryExtractor(BlePeripheralConnectionRequest connection)
+        public LogPointMemoryExtractorService(BlePeripheralConnectionRequest connection)
         {
             this.connection = connection;
 

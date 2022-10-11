@@ -15,7 +15,7 @@ namespace Rangeman
     public partial class MainPage : ContentPage
     {
         private IBluetoothLowEnergyAdapter ble;
-        private LogPointMemoryExtractor dataExtractor = null;
+        private LogPointMemoryExtractorService dataExtractor = null;
         private CancellationTokenSource scanCancellationTokenSource = new CancellationTokenSource();
         private MainPageViewModel viewModel = null;
 
@@ -64,7 +64,7 @@ namespace Rangeman
                 if (connection.IsSuccessful())
                 {
                     Debug.WriteLine("Connection was successful");
-                    dataExtractor = new LogPointMemoryExtractor(connection);
+                    dataExtractor = new LogPointMemoryExtractorService(connection);
                     dataExtractor.AllLogDataReceived += DataExtractor_AllLogDataReceived;
                     dataExtractor.StartDownloadLogAndPointMemoryData();
                 }

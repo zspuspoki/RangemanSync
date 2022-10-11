@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
-using nexus.protocols.ble;
-using System.IO;
-using System.Runtime.CompilerServices;
+using Rangeman.WatchDataReceiver;
 
 namespace Rangeman
 {

@@ -139,7 +139,8 @@ namespace Rangeman
                         if (connection.IsSuccessful())
                         {
                             Debug.WriteLine("Map tab - Device Connection was successful");
-                            var watchDataSenderService = new WatchDataSenderService(viewModel.ToDataByteArray(), viewModel.ToHeaderByteArray());
+                            var watchDataSenderService = new WatchDataSenderService(connection, viewModel.ToDataByteArray(), viewModel.ToHeaderByteArray());
+                            watchDataSenderService.SendRoute();
                         }
                         else
                         {

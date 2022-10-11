@@ -3,7 +3,7 @@ using System;
 using System.Threading.Tasks;
 using Debug = System.Diagnostics.Debug;
 
-namespace Rangeman
+namespace Rangeman.WatchDataReceiver
 {
     internal class RemoteWatchController
     {

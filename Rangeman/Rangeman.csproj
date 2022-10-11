@@ -63,7 +63,7 @@
     <Compile Include="ListItem.cs" />
     <Compile Include="WatchDataReceiver\DataExtractors\Header\LogAndPointMemoryHeaderParser.cs" />
     <Compile Include="WatchDataReceiver\DataExtractors\Header\LogHeaderDataInfo.cs" />
-    <Compile Include="WatchDataReceiver\LogPointMemoryExtractor.cs" />
+    <Compile Include="WatchDataReceiver\LogPointMemoryExtractorService.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -80,7 +80,9 @@
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Common\Util.cs" />
+    <Compile Include="WatchDataSender\ConnectionParameters.cs" />
     <Compile Include="WatchDataSender\ConverterExtensions.cs" />
+    <Compile Include="WatchDataSender\RemoteWatchController.cs" />
     <Compile Include="WatchDataSender\WatchDataSenderService.cs" />
   </ItemGroup>
   <ItemGroup>

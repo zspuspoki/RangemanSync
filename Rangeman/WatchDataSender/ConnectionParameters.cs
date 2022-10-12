@@ -8,7 +8,7 @@ namespace Rangeman.WatchDataSender
 
         public int MtuSize { get; set; }
         public long DataSizeOf1Sector { get; set; }
-        public long Offset1Sector { get; set; }
+        public long OffsetSector { get; set; }
         public sbyte AreaNumber { get; set; }
 
         public ConnectionParameters(byte[] data)
@@ -17,7 +17,7 @@ namespace Rangeman.WatchDataSender
 
             GetMtuSize();
             GetDataSizeOf1Sector();
-            GetOffset1Sector();
+            GetOffsetSector();
             GetAreaNumber();
         }
 
@@ -47,7 +47,7 @@ namespace Rangeman.WatchDataSender
             AreaNumber = (sbyte)data[i];
         }
 
-        private void GetOffset1Sector()
+        private void GetOffsetSector()
         {
             int i = 0;
             byte kindOfData = data[0];
@@ -58,7 +58,7 @@ namespace Rangeman.WatchDataSender
             }
             else if (kindOfData != 6)
             {
-                Offset1Sector = -1L;
+                OffsetSector = -1L;
             }
             else
             {
@@ -67,10 +67,10 @@ namespace Rangeman.WatchDataSender
 
             if (data == null || data.Length <= i)
             {
-                Offset1Sector = 0L;
+                OffsetSector = 0L;
             }
 
-            Offset1Sector = (data[i - 3] & 255) | ((data[i] & 255) << 24) | ((data[i - 1] & 255) << 16) | ((data[i - 2] & 255) << 8);
+            OffsetSector = (data[i - 3] & 255) | ((data[i] & 255) << 24) | ((data[i - 1] & 255) << 16) | ((data[i - 2] & 255) << 8);
         }
 
         private void GetDataSizeOf1Sector()

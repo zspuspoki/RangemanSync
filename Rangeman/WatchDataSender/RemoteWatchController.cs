@@ -1,4 +1,5 @@
-﻿using nexus.protocols.ble;
+﻿using Android.Service.VR;
+using nexus.protocols.ble;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -71,9 +72,41 @@ namespace Rangeman.WatchDataSender
             return result;
         }
 
-        public async Task SendConnectionSettingsBasedOnParams()
+        public async Task SendConnectionSettingsBasedOnParams(ConnectionParameters parameters, int totalDataLength, byte categoryId)
         {
-            throw new NotImplementedException();
+            var taskCompletionSource = new TaskCompletionSource<byte[]>();
+
+            gattServer.NotifyCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid), Guid.Parse(BLEConstants.CasioDataRequestSPCharacteristic),
+            (data) =>
+            {
+                if (data[0] == 0 && data[1] == categoryId)
+                { 
+                    taskCompletionSource.SetResult(data);
+                }
+            });
+
+
+            long currentParameterDataSizeOf1Sector = parameters.DataSizeOf1Sector * parameters.OffsetSector;
+            long j3 = totalDataLength - currentParameterDataSizeOf1Sector;
+
+            if(j3>0)
+            {
+                //Create convoy data: totalDataLength, j3, acceptor1, acceptor2, timeoutMinute
+                //Acceptor1: 250
+                //Acceptor2: 245
+                
+                var convoyData = CreateConvoyData(totalDataLength, j3, 250, 245,  0);
+
+                await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
+                        Guid.Parse(BLEConstants.CasioConvoyCharacteristic), convoyData);
+            }
+
+            await taskCompletionSource.Task;
+        }
+
+        private static byte[] CreateConvoyData(long j, long j2, int i, int i2, int i3)
+        {
+            return new byte[]{1, (byte) (j & 255), (byte) ((j >>> 8) & 255), (byte) ((j >>> 16) & 255), (byte) ((j >>> 24) & 255), (byte) (j2 & 255), (byte) ((j2 >>> 8) & 255), (byte) ((j2 >>> 16) & 255), (byte) ((j2 >>> 24) & 255), (byte) (i & 255), (byte) (i2 & 255), (byte) (i3 & 255)};
         }
     }
 }

@@ -25,6 +25,8 @@ namespace Rangeman.WatchDataSender
             await remoteWatchController.SendConvoyConnectionParameters();
 
             var connectionParameters = await remoteWatchController.SendCategoryAndWaitForConnectionParams(0x16);  // Category id = 22 - route
+
+            await remoteWatchController.SendConnectionSettingsBasedOnParams(connectionParameters, data.Length, 0x16);
         }
     }
 }

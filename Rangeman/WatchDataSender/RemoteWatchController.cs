@@ -1,4 +1,5 @@
-﻿using Android.Service.VR;
+﻿using Android.Nfc.Tech;
+using Android.Service.VR;
 using nexus.protocols.ble;
 using System;
 using System.Linq;
@@ -66,7 +67,7 @@ namespace Rangeman.WatchDataSender
             });
 
             await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
-                                  Guid.Parse(BLEConstants.CasioDataRequestSPCharacteristic), new byte[] { 0x00, categoryId, 0x00, 0x00 }); // Category = 18 - connection setup
+                                  Guid.Parse(BLEConstants.CasioDataRequestSPCharacteristic), new byte[] { 0x00, categoryId, 0x00, 0x00 }); 
 
             var result = await taskCompletionSource.Task;
             return result;
@@ -102,6 +103,53 @@ namespace Rangeman.WatchDataSender
             }
 
             await taskCompletionSource.Task;
+        }
+
+        public async Task CloseCurrentCategoryAndWaitForResponse(byte categoryId)
+        {
+            var taskCompletionSource = new TaskCompletionSource<byte[]>();
+
+            gattServer.NotifyCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid), Guid.Parse(BLEConstants.CasioDataRequestSPCharacteristic),
+                (data) =>
+                {
+                    if (data[0] == 4)
+                    {
+                        if (data[1] == categoryId)
+                        {
+                            taskCompletionSource.SetResult(data);
+                        }
+                    }
+                });
+
+            await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
+                Guid.Parse(BLEConstants.CasioDataRequestSPCharacteristic), new byte[] { 0x09, categoryId, 0x00, 0x00, 0x00 });
+
+            await taskCompletionSource.Task;
+        }
+
+        public async Task WriteFinalClosingData()
+        {
+            var taskCompletionSource = new TaskCompletionSource<byte[]>();
+
+            gattServer.NotifyCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid), Guid.Parse(BLEConstants.CasioConvoyCharacteristic),
+                (data) =>
+                {
+                    if (data[0] == 0x04 && data[1] == 0x00 && data[2] == 0x18)
+                    {
+                        taskCompletionSource.SetResult(data);
+                    }
+                });
+
+            await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
+                Guid.Parse(BLEConstants.CasioDataRequestSPCharacteristic), new byte[] { 0x04, 0x12, 0x00, 0x00, 0x00 });  // category 18
+
+            await taskCompletionSource.Task;
+        }
+
+        public async Task WriteFinalClosingData2()
+        {
+            await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
+                Guid.Parse(BLEConstants.CasioConvoyCharacteristic), new byte[] { 0x04, 0x01, 0x48, 0x00, 0x50, 0x00, 0x04, 0x00, 0x58, 0x02 });
         }
 
         private static byte[] CreateConvoyData(long j, long j2, int i, int i2, int i3)

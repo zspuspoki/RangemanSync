@@ -24,9 +24,25 @@ namespace Rangeman.WatchDataSender
 
             await remoteWatchController.SendConvoyConnectionParameters();
 
-            var connectionParameters = await remoteWatchController.SendCategoryAndWaitForConnectionParams(0x16);  // Category id = 22 - route
+            var categoriesToSend = new CategoryToSend[] { 
+                new CategoryToSend(0x16, data), 
+                new CategoryToSend(0x15, header) };
 
-            await remoteWatchController.SendConnectionSettingsBasedOnParams(connectionParameters, data.Length, 0x16);
+            foreach (var category in categoriesToSend)
+            {
+                var connectionParameters = await remoteWatchController.SendCategoryAndWaitForConnectionParams(category.CategoryId);  // Category id = 22 - route
+
+                await remoteWatchController.SendConnectionSettingsBasedOnParams(connectionParameters, data.Length, category.CategoryId);
+
+                BufferedConvoySender bufferedConvoySender = new BufferedConvoySender(this.connection.GattServer, category.Data);
+                bufferedConvoySender.Send();
+
+                await remoteWatchController.CloseCurrentCategoryAndWaitForResponse(category.CategoryId);
+            }
+
+            await remoteWatchController.WriteFinalClosingData();
+
+            await remoteWatchController.WriteFinalClosingData2();
         }
     }
 }

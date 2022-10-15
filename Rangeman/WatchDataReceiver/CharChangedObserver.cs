@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using Debug = System.Diagnostics.Debug;
+using Rangeman.Common;
 
 namespace Rangeman
 {

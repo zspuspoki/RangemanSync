@@ -1,5 +1,6 @@
 ﻿using nexus.protocols.ble;
 using System;
+using System.Diagnostics;
 
 namespace Rangeman.WatchDataSender
 {
@@ -18,6 +19,8 @@ namespace Rangeman.WatchDataSender
 
         public async void SendRoute()
         {
+            Debug.WriteLine("--- Starting SendRoute()");
+
             var remoteWatchController = new RemoteWatchController(this.connection.GattServer);
 
             await remoteWatchController.SendInitCommandsAndWaitForCCCData(new byte[] { 00, 00, 00 });

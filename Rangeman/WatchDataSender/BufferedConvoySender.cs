@@ -1,7 +1,8 @@
-﻿using Newtonsoft.Json.Converters;
-using nexus.protocols.ble;
+﻿using nexus.protocols.ble;
+using Rangeman.Common;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Rangeman.WatchDataSender
 {
@@ -26,9 +27,13 @@ namespace Rangeman.WatchDataSender
             List<byte> currentDataToSend = new List<byte>();
             List<byte> oneDataChunkWithCrc = new List<byte>();
 
+            Debug.WriteLine($"--- BufferedConvoySender - data.Length = {data.Length}");
+
             while (i < data.Length)
             {
                 currentDataToSend.Add(0x05); // 0x05 is the type code of convoy data
+
+                Debug.WriteLine($"--- BufferedConvoySender - currentConvoyDataCount = {currentConvoyDataCount}");
 
                 while (i++ < data.Length && currentConvoyDataCount++ < MaxNumberOfBytesToWriteConvoy)
                 {
@@ -37,10 +42,14 @@ namespace Rangeman.WatchDataSender
                     oneDataChunkWithCrc.Add(dataToAdd);
                 }
 
+                Debug.WriteLine($"--- BufferedConvoySender - i after while loop = {i}");
+
                 if(i % 256 == 0)
                 {
                     var crc16 = new Crc16(Crc16Mode.CcittKermit);
                     var crc = crc16.ComputeChecksumBytes(oneDataChunkWithCrc.ToArray());
+
+                    Debug.WriteLine($"--- BufferedConvoySender - crc code  : {Utils.GetPrintableBytesArray(crc)}");
 
                     foreach(var crcByte in crc)
                     {
@@ -50,8 +59,12 @@ namespace Rangeman.WatchDataSender
                     oneDataChunkWithCrc.Clear();
                 }
 
+                var currentByteArrayToSend = currentDataToSend.ToArray();
+
+                Debug.WriteLine($"-- BufferedConvoySender - before sending data: {Utils.GetPrintableBytesArray(currentByteArrayToSend)}");
+
                 await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
-                    Guid.Parse(BLEConstants.CasioConvoyCharacteristic), currentDataToSend.ToArray());
+                    Guid.Parse(BLEConstants.CasioConvoyCharacteristic), currentByteArrayToSend);
 
                 currentDataToSend.Clear();
                 currentConvoyDataCount = 0;

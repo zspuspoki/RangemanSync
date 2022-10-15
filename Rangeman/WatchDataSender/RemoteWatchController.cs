@@ -1,7 +1,7 @@
-﻿using Android.Nfc.Tech;
-using Android.Service.VR;
-using nexus.protocols.ble;
+﻿using nexus.protocols.ble;
+using Rangeman.Common;
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -23,20 +23,26 @@ namespace Rangeman.WatchDataSender
             gattServer.NotifyCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid), Guid.Parse(BLEConstants.CasioConvoyCharacteristic),
             (data) =>
             {
+                Debug.WriteLine($"--- SendInitCommandsAndWaitForCCCData - NotifyCharacteristicValue. Received data bytes : {Utils.GetPrintableBytesArray(data)}");
+
                 if (data.SequenceEqual(convoyData))
                 {
+                    Debug.WriteLine($"--- SendInitCommandsAndWaitForCCCData - NotifyCharacteristicValue. data equals to convoy data : {Utils.GetPrintableBytesArray(convoyData)}");
                     taskCompletionSource.SetResult(data);
                 }
             });
 
+            Debug.WriteLine("--- SendInitCommandsAndWaitForCCCData - Before writing CasioDataRequestSPCharacteristic");
             await gattServer.WriteDescriptorValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
                                       Guid.Parse(BLEConstants.CasioDataRequestSPCharacteristic),
                                       Guid.Parse(BLEConstants.CCCDescriptor), new byte[] { 0x01, 0x00 });
 
+            Debug.WriteLine("--- SendInitCommandsAndWaitForCCCData - Before writing CasioConvoyCharacteristic");
             await gattServer.WriteDescriptorValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
                                   Guid.Parse(BLEConstants.CasioConvoyCharacteristic),
                                   Guid.Parse(BLEConstants.CCCDescriptor), new byte[] { 0x01, 0x00 });
 
+            Debug.WriteLine("--- SendInitCommandsAndWaitForCCCData - Before writing CasioDataRequestSPCharacteristic 2.");
             await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
                                   Guid.Parse(BLEConstants.CasioDataRequestSPCharacteristic), new byte[] { 0x00, 0x12, 0x00, 0x00 }); // Category = 18 - connection setup
 
@@ -45,6 +51,7 @@ namespace Rangeman.WatchDataSender
 
         public async Task SendConvoyConnectionParameters()
         {
+            Debug.WriteLine("--- SendConvoyConnectionParameters - Before writing CasioConvoyCharacteristic");
             await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
                 Guid.Parse(BLEConstants.CasioConvoyCharacteristic), new byte[] { 0x04, 0x01, 0x18, 0x00, 0x18, 0x00, 0x00, 0x00, 0x58, 0x02 });
         }
@@ -56,6 +63,7 @@ namespace Rangeman.WatchDataSender
             gattServer.NotifyCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid), Guid.Parse(BLEConstants.CasioConvoyCharacteristic),
             (data) =>
             {
+                Debug.WriteLine($"--- SendCategoryAndWaitForConnectionParams - NotifyCharacteristicValue. Received data bytes : {Utils.GetPrintableBytesArray(data)}");
                 var kindData = data[0];
 
                 if (kindData == 2 || kindData == 6)
@@ -66,10 +74,13 @@ namespace Rangeman.WatchDataSender
                 }
             });
 
+            Debug.WriteLine("--- SendCategoryAndWaitForConnectionParams - Before writing CasioDataRequestSPCharacteristic");
             await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
                                   Guid.Parse(BLEConstants.CasioDataRequestSPCharacteristic), new byte[] { 0x00, categoryId, 0x00, 0x00 }); 
 
             var result = await taskCompletionSource.Task;
+
+            Debug.WriteLine("--- SendCategoryAndWaitForConnectionParams - after awaiting Task");
             return result;
         }
 
@@ -80,6 +91,7 @@ namespace Rangeman.WatchDataSender
             gattServer.NotifyCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid), Guid.Parse(BLEConstants.CasioDataRequestSPCharacteristic),
             (data) =>
             {
+                Debug.WriteLine($"--- SendConnectionSettingsBasedOnParams - NotifyCharacteristicValue. Received data bytes : {Utils.GetPrintableBytesArray(data)}");
                 if (data[0] == 0 && data[1] == categoryId)
                 { 
                     taskCompletionSource.SetResult(data);
@@ -90,7 +102,10 @@ namespace Rangeman.WatchDataSender
             long currentParameterDataSizeOf1Sector = parameters.DataSizeOf1Sector * parameters.OffsetSector;
             long j3 = totalDataLength - currentParameterDataSizeOf1Sector;
 
-            if(j3>0)
+            Debug.WriteLine($"--- SendConnectionSettingsBasedOnParams - currentParameterDataSizeOf1Sector : {currentParameterDataSizeOf1Sector}");
+            Debug.WriteLine($"--- SendConnectionSettingsBasedOnParams - j3 : {j3}");
+
+            if (j3>0)
             {
                 //Create convoy data: totalDataLength, j3, acceptor1, acceptor2, timeoutMinute
                 //Acceptor1: 250
@@ -98,11 +113,15 @@ namespace Rangeman.WatchDataSender
                 
                 var convoyData = CreateConvoyData(totalDataLength, j3, 250, 245,  0);
 
+                Debug.WriteLine($"--- SendConnectionSettingsBasedOnParams - after CreateConvoyData. convoyData = {convoyData}");
+
                 await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
                         Guid.Parse(BLEConstants.CasioConvoyCharacteristic), convoyData);
             }
 
+            Debug.WriteLine($"--- SendConnectionSettingsBasedOnParams - before awaiting task");
             await taskCompletionSource.Task;
+            Debug.WriteLine($"--- SendConnectionSettingsBasedOnParams - after awaiting task");
         }
 
         public async Task CloseCurrentCategoryAndWaitForResponse(byte categoryId)
@@ -112,6 +131,7 @@ namespace Rangeman.WatchDataSender
             gattServer.NotifyCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid), Guid.Parse(BLEConstants.CasioDataRequestSPCharacteristic),
                 (data) =>
                 {
+                    Debug.WriteLine($"--- CloseCurrentCategoryAndWaitForResponse - NotifyCharacteristicValue. Received data bytes : {Utils.GetPrintableBytesArray(data)}");
                     if (data[0] == 4)
                     {
                         if (data[1] == categoryId)
@@ -124,7 +144,9 @@ namespace Rangeman.WatchDataSender
             await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
                 Guid.Parse(BLEConstants.CasioDataRequestSPCharacteristic), new byte[] { 0x09, categoryId, 0x00, 0x00, 0x00 });
 
+            Debug.WriteLine($"--- CloseCurrentCategoryAndWaitForResponse - Before awaiting task");
             await taskCompletionSource.Task;
+            Debug.WriteLine($"--- CloseCurrentCategoryAndWaitForResponse - After awaiting task");
         }
 
         public async Task WriteFinalClosingData()
@@ -134,6 +156,7 @@ namespace Rangeman.WatchDataSender
             gattServer.NotifyCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid), Guid.Parse(BLEConstants.CasioConvoyCharacteristic),
                 (data) =>
                 {
+                    Debug.WriteLine($"--- WriteFinalClosingData - NotifyCharacteristicValue. Received data bytes : {Utils.GetPrintableBytesArray(data)}");
                     if (data[0] == 0x04 && data[1] == 0x00 && data[2] == 0x18)
                     {
                         taskCompletionSource.SetResult(data);
@@ -143,11 +166,14 @@ namespace Rangeman.WatchDataSender
             await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
                 Guid.Parse(BLEConstants.CasioDataRequestSPCharacteristic), new byte[] { 0x04, 0x12, 0x00, 0x00, 0x00 });  // category 18
 
+            Debug.WriteLine($"--- WriteFinalClosingData - Before awaiting task");
             await taskCompletionSource.Task;
+            Debug.WriteLine($"--- WriteFinalClosingData - After awaiting task");
         }
 
         public async Task WriteFinalClosingData2()
         {
+            Debug.WriteLine($"--- WriteFinalClosingData2 - Start");
             await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
                 Guid.Parse(BLEConstants.CasioConvoyCharacteristic), new byte[] { 0x04, 0x01, 0x48, 0x00, 0x50, 0x00, 0x04, 0x00, 0x58, 0x02 });
         }

@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace Rangeman
+namespace Rangeman.Common
 {
     internal static class Utils
     {

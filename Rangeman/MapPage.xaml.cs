@@ -130,8 +130,12 @@ namespace Rangeman
                 {
                     var advertisedName = a.Advertisement.DeviceName;
 
+                    Debug.WriteLine($"--- MapPage SendButton_Clicked, advertised device name: {advertisedName}");
+
                     if (advertisedName != null && advertisedName.Contains("CASIO"))
                     {
+                        Debug.WriteLine("--- MapPage SendButton_Clicked - advertised name contains CASIO");
+
                         scanCancellationTokenSource.Cancel();
 
                         var connection = await ble.ConnectToDevice(a);
@@ -139,7 +143,7 @@ namespace Rangeman
                         if (connection.IsSuccessful())
                         {
                             Debug.WriteLine("Map tab - Device Connection was successful");
-                            var watchDataSenderService = new WatchDataSenderService(connection, viewModel.ToDataByteArray(), viewModel.ToHeaderByteArray());
+                            var watchDataSenderService = new WatchDataSenderService(connection, viewModel.ToTestDataByteArray(), viewModel.ToTestHeaderByteArray());
                             watchDataSenderService.SendRoute();
                         }
                         else

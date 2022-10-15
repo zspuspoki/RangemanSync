@@ -38,7 +38,7 @@ namespace Rangeman.WatchDataSender
                 await remoteWatchController.SendConnectionSettingsBasedOnParams(connectionParameters, data.Length, category.CategoryId);
 
                 BufferedConvoySender bufferedConvoySender = new BufferedConvoySender(this.connection.GattServer, category.Data);
-                bufferedConvoySender.Send();
+                await bufferedConvoySender.Send();
 
                 await remoteWatchController.CloseCurrentCategoryAndWaitForResponse(category.CategoryId);
             }

@@ -3,6 +3,7 @@ using Rangeman.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace Rangeman.WatchDataSender
 {
@@ -18,11 +19,10 @@ namespace Rangeman.WatchDataSender
             this.data = data;
         }
 
-        public async void Send()
+        public async Task Send()
         {
-            int currentConvoyDataCount = 0;
             int i = 0;
-            currentConvoyDataCount = 0;
+            int currentConvoyDataCount = 0;
 
             List<byte> currentDataToSend = new List<byte>();
             List<byte> oneDataChunkWithCrc = new List<byte>();
@@ -35,9 +35,9 @@ namespace Rangeman.WatchDataSender
 
                 Debug.WriteLine($"--- BufferedConvoySender - currentConvoyDataCount = {currentConvoyDataCount}");
 
-                while (i++ < data.Length && currentConvoyDataCount++ < MaxNumberOfBytesToWriteConvoy)
+                while (i < data.Length && currentConvoyDataCount++ < MaxNumberOfBytesToWriteConvoy)
                 {
-                    var dataToAdd = (byte)~(data[i]);
+                    var dataToAdd = (byte)~(data[i++]);
                     currentDataToSend.Add(dataToAdd);
                     oneDataChunkWithCrc.Add(dataToAdd);
                 }
@@ -65,6 +65,8 @@ namespace Rangeman.WatchDataSender
 
                 await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
                     Guid.Parse(BLEConstants.CasioConvoyCharacteristic), currentByteArrayToSend);
+
+                await Task.Delay(5);
 
                 currentDataToSend.Clear();
                 currentConvoyDataCount = 0;

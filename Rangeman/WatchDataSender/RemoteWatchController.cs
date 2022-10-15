@@ -132,21 +132,27 @@ namespace Rangeman.WatchDataSender
                 (data) =>
                 {
                     Debug.WriteLine($"--- CloseCurrentCategoryAndWaitForResponse - NotifyCharacteristicValue. Received data bytes : {Utils.GetPrintableBytesArray(data)}");
-                    if (data[0] == 4)
+                    //if (data[0] == 4)
+                    //{
+                    //    if (data[1] == categoryId)
+                    //    {
+                    //        taskCompletionSource.SetResult(data);
+                    //    }
+                    //}
+                    if(data.SequenceEqual(new byte[] { 09, categoryId , 00, 00, 00, 00, 00 }))
                     {
-                        if (data[1] == categoryId)
-                        {
-                            taskCompletionSource.SetResult(data);
-                        }
+                        Debug.WriteLine("--- CloseCurrentCategoryAndWaitForResponse - Sequence is equals");
+                        taskCompletionSource.SetResult(data);
                     }
                 });
-
-            await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
-                Guid.Parse(BLEConstants.CasioDataRequestSPCharacteristic), new byte[] { 0x09, categoryId, 0x00, 0x00, 0x00 });
 
             Debug.WriteLine($"--- CloseCurrentCategoryAndWaitForResponse - Before awaiting task");
             await taskCompletionSource.Task;
             Debug.WriteLine($"--- CloseCurrentCategoryAndWaitForResponse - After awaiting task");
+
+            Debug.WriteLine($"--- CloseCurrentCategoryAndWaitForResponse - Before sending values to characteristic");
+            await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
+                Guid.Parse(BLEConstants.CasioDataRequestSPCharacteristic), new byte[] { 0x09, categoryId, 0x00, 0x00, 0x00 });
         }
 
         public async Task WriteFinalClosingData()

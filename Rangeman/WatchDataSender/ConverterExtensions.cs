@@ -10,6 +10,10 @@ namespace Rangeman.WatchDataSender
         {
             List<byte[]> resultList = new List<byte[]>();
 
+            //00-06-00-00-00-1C-00-00-00
+            //In the above example, the 6 is TransitPointCount, 1C (dec 28) is the NodeCount
+            //2nd byte : TransitPointCount
+            //6th byte: NodeCount
             var infoBytes = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0 }; // 9 bytes
 
             var emptyData = new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,

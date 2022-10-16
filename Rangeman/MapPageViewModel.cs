@@ -26,6 +26,8 @@ namespace Rangeman
             hasEndCoordinate = true;
         }
 
+        public bool ProgressBarIsVisible { get; set; }
+        public string ProgressMessage { get; set; } = "Test message";
         public Context Context { get; }
         public bool HasStartCoordinate => hasStartCoordinate;
         public bool HasEndCoordinate => hasEndCoordinate;

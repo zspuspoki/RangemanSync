@@ -54,6 +54,9 @@
     </Compile>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Common\BLEConstants.cs" />
+    <Compile Include="CustomControls\CircleProgressBar.xaml.cs">
+      <DependentUpon>CircleProgressBar.xaml</DependentUpon>
+    </Compile>
     <Compile Include="WatchDataReceiver\CasioConvoyAndCasioDataRequestObserver.cs" />
     <Compile Include="WatchDataReceiver\CharChangedObserver.cs" />
     <Compile Include="WatchDataReceiver\DataExtractors\Data\LogData.cs" />
@@ -129,6 +132,11 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="MapPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="CustomControls\CircleProgressBar.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>

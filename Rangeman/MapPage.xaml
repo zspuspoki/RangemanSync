@@ -1,7 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-              xmlns:mapsui="clr-namespace:Mapsui.UI.Forms;assembly=Mapsui.UI.Forms"
+             xmlns:local="clr-namespace:Rangeman.CustomControls;assembly=Rangeman"
+             xmlns:mapsui="clr-namespace:Mapsui.UI.Forms;assembly=Mapsui.UI.Forms"
              x:Class="Rangeman.MapPage">
     <ContentPage.Content>
         <AbsoluteLayout>
@@ -14,6 +15,16 @@
                      HorizontalOptions="Fill"
                      BackgroundColor="Gray" MapClicked="mapView_MapClicked" />
             </ContentView>
+            
+            <Grid AbsoluteLayout.LayoutBounds=".5, .5, AutoSize, AutoSize"
+                  AbsoluteLayout.LayoutFlags="PositionProportional" IsVisible="{Binding ProgressBarIsVisible}}">
+                <local:CircleProgressBar HeightRequest="100" WidthRequest="100" Percentage="65" />
+                <Label Text="65%" FontSize="14" Margin="18,20,0,0"/>
+            </Grid>
+
+            <Label AbsoluteLayout.LayoutBounds="0, 0, AutoSize, AutoSize"
+                      AbsoluteLayout.LayoutFlags="PositionProportional" TextColor="Red" BackgroundColor="White" Text="{Binding ProgressMessage}"/>
+
             <Button AbsoluteLayout.LayoutBounds="0, 1, AutoSize, AutoSize"
                       AbsoluteLayout.LayoutFlags="PositionProportional"
                       HeightRequest="65"

@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentView xmlns="http://xamarin.com/schemas/2014/forms" 
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Rangeman.CustomControls.CircleProgressBar">
+  <ContentView.Content>
+        <Grid>
+
+            <Path x:Name="grayPath" Stroke="LightGray" 
+              StrokeThickness="4" HorizontalOptions="Start" VerticalOptions="Start">
+                <Path.Data>
+                    <PathGeometry>
+                        <PathGeometry.Figures>
+                            <PathFigureCollection>
+                                <PathFigure x:Name="grayPathFigure">
+                                    <PathFigure.Segments>
+                                        <PathSegmentCollection>
+                                            <ArcSegment x:Name="grayArcSegment" SweepDirection="Clockwise" />
+                                        </PathSegmentCollection>
+                                    </PathFigure.Segments>
+                                </PathFigure>
+                            </PathFigureCollection>
+                        </PathGeometry.Figures>
+                    </PathGeometry>
+                </Path.Data>
+            </Path>
+
+
+            <Path x:Name="pathRoot" Stroke="Green" 
+              StrokeThickness="4" HorizontalOptions="Start" VerticalOptions="Start">
+                <Path.Data>
+                    <PathGeometry>
+                        <PathGeometry.Figures>
+                            <PathFigureCollection>
+                                <PathFigure x:Name="pathFigure">
+                                    <PathFigure.Segments>
+                                        <PathSegmentCollection>
+                                            <ArcSegment x:Name="arcSegment" SweepDirection="Clockwise" />
+                                        </PathSegmentCollection>
+                                    </PathFigure.Segments>
+                                </PathFigure>
+                            </PathFigureCollection>
+                        </PathGeometry.Figures>
+                    </PathGeometry>
+                </Path.Data>
+            </Path>
+        </Grid>
+    </ContentView.Content>
+</ContentView>

@@ -57,6 +57,7 @@
     <Compile Include="CustomControls\CircleProgressBar.xaml.cs">
       <DependentUpon>CircleProgressBar.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ViewModelBase.cs" />
     <Compile Include="WatchDataReceiver\CasioConvoyAndCasioDataRequestObserver.cs" />
     <Compile Include="WatchDataReceiver\CharChangedObserver.cs" />
     <Compile Include="WatchDataReceiver\DataExtractors\Data\LogData.cs" />
@@ -88,6 +89,7 @@
     <Compile Include="WatchDataSender\ConnectionParameters.cs" />
     <Compile Include="WatchDataSender\ConverterExtensions.cs" />
     <Compile Include="WatchDataSender\Crc16.cs" />
+    <Compile Include="WatchDataSender\DataSenderProgressEventArgs.cs" />
     <Compile Include="WatchDataSender\RemoteWatchController.cs" />
     <Compile Include="WatchDataSender\WatchDataSenderService.cs" />
   </ItemGroup>

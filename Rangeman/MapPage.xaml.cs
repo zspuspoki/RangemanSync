@@ -1,8 +1,4 @@
-﻿using Android.App;
-using Android.Webkit;
-using AndroidX.Lifecycle;
-using employeeID;
-using Mapsui;
+﻿using Mapsui;
 using Mapsui.Projection;
 using Mapsui.UI.Forms;
 using Mapsui.Utilities;
@@ -131,10 +127,12 @@ namespace Rangeman
                     var advertisedName = a.Advertisement.DeviceName;
 
                     Debug.WriteLine($"--- MapPage SendButton_Clicked, advertised device name: {advertisedName}");
+                    viewModel.ProgressMessage = $"Looking for Casio device. Currently found device name: {advertisedName}";
 
                     if (advertisedName != null && advertisedName.Contains("CASIO"))
                     {
                         Debug.WriteLine("--- MapPage SendButton_Clicked - advertised name contains CASIO");
+                        viewModel.ProgressMessage = "Found Casio GPR-B1000. Starting connection...";
 
                         scanCancellationTokenSource.Cancel();
 
@@ -143,8 +141,11 @@ namespace Rangeman
                         if (connection.IsSuccessful())
                         {
                             Debug.WriteLine("Map tab - Device Connection was successful");
+                            viewModel.ProgressMessage = "Connected to GPR-B1000 watch.";
+
                             var watchDataSenderService = new WatchDataSenderService(connection, viewModel.ToTestDataByteArray(), viewModel.ToTestHeaderByteArray());
-                            watchDataSenderService.SendRoute();
+                            watchDataSenderService.ProgressChanged += WatchDataSenderService_ProgressChanged;
+                            await watchDataSenderService.SendRoute();                            
                         }
                         else
                         {
@@ -153,6 +154,17 @@ namespace Rangeman
                     }
                 }
             }, scanCancellationTokenSource.Token);
+        }
+
+        private void WatchDataSenderService_ProgressChanged(object sender, DataSenderProgressEventArgs e)
+        {
+            if(sender is WatchDataSenderService)
+            {
+                viewModel.ProgressBarIsVisible = true;
+                viewModel.ProgressMessage = e.Text;
+                viewModel.ProgressBarPercentageMessage = e.PercentageText;
+                viewModel.ProgressBarPercentageNumber = e.PercentageNumber;
+            }
         }
     }
 }

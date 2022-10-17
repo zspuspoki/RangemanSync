@@ -1,11 +1,14 @@
 ﻿using nexus.protocols.ble;
 using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace Rangeman.WatchDataSender
 {
     internal class WatchDataSenderService
     {
+        public event EventHandler<DataSenderProgressEventArgs> ProgressChanged;
+
         private readonly BlePeripheralConnectionRequest connection;
         private readonly byte[] data;
         private readonly byte[] header;
@@ -17,15 +20,21 @@ namespace Rangeman.WatchDataSender
             this.header = header;
         }
 
-        public async void SendRoute()
+        public async Task SendRoute()
         {
+            var progressPercent = 8;
+
             Debug.WriteLine("--- Starting SendRoute()");
 
             var remoteWatchController = new RemoteWatchController(this.connection.GattServer);
 
             await remoteWatchController.SendInitCommandsAndWaitForCCCData(new byte[] { 00, 00, 00 });
 
+            FireProgressEvent(ref progressPercent, 8, "Sent init commands and waited for CCC data");
+
             await remoteWatchController.SendConvoyConnectionParameters();
+
+            FireProgressEvent(ref progressPercent, 8, "Sent convoy connection parameters");
 
             var categoriesToSend = new CategoryToSend[] { 
                 new CategoryToSend(0x16, data), 
@@ -35,17 +44,37 @@ namespace Rangeman.WatchDataSender
             {
                 var connectionParameters = await remoteWatchController.SendCategoryAndWaitForConnectionParams(category.CategoryId);  // Category id = 22 - route
 
+                FireProgressEvent(ref progressPercent, 4, "Sent category and waited for connection params");
+
                 await remoteWatchController.SendConnectionSettingsBasedOnParams(connectionParameters, data.Length, category.CategoryId);
+
+                FireProgressEvent(ref progressPercent, 4, "Sent connection settings based on params");
 
                 BufferedConvoySender bufferedConvoySender = new BufferedConvoySender(this.connection.GattServer, category.Data);
                 await bufferedConvoySender.Send();
 
+                FireProgressEvent(ref progressPercent, 4, "Finished using buffered convoy sender");
+
                 await remoteWatchController.CloseCurrentCategoryAndWaitForResponse(category.CategoryId);
+
+                FireProgressEvent(ref progressPercent, 4, "Closed current category and waited for response");
             }
 
             await remoteWatchController.WriteFinalClosingData();
+            FireProgressEvent(ref progressPercent, 8, "Finished writing final closing data");
 
             await remoteWatchController.WriteFinalClosingData2();
+        }
+
+        private void FireProgressEvent(ref int percentage, int increment, string text)
+        {
+            if(ProgressChanged!= null)
+            {
+                var eventArgs = new DataSenderProgressEventArgs { PercentageText = $"{percentage}%", Text = text, PercentageNumber = percentage };
+                ProgressChanged(this, eventArgs);
+
+                percentage += increment;
+            }
         }
     }
 }

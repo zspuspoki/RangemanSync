@@ -17,9 +17,9 @@
             </ContentView>
             
             <Grid AbsoluteLayout.LayoutBounds=".5, .5, AutoSize, AutoSize"
-                  AbsoluteLayout.LayoutFlags="PositionProportional" IsVisible="{Binding ProgressBarIsVisible}}">
-                <local:CircleProgressBar HeightRequest="100" WidthRequest="100" Percentage="65" />
-                <Label Text="65%" FontSize="14" Margin="18,20,0,0"/>
+                  AbsoluteLayout.LayoutFlags="PositionProportional" IsVisible="{Binding ProgressBarIsVisible}">
+                <local:CircleProgressBar HeightRequest="100" WidthRequest="100" Percentage="{Binding ProgressBarPercentageNumber}" />
+                <Label Text="{Binding ProgressBarPercentageMessage}" FontSize="14" TextColor="Red" Margin="18,20,0,0"/>
             </Grid>
 
             <Label AbsoluteLayout.LayoutBounds="0, 0, AutoSize, AutoSize"

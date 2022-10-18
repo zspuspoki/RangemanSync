@@ -38,14 +38,18 @@ namespace Rangeman.WatchDataSender
                                       Guid.Parse(BLEConstants.CasioDataRequestSPCharacteristic),
                                       Guid.Parse(BLEConstants.CCCDescriptor), new byte[] { 0x01, 0x00 });
 
+            Debug.WriteLine("--- SendInitCommandsAndWaitForCCCData - before executing first delay");
             await Task.Delay(CommandDelay);
+            Debug.WriteLine("--- SendInitCommandsAndWaitForCCCData - after executing first delay");
 
             Debug.WriteLine("--- SendInitCommandsAndWaitForCCCData - Before writing CasioConvoyCharacteristic");
             await gattServer.WriteDescriptorValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
                                   Guid.Parse(BLEConstants.CasioConvoyCharacteristic),
                                   Guid.Parse(BLEConstants.CCCDescriptor), new byte[] { 0x01, 0x00 });
 
+            Debug.WriteLine("--- SendInitCommandsAndWaitForCCCData - before executing second delay");
             await Task.Delay(CommandDelay);
+            Debug.WriteLine("--- SendInitCommandsAndWaitForCCCData - after executing second delay");
 
             Debug.WriteLine("--- SendInitCommandsAndWaitForCCCData - Before writing CasioDataRequestSPCharacteristic 2.");
             await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
@@ -201,6 +205,7 @@ namespace Rangeman.WatchDataSender
                 Guid.Parse(BLEConstants.CasioConvoyCharacteristic), new byte[] { 0x04, 0x01, 0x48, 0x00, 0x50, 0x00, 0x04, 0x00, 0x58, 0x02 });
 
             await Task.Delay(CommandDelay);
+            Debug.WriteLine("--- WriteFinalClosingData2 - End");
         }
 
         private static byte[] CreateConvoyData(long j, long j2, int i, int i2, int i3)

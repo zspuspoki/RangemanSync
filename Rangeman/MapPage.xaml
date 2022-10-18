@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Rangeman.CustomControls;assembly=Rangeman"
-             xmlns:mapsui="clr-namespace:Mapsui.UI.Forms;assembly=Mapsui.UI.Forms"
+             xmlns:mapsui="clr-namespace:Mapsui.UI.Forms;assembly=Mapsui.UI.Forms" xmlns:controls="clr-namespace:Xamarin.Forms.Controls;assembly=CircularProgressBar"
              x:Class="Rangeman.MapPage">
     <ContentPage.Content>
         <AbsoluteLayout>
@@ -17,9 +17,15 @@
             </ContentView>
             
             <Grid AbsoluteLayout.LayoutBounds=".5, .5, AutoSize, AutoSize"
-                  AbsoluteLayout.LayoutFlags="PositionProportional" IsVisible="{Binding ProgressBarIsVisible}">
-                <local:CircleProgressBar HeightRequest="100" WidthRequest="100" Percentage="{Binding ProgressBarPercentageNumber}" />
-                <Label Text="{Binding ProgressBarPercentageMessage}" FontSize="14" TextColor="Red" Margin="18,20,0,0"/>
+                  AbsoluteLayout.LayoutFlags="PositionProportional"
+                  IsVisible="{Binding ProgressBarIsVisible}">
+                <controls:CircularProgressBar 
+                    Progress="{Binding ProgressBarPercentageNumber}"
+                    HeightRequest="100" 
+                    WidthRequest="100" 
+                    Color="Green"
+                    />
+                <Label Text="{Binding ProgressBarPercentageMessage}" FontSize="24" TextColor="Red" Margin="26,30,0,0"/>
             </Grid>
 
             <Label AbsoluteLayout.LayoutBounds="0, 0, AutoSize, AutoSize"
@@ -29,7 +35,7 @@
                       AbsoluteLayout.LayoutFlags="PositionProportional"
                       HeightRequest="65"
                       WidthRequest="65"
-                      CornerRadius="25" Text="Send" Clicked="SendButton_Clicked" />
+                      CornerRadius="25" Text="Send" Clicked="SendButton_Clicked" x:Name="SendButton" />
         </AbsoluteLayout>
     </ContentPage.Content>
 </ContentPage>

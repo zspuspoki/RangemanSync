@@ -19,6 +19,7 @@ namespace Rangeman
         private IBluetoothLowEnergyAdapter ble;
         private CancellationTokenSource scanCancellationTokenSource = new CancellationTokenSource();
         private MapPageViewModel viewModel = null;
+        private static SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1, 1);
 
         public MapPage()
         {            
@@ -120,38 +121,61 @@ namespace Rangeman
 
         private async void SendButton_Clicked(object sender, EventArgs e)
         {
+            Debug.WriteLine("--- MapPage - start SendButton_Clicked");
+
+            if(!viewModel.HasRoute)
+            {
+                await DisplayAlert("Alert", "Please create a route before pressing Send.", "OK");
+                return;
+            }
+
+            SendButton.Clicked -= SendButton_Clicked;
             await ble.ScanForBroadcasts(async (a) =>
             {
-                if (a.Advertisement != null)
+                await semaphoreSlim.WaitAsync();
+                try
                 {
-                    var advertisedName = a.Advertisement.DeviceName;
-
-                    Debug.WriteLine($"--- MapPage SendButton_Clicked, advertised device name: {advertisedName}");
-                    viewModel.ProgressMessage = $"Looking for Casio device. Currently found device name: {advertisedName}";
-
-                    if (advertisedName != null && advertisedName.Contains("CASIO"))
+                    if (a.Advertisement != null)
                     {
-                        Debug.WriteLine("--- MapPage SendButton_Clicked - advertised name contains CASIO");
-                        viewModel.ProgressMessage = "Found Casio GPR-B1000. Starting connection...";
+                        var advertisedName = a.Advertisement.DeviceName;
 
-                        scanCancellationTokenSource.Cancel();
+                        Debug.WriteLine($"--- MapPage SendButton_Clicked, advertised device name: {advertisedName}");
+                        viewModel.ProgressMessage = "Looking for Casio device...";
 
-                        var connection = await ble.ConnectToDevice(a);
-
-                        if (connection.IsSuccessful())
+                        if (advertisedName != null && 
+                            advertisedName.Contains("CASIO GPR-B1000")
+                            && viewModel.HasRoute)
                         {
-                            Debug.WriteLine("Map tab - Device Connection was successful");
-                            viewModel.ProgressMessage = "Connected to GPR-B1000 watch.";
+                            Debug.WriteLine("--- MapPage SendButton_Clicked - advertised name contains CASIO");
+                            viewModel.ProgressMessage = "Found Casio GPR-B1000. Starting connection...";
 
-                            var watchDataSenderService = new WatchDataSenderService(connection, viewModel.ToTestDataByteArray(), viewModel.ToTestHeaderByteArray());
-                            watchDataSenderService.ProgressChanged += WatchDataSenderService_ProgressChanged;
-                            await watchDataSenderService.SendRoute();                            
-                        }
-                        else
-                        {
-                            Debug.WriteLine("Map tab - Device Connection wasn't successful");
+                            scanCancellationTokenSource.Cancel();
+
+                            var connection = await ble.ConnectToDevice(a);
+
+                            if (connection.IsSuccessful())
+                            {
+                                Debug.WriteLine("Map tab - Device Connection was successful");
+                                viewModel.ProgressMessage = "Connected to GPR-B1000 watch.";
+
+                                var watchDataSenderService = new WatchDataSenderService(connection, viewModel.ToTestDataByteArray(), viewModel.ToTestHeaderByteArray());
+                                watchDataSenderService.ProgressChanged += WatchDataSenderService_ProgressChanged;
+                                await watchDataSenderService.SendRoute();
+                                Debug.WriteLine("Map tab - after awaiting SendRoute()");
+                                viewModel.ResetCoordinates();
+                            }
+                            else
+                            {
+                                Debug.WriteLine("Map tab - Device Connection wasn't successful");
+                            }
+
+                            SendButton.Clicked += SendButton_Clicked;
                         }
                     }
+                }
+                finally
+                {
+                    semaphoreSlim.Release();
                 }
             }, scanCancellationTokenSource.Token);
         }
@@ -164,6 +188,8 @@ namespace Rangeman
                 viewModel.ProgressMessage = e.Text;
                 viewModel.ProgressBarPercentageMessage = e.PercentageText;
                 viewModel.ProgressBarPercentageNumber = e.PercentageNumber;
+
+                Debug.WriteLine($"Current progress bar percentage number: {viewModel.ProgressBarPercentageNumber}");
             }
         }
     }

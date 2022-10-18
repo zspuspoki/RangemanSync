@@ -44,26 +44,29 @@ namespace Rangeman.WatchDataSender
             {
                 var connectionParameters = await remoteWatchController.SendCategoryAndWaitForConnectionParams(category.CategoryId);  // Category id = 22 - route
 
-                FireProgressEvent(ref progressPercent, 4, "Sent category and waited for connection params");
+                FireProgressEvent(ref progressPercent, 8, "Sent category and waited for connection params");
 
                 await remoteWatchController.SendConnectionSettingsBasedOnParams(connectionParameters, data.Length, category.CategoryId);
 
-                FireProgressEvent(ref progressPercent, 4, "Sent connection settings based on params");
+                FireProgressEvent(ref progressPercent, 8, "Sent connection settings based on params");
 
                 BufferedConvoySender bufferedConvoySender = new BufferedConvoySender(this.connection.GattServer, category.Data);
                 await bufferedConvoySender.Send();
 
-                FireProgressEvent(ref progressPercent, 4, "Finished using buffered convoy sender");
+                FireProgressEvent(ref progressPercent, 8, "Finished using buffered convoy sender");
 
                 await remoteWatchController.CloseCurrentCategoryAndWaitForResponse(category.CategoryId);
 
-                FireProgressEvent(ref progressPercent, 4, "Closed current category and waited for response");
+                FireProgressEvent(ref progressPercent, 8, "Closed current category and waited for response");
             }
 
             await remoteWatchController.WriteFinalClosingData();
             FireProgressEvent(ref progressPercent, 8, "Finished writing final closing data");
 
             await remoteWatchController.WriteFinalClosingData2();
+
+            progressPercent = 100;
+            FireProgressEvent(ref progressPercent, 0, "Finished sending data");
         }
 
         private void FireProgressEvent(ref int percentage, int increment, string text)

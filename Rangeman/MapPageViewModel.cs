@@ -10,7 +10,7 @@ namespace Rangeman
         private bool hasEndCoordinate;
         private bool progressBarIsVisible;
         private string progressBarPercentageMessage;
-        private string progressMessage = "Test message";
+        private string progressMessage;
         private double progressBarPercentageNumber;
 
         public MapPageViewModel(Android.Content.Context context)

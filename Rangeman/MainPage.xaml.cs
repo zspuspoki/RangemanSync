@@ -22,6 +22,7 @@ namespace Rangeman
         public MainPage()
         {
             InitializeComponent();
+            NavigationPage.SetHasNavigationBar(this, false);
             this.BindingContextChanged += MainPage_BindingContextChanged;
         }
 

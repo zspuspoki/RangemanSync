@@ -1,6 +1,7 @@
 ﻿using Rangeman.Common;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Rangeman.WatchDataSender
 {
@@ -24,7 +25,7 @@ namespace Rangeman.WatchDataSender
 
             var currentTime = DateTime.Now;
 
-            resultList.Add(BitConverter.GetBytes(currentTime.Year));  // 2 bytes
+            resultList.Add(BitConverter.GetBytes((ushort)currentTime.Year));  // 2 bytes
             resultList.Add(new byte[] { (byte)currentTime.Month });   // 1
             resultList.Add(new byte[] { (byte)currentTime.Day });     // 1
             resultList.Add(new byte[] { (byte)currentTime.Hour });    // 1
@@ -37,7 +38,11 @@ namespace Rangeman.WatchDataSender
                 resultList.Add(bytesToAdd);
             }
 
-            return Utils.GetAllDataArray(resultList);
+            var result = Utils.GetAllDataArray(resultList);
+
+            Debug.WriteLine($"--- Header byte array from converter : {Utils.GetPrintableBytesArray(result)}");
+
+            return result;
         }
 
         public static byte[] ToDataByteArray(this MapPageViewModel mapPageViewModel)
@@ -46,8 +51,8 @@ namespace Rangeman.WatchDataSender
             
             foreach(var gpsCoordinatePair in mapPageViewModel.GpsCoordinates)
             {
-                resultList.Add(BitConverter.GetBytes(gpsCoordinatePair.Longitude));
                 resultList.Add(BitConverter.GetBytes(gpsCoordinatePair.Latitude));
+                resultList.Add(BitConverter.GetBytes(gpsCoordinatePair.Longitude));
             }
 
             var currentLength = resultList.Count * 8;
@@ -64,7 +69,11 @@ namespace Rangeman.WatchDataSender
                 }
             }
 
-            return Utils.GetAllDataArray(resultList);
+            var result = Utils.GetAllDataArray(resultList);
+
+            Debug.WriteLine($"--- Data byte array from converter : {Utils.GetPrintableBytesArray(result)}");
+
+            return result;
         }
 
         /// <summary>

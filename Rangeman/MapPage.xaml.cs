@@ -24,7 +24,7 @@ namespace Rangeman
         public MapPage()
         {            
             InitializeComponent();
-
+            NavigationPage.SetHasNavigationBar(this, false);
             this.BindingContextChanged += MapPage_BindingContextChanged;
             InitalizeMap();
         }
@@ -158,9 +158,10 @@ namespace Rangeman
                                 Debug.WriteLine("Map tab - Device Connection was successful");
                                 viewModel.ProgressMessage = "Connected to GPR-B1000 watch.";
 
-                                var watchDataSenderService = new WatchDataSenderService(connection, viewModel.ToTestDataByteArray(), viewModel.ToTestHeaderByteArray());
+                                var watchDataSenderService = new WatchDataSenderService(connection, viewModel.ToDataByteArray(), viewModel.ToHeaderByteArray());
                                 watchDataSenderService.ProgressChanged += WatchDataSenderService_ProgressChanged;
                                 await watchDataSenderService.SendRoute();
+
                                 Debug.WriteLine("Map tab - after awaiting SendRoute()");
                                 viewModel.ResetCoordinates();
                             }

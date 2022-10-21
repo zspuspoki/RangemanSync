@@ -5,7 +5,11 @@ namespace Rangeman
 {
     internal class MapPageViewModel : ViewModelBase
     {
-        private List<GpsCoordinates> gpsCoordinates = new List<GpsCoordinates>();
+        public const int MaxNumberOfTransitPoints = 4;
+
+        private List<GpsCoordinates> startEndCoordinates = new List<GpsCoordinates>();
+        private List<GpsCoordinates> transitPointCordinates = new List<GpsCoordinates>();
+
         private bool hasStartCoordinate;
         private bool hasEndCoordinate;
         private bool progressBarIsVisible;
@@ -20,20 +24,25 @@ namespace Rangeman
 
         public void AddStartCoordinates(double longitude, double latitude)
         {
-            gpsCoordinates.Add(new GpsCoordinates { Longitude = longitude, Latitude = latitude });
+            startEndCoordinates.Add(new GpsCoordinates { Longitude = longitude, Latitude = latitude });
             hasStartCoordinate = true;
         }
 
         public void AddEndCoordinates(double longitude, double latitude)
         {
-            gpsCoordinates.Add(new GpsCoordinates { Longitude = longitude, Latitude = latitude });
+            startEndCoordinates.Add(new GpsCoordinates { Longitude = longitude, Latitude = latitude });
             hasEndCoordinate = true;
             HasRoute = true;
         }
 
+        public void AddTransitPointCoordinates(double longitude, double latitude)
+        {
+            transitPointCordinates.Add(new GpsCoordinates { Longitude = longitude, Latitude = latitude });
+        }
+
         public void ResetCoordinates()
         {
-            gpsCoordinates.Clear();
+            startEndCoordinates.Clear();
             HasRoute = false;
         }
 
@@ -44,7 +53,8 @@ namespace Rangeman
         public Context Context { get; }
         public bool HasStartCoordinate => hasStartCoordinate;
         public bool HasEndCoordinate => hasEndCoordinate;
-        public IEnumerable<GpsCoordinates> GpsCoordinates => gpsCoordinates;
+        public IEnumerable<GpsCoordinates> StartEndCoordinates => startEndCoordinates;
+        public IEnumerable<GpsCoordinates> TransitPointCoordinates => startEndCoordinates;
         public bool HasRoute { get; set; }
 
     }

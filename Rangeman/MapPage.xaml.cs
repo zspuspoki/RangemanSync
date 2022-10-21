@@ -6,6 +6,7 @@ using nexus.protocols.ble;
 using Rangeman.WatchDataSender;
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using Xamarin.Essentials;
 using Xamarin.Forms;
@@ -52,11 +53,14 @@ namespace Rangeman
             mapView.MyLocationLayer.UpdateMyLocation(new Position(location.Latitude, location.Longitude), true);
         }
 
-        private async void mapView_MapClicked(object sender, Mapsui.UI.Forms.MapClickedEventArgs e)
+        private void mapView_MapClicked(object sender, Mapsui.UI.Forms.MapClickedEventArgs e)
         {
             if (viewModel.HasEndCoordinate && viewModel.HasStartCoordinate)
             {
-                return;
+                if (viewModel.TransitPointCoordinates.Count() == MapPageViewModel.MaxNumberOfTransitPoints)
+                {
+                    return;
+                }
             }
 
             if (!viewModel.HasStartCoordinate)
@@ -158,7 +162,11 @@ namespace Rangeman
                                 Debug.WriteLine("Map tab - Device Connection was successful");
                                 viewModel.ProgressMessage = "Connected to GPR-B1000 watch.";
 
-                                var watchDataSenderService = new WatchDataSenderService(connection, viewModel.ToDataByteArray(), viewModel.ToHeaderByteArray());
+                                MapPageDataConverter mapPageDataConverter = new MapPageDataConverter(viewModel);
+
+                                var watchDataSenderService = new WatchDataSenderService(connection, mapPageDataConverter.GetDataByteArray(),
+                                    mapPageDataConverter.GetHeaderByteArray());
+
                                 watchDataSenderService.ProgressChanged += WatchDataSenderService_ProgressChanged;
                                 await watchDataSenderService.SendRoute();
 

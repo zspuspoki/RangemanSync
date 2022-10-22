@@ -54,7 +54,7 @@ namespace Rangeman
         public bool HasStartCoordinate => hasStartCoordinate;
         public bool HasEndCoordinate => hasEndCoordinate;
         public IEnumerable<GpsCoordinates> StartEndCoordinates => startEndCoordinates;
-        public IEnumerable<GpsCoordinates> TransitPointCoordinates => startEndCoordinates;
+        public IEnumerable<GpsCoordinates> TransitPointCoordinates => transitPointCordinates;
         public bool HasRoute { get; set; }
 
     }

@@ -27,6 +27,8 @@ namespace Rangeman.WatchDataSender
             //2nd byte : TransitPointCount
             //6th byte: NodeCount
 
+            Debug.WriteLine($"--- GetHeaderByteArray: transitPointsWithInterimPoints.Count = {transitPointsWithInterimPoints.Count}");
+
             var nodeCount = (byte)(transitPointsWithInterimPoints.Count >> 1);
             var transitPointCount = (byte)mapPageViewModel.TransitPointCoordinates.Count();
 
@@ -144,30 +146,38 @@ namespace Rangeman.WatchDataSender
             {
                 var startEndCoordinates = mapPageViewModel.StartEndCoordinates.ToList();
                 var transitPoints = mapPageViewModel.TransitPointCoordinates.ToList();
-                var firstElement = startEndCoordinates[0];
+                var firstElement = startEndCoordinates[0]; //S
 
                 for (var i = 0; i <= transitPoints.Count; i++)
                 {
-                    var endCoordinate = i < transitPoints.Count ? transitPoints[i] : startEndCoordinates[1];
-                    var interimCoordinates = GetInterimGpsCoordinates(firstElement, endCoordinate);
+                    var endCoordinate = i < transitPoints.Count ? transitPoints[i] : startEndCoordinates[1]; //1 
 
-                    result.Add(BitConverter.GetBytes(endCoordinate.Latitude));
-                    result.Add(BitConverter.GetBytes(endCoordinate.Longitude));
+                    var interimCoordinates = GetInterimGpsCoordinates(firstElement, endCoordinate); //A  
 
                     foreach (var gpsCOordinateElement in interimCoordinates)
                     {
                         result.Add(gpsCOordinateElement);
                     }
 
+                    if (i < transitPoints.Count) // The last G point should not be added to transit&interim list
+                    {
+                        result.Add(BitConverter.GetBytes(endCoordinate.Latitude));
+                        result.Add(BitConverter.GetBytes(endCoordinate.Longitude));
+                    }
+
                     firstElement = endCoordinate;
                 }
             }
+
+            //1 - A - 
 
             return result;
         }
 
         private List<byte[]> GetInterimGpsCoordinates(GpsCoordinates startCoordinate, GpsCoordinates endCoordinate)
         {
+            Debug.WriteLine($"-- MapPageDataConverter: Calculating interim points. Coor1: ({startCoordinate.Latitude}, {startCoordinate.Longitude}) Coor2: ({endCoordinate.Latitude}, {endCoordinate.Longitude})");
+
             var result = new List<byte[]>();
             var latLngBoundsBuilder =
             new LatLngBounds.Builder()
@@ -178,6 +188,8 @@ namespace Rangeman.WatchDataSender
 
             result.Add(BitConverter.GetBytes(centerCoodinates.Latitude));
             result.Add(BitConverter.GetBytes(centerCoodinates.Longitude));
+
+            Debug.WriteLine($"-- MapPageDataConverter:Calculted interim point: ({centerCoodinates.Latitude}, {centerCoodinates.Longitude})");
 
             return result;
         }

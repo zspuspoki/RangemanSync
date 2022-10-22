@@ -53,7 +53,7 @@ namespace Rangeman
             mapView.MyLocationLayer.UpdateMyLocation(new Position(location.Latitude, location.Longitude), true);
         }
 
-        private void mapView_MapClicked(object sender, Mapsui.UI.Forms.MapClickedEventArgs e)
+        private void mapView_MapClicked(object sender, MapClickedEventArgs e)
         {
             if (viewModel.HasEndCoordinate && viewModel.HasStartCoordinate)
             {
@@ -63,16 +63,28 @@ namespace Rangeman
                 }
             }
 
+            string pinTitle;
             if (!viewModel.HasStartCoordinate)
             {
+                pinTitle = "S";
                 viewModel.AddStartCoordinates(e.Point.Longitude, e.Point.Latitude);
             }
             else if (!viewModel.HasEndCoordinate)
             {
+                pinTitle = "E";
                 viewModel.AddEndCoordinates(e.Point.Longitude, e.Point.Latitude);
             }
+            else
+            {
+                var transitPointCoordinateCount = viewModel.TransitPointCoordinates.Count();
 
-            ShowPinOnMap(e);
+                Debug.WriteLine($"-- mapView_MapClicked: transitPointCoordinateCount = {transitPointCoordinateCount}");
+
+                pinTitle = $"{transitPointCoordinateCount + 1}";
+                viewModel.AddTransitPointCoordinates(e.Point.Longitude, e.Point.Latitude);
+            }
+
+            ShowPinOnMap(pinTitle, e);
         }
 
         private async void InitalizeMap()
@@ -102,7 +114,7 @@ namespace Rangeman
             mapView.Map = map;
         }
 
-        private void ShowPinOnMap(MapClickedEventArgs e)
+        private void ShowPinOnMap(string pinTitle, MapClickedEventArgs e)
         {
             var pin = new Pin(mapView)
             {
@@ -115,7 +127,7 @@ namespace Rangeman
             pin.Callout.CalloutClicked += async (s, e) =>
             {
                 e.Callout.Type = Mapsui.Rendering.Skia.CalloutType.Single;
-                e.Callout.Title = !viewModel.HasEndCoordinate ? "S" : "E";
+                e.Callout.Title = pinTitle;
                 e.Handled = true;
             };
 

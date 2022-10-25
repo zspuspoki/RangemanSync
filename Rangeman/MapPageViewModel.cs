@@ -5,7 +5,7 @@ namespace Rangeman
 {
     internal class MapPageViewModel : ViewModelBase
     {
-        public const int MaxNumberOfTransitPoints = 4;
+        public const int MaxNumberOfTransitPoints = 9;
 
         private List<GpsCoordinates> startEndCoordinates = new List<GpsCoordinates>();
         private List<GpsCoordinates> transitPointCordinates = new List<GpsCoordinates>();

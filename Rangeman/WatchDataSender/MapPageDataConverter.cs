@@ -1,9 +1,11 @@
 ﻿using Android.Gms.Maps.Model;
+using Mapsui.Projection;
 using Rangeman.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Xamarin.Essentials;
 
 namespace Rangeman.WatchDataSender
 {
@@ -84,10 +86,16 @@ namespace Rangeman.WatchDataSender
             }
 
             var currentLength = resultList.Count * 8;
+            var fullDataSectionLength = 256; // The data array should be 256 * 1, 256 * 2, 256 * n bytes long, so padding should be calculated here
 
-            if(currentLength < 256)
+            while(currentLength > fullDataSectionLength)
             {
-                var paddedCount = (256 - currentLength) / 16;
+                fullDataSectionLength += 256;
+            }
+
+            if(currentLength < fullDataSectionLength)
+            {
+                var paddedCount = (fullDataSectionLength - currentLength) / 16;
 
                 for (var i=0; i< paddedCount;i++)
                 {
@@ -190,6 +198,38 @@ namespace Rangeman.WatchDataSender
             result.Add(BitConverter.GetBytes(centerCoodinates.Longitude));
 
             Debug.WriteLine($"-- MapPageDataConverter:Calculted interim point: ({centerCoodinates.Latitude}, {centerCoodinates.Longitude})");
+
+            return result;
+        }
+
+        private List<byte[]> GetInterimGpsCoordinates(GpsCoordinates startCoordinate, GpsCoordinates endCoordinate, int pointCount)
+        {
+            Debug.WriteLine($"-- MapPageDataConverter: GetInterimGpsCoordinates (multipoint) Calculating interim points. Coor1: ({startCoordinate.Latitude}, {startCoordinate.Longitude}) Coor2: ({endCoordinate.Latitude}, {endCoordinate.Longitude})");
+
+            if (pointCount < 0)
+            {
+                throw new ArgumentNullException("pointCount cannot be less than 0");
+            }
+
+            var result = new List<byte[]>();
+
+            var displacement = Location.CalculateDistance(startCoordinate.Latitude, startCoordinate.Longitude, 
+                endCoordinate.Latitude, endCoordinate.Longitude, DistanceUnits.Kilometers);
+
+            var distanceBetweenPoints = displacement / (pointCount + 1);
+
+            for (var i = 1; i <= pointCount; i++)
+            {
+                var t = (distanceBetweenPoints * i) / displacement;
+
+                var latitude = (1 - t) * startCoordinate.Latitude + t * endCoordinate.Latitude;
+                var longitude = (1 - t) * startCoordinate.Longitude + t * endCoordinate.Longitude;
+
+                Debug.WriteLine($"-- MapPageDataConverter:Calculted interim point (multipoint): ({latitude}, {longitude})");
+
+                result.Add(BitConverter.GetBytes(latitude));
+                result.Add(BitConverter.GetBytes(longitude));
+            }
 
             return result;
         }

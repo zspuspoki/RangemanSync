@@ -149,8 +149,9 @@ namespace Rangeman.WatchDataSender
         private List<byte[]> GetTransitPointsWithInterimPoints()
         {
             var result = new List<byte[]>();
+            var transitPointCount = mapPageViewModel.TransitPointCoordinates.Count();
 
-            if(mapPageViewModel.TransitPointCoordinates.Count() > 0)
+            if (transitPointCount > 0)
             {
                 var startEndCoordinates = mapPageViewModel.StartEndCoordinates.ToList();
                 var transitPoints = mapPageViewModel.TransitPointCoordinates.ToList();
@@ -160,7 +161,9 @@ namespace Rangeman.WatchDataSender
                 {
                     var endCoordinate = i < transitPoints.Count ? transitPoints[i] : startEndCoordinates[1]; //1 
 
-                    var interimCoordinates = GetInterimGpsCoordinates(firstElement, endCoordinate); //A  
+                    var interimCoordinates = transitPointCount <= 4 ? 
+                        GetInterimGpsCoordinates(firstElement, endCoordinate) : 
+                        GetInterimGpsCoordinates(firstElement, endCoordinate, 2); //A  
 
                     foreach (var gpsCOordinateElement in interimCoordinates)
                     {

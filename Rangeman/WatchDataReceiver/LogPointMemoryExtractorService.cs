@@ -5,17 +5,54 @@ using Rangeman.DataExtractors.Data;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
+using Android.Gms.Common.Apis;
+using Java.Util;
 
 namespace employeeID
 {
     internal class LogPointMemoryExtractorService
     {
         private readonly BlePeripheralConnectionRequest connection;
+        private RemoteWatchController remoteWatchController;
         public event EventHandler<List<LogData>> AllLogDataReceived;
 
         public LogPointMemoryExtractorService(BlePeripheralConnectionRequest connection)
         {
             this.connection = connection;
+            var gattServer = connection.GattServer;
+            remoteWatchController = new RemoteWatchController(gattServer);
+
+        }
+
+        public async Task<List<LogHeaderDataInfo>> GetHeaderData()
+        {
+            await remoteWatchController.SendInitializationCommandsToWatch();
+
+            //REceive StartReadyToTransDataSequence
+
+            var allDataReceived = new TaskCompletionSource<IDataExtractor>();
+            var casioConvoyAndCasioDataRequestObserver = new CasioConvoyAndCasioDataRequestObserver(new LogAndPointMemoryHeaderParser(), 
+                remoteWatchController, allDataReceived);
+
+            remoteWatchController.SubscribeToCharacteristicChanges(casioConvoyAndCasioDataRequestObserver);
+
+            var headerResultFromWatch = await allDataReceived.Task;
+
+            if (headerResultFromWatch is LogAndPointMemoryHeaderParser dataExtractor)
+            {
+                var result = new List<LogHeaderDataInfo>();
+
+                for (var i = 1; i <= 20; i++)
+                {
+                    var headerToAdd = dataExtractor.GetLogHeaderDataInfo(i);
+                    result.Add(headerToAdd);
+                }
+
+                return result;
+            }
+
+            return null;
 
         }
 
@@ -32,7 +69,8 @@ namespace employeeID
 
                 //REceive StartReadyToTransDataSequence
 
-                var casioConvoyAndCasioDataRequestObserver = new CasioConvoyAndCasioDataRequestObserver(new LogAndPointMemoryHeaderParser(), remoteWatchController);
+                var casioConvoyAndCasioDataRequestObserver = new CasioConvoyAndCasioDataRequestObserver(new LogAndPointMemoryHeaderParser(), 
+                    remoteWatchController, null);
 
                 remoteWatchController.SubscribeToCharacteristicChanges(casioConvoyAndCasioDataRequestObserver);
 

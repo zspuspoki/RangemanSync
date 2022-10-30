@@ -4,6 +4,7 @@ using System.Linq;
 using System.Diagnostics;
 using Rangeman.WatchDataReceiver;
 using Rangeman.Common;
+using System.Threading.Tasks;
 
 namespace Rangeman
 {
@@ -22,13 +23,15 @@ namespace Rangeman
         private static readonly object key = new object();
         private IDataExtractor dataExtractor;
         private readonly RemoteWatchController remoteWatchController;
+        private readonly TaskCompletionSource<IDataExtractor> taskCompletionSource;
 
         public event EventHandler<IDataExtractor> AllDataReceived;
 
-        public CasioConvoyAndCasioDataRequestObserver(IDataExtractor dataExtractor, RemoteWatchController remoteWatchController)
+        public CasioConvoyAndCasioDataRequestObserver(IDataExtractor dataExtractor, RemoteWatchController remoteWatchController, TaskCompletionSource<IDataExtractor> taskCompletionSource)
         {
             this.dataExtractor = dataExtractor;
             this.remoteWatchController = remoteWatchController;
+            this.taskCompletionSource = taskCompletionSource;
         }
 
         public void OnCompleted()
@@ -145,10 +148,15 @@ namespace Rangeman
             dataReceivingIsAllowed = false;
 
             var allReceivedData = Utils.GetAllDataArray(data);
+            dataExtractor.SetData(allReceivedData);
+
+            if(taskCompletionSource != null)
+            {
+                taskCompletionSource.SetResult(dataExtractor);
+            }
 
             if (AllDataReceived != null)
             {
-                dataExtractor.SetData(allReceivedData);
                 AllDataReceived(this, dataExtractor);
             }
         }

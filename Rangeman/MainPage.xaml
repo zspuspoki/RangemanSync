@@ -4,21 +4,22 @@
              x:Class="Rangeman.MainPage">
     <ContentPage.Content>
         <StackLayout>
-            <Button Text="Search" Clicked="searchDevice"/>
-            <ListView x:Name="DevicesList" ItemsSource="{Binding DeviceList}"
+            <Label Text="Progress message" TextColor="Red" />
+            <ListView x:Name="LogHeadersList" ItemsSource="{Binding LogHeaderList}"
                       CachingStrategy="RecycleElement"
-                      ItemSelected="DevicesList_OnItemSelected">
+                      ItemSelected="LogHeadersList_ItemSelected">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <ViewCell>
                             <StackLayout>
-                                <Label Text="{Binding Name}"></Label>
+                                <Label Text="{Binding HeaderTime}"></Label>
                             </StackLayout>
                         </ViewCell>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-
+            <Button Text="Download Headers" Clicked="DownloadHeaders_Clicked" x:Name="DownloadHeadersButton"/>
+            <Button Text="Download / Save as GPX" x:Name="DownloadSaveGPXButton" Clicked="DownloadSaveGPXButton_Clicked"/>
             <!-- 
         <StackLayout Orientation="Horizontal">
             <Button x:Name="btnStatus" Text="Status" Clicked="btnStatus_Clicked"/>

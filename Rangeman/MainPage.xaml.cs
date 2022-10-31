@@ -1,8 +1,6 @@
 ﻿using employeeID;
 using nexus.protocols.ble;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 
 using Xamarin.Forms;
@@ -18,6 +16,7 @@ namespace Rangeman
         private LogPointMemoryExtractorService dataExtractor = null;
         private CancellationTokenSource scanCancellationTokenSource = new CancellationTokenSource();
         private MainPageViewModel viewModel = null;
+        private static SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1, 1);
 
         public MainPage()
         {
@@ -36,53 +35,64 @@ namespace Rangeman
             }
         }
 
-        private async void searchDevice(object sender, EventArgs e)
+        private async void DownloadHeaders_Clicked(object sender, EventArgs e)
         {
-            await ble.ScanForBroadcasts((a) =>
-            {
-                if (a.Advertisement != null)
-                {
-                    var advertisedName = a.Advertisement.DeviceName;
+            Debug.WriteLine("--- MainPage - start DownloadHeaders_Clicked");
 
-                    if (advertisedName != null && advertisedName.Contains("CASIO") && !viewModel.DeviceList.Any(e => e.Name == advertisedName))
+            DownloadHeadersButton.Clicked -= DownloadHeaders_Clicked;
+
+            await ble.ScanForBroadcasts(async (a) =>
+            {
+                await semaphoreSlim.WaitAsync();
+                try
+                {
+                    if (a.Advertisement != null)
                     {
-                        viewModel.DeviceList.Add(new ListItem { Name = advertisedName, Device = a });
+                        var advertisedName = a.Advertisement.DeviceName;
+
+                        Debug.WriteLine($"--- MainPage DownloadHeaders_Clicked, advertised device name: {advertisedName}");
+
+                        if (advertisedName != null &&
+                            advertisedName.Contains("CASIO GPR-B1000"))
+                        {
+                            Debug.WriteLine("--- MainPage DownloadHeaders_Clicked - advertised name contains CASIO");
+
+                            scanCancellationTokenSource.Cancel();
+
+                            var connection = await ble.ConnectToDevice(a);
+
+                            if (connection.IsSuccessful())
+                            {
+                                var logPointMemoryService = new LogPointMemoryExtractorService(connection);
+                                var headers = await logPointMemoryService.GetHeaderDataAsync();
+                                headers.ForEach(h => viewModel.LogHeaderList.Add(h.ToViewModel()));
+                            }
+                            else
+                            {
+
+                            }
+
+                            DownloadHeadersButton.Clicked += DownloadHeaders_Clicked;
+                        }
                     }
                 }
-            },scanCancellationTokenSource.Token);
+                finally
+                {
+                    semaphoreSlim.Release();
+                }
+            }, scanCancellationTokenSource.Token);
         }
 
-        private async void DevicesList_OnItemSelected(object sender, SelectedItemChangedEventArgs e)
+        private void DownloadSaveGPXButton_Clicked(object sender, EventArgs e)
         {
-            scanCancellationTokenSource.Cancel();
-
-            var deviceListItem = DevicesList.SelectedItem as ListItem;
-
-            if (deviceListItem.Device != null)
-            {
-                var connection = await ble.ConnectToDevice(deviceListItem.Device);
-
-                if (connection.IsSuccessful())
-                {
-                    Debug.WriteLine("Connection was successful");
-                    dataExtractor = new LogPointMemoryExtractorService(connection);
-                    dataExtractor.AllLogDataReceived += DataExtractor_AllLogDataReceived;
-                    dataExtractor.StartDownloadLogAndPointMemoryData();
-                }
-                else
-                {
-                    Debug.WriteLine("Connection wasn't successful");
-                }
-            }
+            //Save selected log header as GPX
         }
 
-        private void DataExtractor_AllLogDataReceived(object sender, List<DataExtractors.Data.LogData> logDataItems)
+        private void LogHeadersList_ItemSelected(object sender, SelectedItemChangedEventArgs e)
         {
-            viewModel.DeviceList.Clear();
-            foreach(var logData in logDataItems)
+            if (e.SelectedItem is LogHeaderViewModel selectedLogHeader)
             {
-                var listItemText = $"Date = {logData.Date}, Latitude = {logData.Latitude}, \n Longitude = {logData.Longitude}, Pressure = {logData.Pressure},\n Temperature = {logData.Temperature}";
-                viewModel.DeviceList.Add(new ListItem { Name = listItemText, Device = null });
+                viewModel.SelectedLogHeader = selectedLogHeader;
             }
         }
     }

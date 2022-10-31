@@ -12,6 +12,7 @@ namespace Rangeman
         }
 
         public Context Context { get; }
-        public ObservableCollection<ListItem> DeviceList { get; } = new ObservableCollection<ListItem>();
+        public ObservableCollection<LogHeaderViewModel> LogHeaderList { get; } = new ObservableCollection<LogHeaderViewModel>();
+        public LogHeaderViewModel SelectedLogHeader { get; set; }
     }
 }

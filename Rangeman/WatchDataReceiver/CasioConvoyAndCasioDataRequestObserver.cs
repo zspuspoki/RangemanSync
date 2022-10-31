@@ -23,7 +23,7 @@ namespace Rangeman
         private static readonly object key = new object();
         private IDataExtractor dataExtractor;
         private readonly RemoteWatchController remoteWatchController;
-        private readonly TaskCompletionSource<IDataExtractor> taskCompletionSource;
+        private TaskCompletionSource<IDataExtractor> taskCompletionSource;
 
         public event EventHandler<IDataExtractor> AllDataReceived;
 
@@ -159,6 +159,13 @@ namespace Rangeman
             {
                 AllDataReceived(this, dataExtractor);
             }
+        }
+
+        public void RestartDataReceiving(TaskCompletionSource<IDataExtractor> taskCompletionSource)
+        {
+            this.taskCompletionSource = taskCompletionSource;
+
+            RestartDataReceiving();
         }
 
         public void RestartDataReceiving()

@@ -54,6 +54,8 @@
     </Compile>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Common\BLEConstants.cs" />
+    <Compile Include="LogHeaderViewModel.cs" />
+    <Compile Include="LogHeaderViewModelConverter.cs" />
     <Compile Include="ViewModelBase.cs" />
     <Compile Include="WatchDataReceiver\CasioConvoyAndCasioDataRequestObserver.cs" />
     <Compile Include="WatchDataReceiver\CharChangedObserver.cs" />

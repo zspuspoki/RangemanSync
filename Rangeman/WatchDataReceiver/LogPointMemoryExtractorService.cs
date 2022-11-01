@@ -15,8 +15,6 @@ namespace employeeID
         private LogAndPointMemoryHeaderParser logAndPointMemoryHeaderParser;
         private CasioConvoyAndCasioDataRequestObserver casioConvoyAndCasioDataRequestObserver;
 
-        public event EventHandler<List<LogData>> AllLogDataReceived;
-
         public LogPointMemoryExtractorService(BlePeripheralConnectionRequest connection)
         {
             this.connection = connection;

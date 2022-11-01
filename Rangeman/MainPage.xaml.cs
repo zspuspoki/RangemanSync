@@ -1,12 +1,13 @@
 ﻿using employeeID;
 using nexus.protocols.ble;
+using nexus.protocols.ble.scan;
 using Rangeman.DataExtractors.Data;
 using SharpGPX;
 using SharpGPX.GPX1_0;
 using System;
 using System.Collections.Generic;
 using System.Threading;
-
+using System.Threading.Tasks;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 using Debug = System.Diagnostics.Debug;
@@ -18,9 +19,6 @@ namespace Rangeman
     {
         private const string WatchDeviceName = "CASIO GPR-B1000";
         private IBluetoothLowEnergyAdapter ble;
-        private LogPointMemoryExtractorService logPointMemoryService = null;
-        private CancellationTokenSource scanCancellationTokenSource = new CancellationTokenSource();
-        private CancellationTokenSource downloadSaveGpxTokenSource = new CancellationTokenSource();
         private MainPageViewModel viewModel = null;
         private static SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1, 1);
 
@@ -47,52 +45,50 @@ namespace Rangeman
 
             DownloadHeadersButton.Clicked -= DownloadHeaders_Clicked;
 
-            await ble.ScanForBroadcasts(async (a) =>
+            CancellationTokenSource scanCancellationTokenSource = new CancellationTokenSource();
+            IBlePeripheral device = null;
+
+            await ble.ScanForBroadcasts((a) =>
             {
-                await semaphoreSlim.WaitAsync();
-
-                IBleGattServerConnection gattServerConnection = null;
-
-                try
+                if (a.Advertisement != null)
                 {
-                    if (a.Advertisement != null)
+                    var advertisedName = a.Advertisement.DeviceName;
+
+                    Debug.WriteLine($"--- MainPage DownloadHeaders_Clicked, advertised device name: {advertisedName}");
+
+                    if (advertisedName != null &&
+                        advertisedName.Contains(WatchDeviceName))
                     {
-                        var advertisedName = a.Advertisement.DeviceName;
+                        Debug.WriteLine("--- MainPage DownloadHeaders_Clicked - advertised name contains CASIO");
 
-                        Debug.WriteLine($"--- MainPage DownloadHeaders_Clicked, advertised device name: {advertisedName}");
+                        device = a;
 
-                        if (advertisedName != null &&
-                            advertisedName.Contains(WatchDeviceName))
-                        {
-                            Debug.WriteLine("--- MainPage DownloadHeaders_Clicked - advertised name contains CASIO");
-
-                            scanCancellationTokenSource.Cancel();
-
-                            var connection = await ble.ConnectToDevice(a);
-
-                            if (connection.IsSuccessful())
-                            {
-                                gattServerConnection = connection.GattServer;
-
-                                logPointMemoryService = new LogPointMemoryExtractorService(connection);
-                                var headers = await logPointMemoryService.GetHeaderDataAsync();
-                                headers.ForEach(h => viewModel.LogHeaderList.Add(h.ToViewModel()));
-                            }
-                            else
-                            {
-
-                            }
-
-                            DownloadHeadersButton.Clicked += DownloadHeaders_Clicked;
-                        }
+                        scanCancellationTokenSource.Cancel();
                     }
                 }
-                finally
-                {
-                    await gattServerConnection?.Disconnect();
-                    semaphoreSlim.Release();
-                }
             }, scanCancellationTokenSource.Token);
+
+
+            if (device != null)
+            {
+                var connection = await ble.ConnectToDevice(device);
+
+                if (connection.IsSuccessful())
+                {
+                    try
+                    {
+                        var logPointMemoryService = new LogPointMemoryExtractorService(connection);
+                        var headers = await logPointMemoryService.GetHeaderDataAsync();
+                        headers.ForEach(h => viewModel.LogHeaderList.Add(h.ToViewModel()));
+                    }
+                    finally
+                    {
+                        await connection.GattServer.Disconnect();
+                    }
+                }
+            }
+
+            DownloadHeadersButton.Clicked += DownloadHeaders_Clicked;
         }
 
         private async void DownloadSaveGPXButton_Clicked(object sender, EventArgs e)
@@ -101,64 +97,63 @@ namespace Rangeman
 
             DownloadSaveGPXButton.Clicked -= DownloadSaveGPXButton_Clicked;
 
-            await ble.ScanForBroadcasts(async (a) =>
+            CancellationTokenSource scanCancellationTokenSource = new CancellationTokenSource();
+            IBlePeripheral device = null;
+
+            await ble.ScanForBroadcasts((a) =>
             {
-                Debug.WriteLine("--- MainPage - DownloadSaveGPXButton_Clicked before semaphoreSlim.WaitAsync()");
-
-                await semaphoreSlim.WaitAsync();
-
-                IBleGattServerConnection gattServerConnection = null;
-
-                try
+                if (a.Advertisement != null)
                 {
-                    if (a.Advertisement != null)
+                    var advertisedName = a.Advertisement.DeviceName;
+
+                    Debug.WriteLine($"--- MainPage DownloadSaveGPXButton_Clicked, advertised device name: {advertisedName}");
+
+                    if (advertisedName != null &&
+                        advertisedName.Contains(WatchDeviceName))
                     {
-                        var advertisedName = a.Advertisement.DeviceName;
+                        Debug.WriteLine("--- MainPage DownloadSaveGPXButton_Clicked - advertised name contains CASIO");
 
-                        Debug.WriteLine($"--- MainPage DownloadSaveGPXButton_Clicked, advertised device name: {advertisedName}");
+                        device = a;
 
-                        if (advertisedName != null &&
-                            advertisedName.Contains(WatchDeviceName))
-                        {
-                            Debug.WriteLine("--- MainPage DownloadHeaders_Clicked - advertised name contains CASIO");
-
-                            downloadSaveGpxTokenSource.Cancel();
-
-                            var connection = await ble.ConnectToDevice(a);
-
-                            if (connection.IsSuccessful())
-                            {
-                                gattServerConnection = connection.GattServer;
-                                if (logPointMemoryService != null)
-                                {
-                                    if (viewModel.SelectedLogHeader != null)
-                                    {
-                                        var logDataEntries = await logPointMemoryService.GetLogDataAsync(viewModel.SelectedLogHeader.OrdinalNumber);
-
-                                        SaveGPXFile(logDataEntries);
-                                    }
-                                    else
-                                    {
-                                        Debug.WriteLine("DownloadSaveGPXButton_Clicked : One log header entry should be selected");
-                                    }
-                                }
-                            }
-                            else
-                            {
-
-                            }
-
-                            DownloadSaveGPXButton.Clicked += DownloadSaveGPXButton_Clicked;
-                        }
+                        scanCancellationTokenSource.Cancel();
                     }
                 }
-                finally
-                {
-                    gattServerConnection?.Disconnect();
-                    semaphoreSlim.Release();
-                }
-            }, downloadSaveGpxTokenSource.Token);
+            }, scanCancellationTokenSource.Token);
 
+            if (device != null)
+            {
+                Debug.WriteLine("DownloadSaveGPXButton_Clicked : Before connecting");
+                var connection = await ble.ConnectToDevice(device);
+                Debug.WriteLine("DownloadSaveGPXButton_Clicked : After connecting");
+
+                if (connection.IsSuccessful())
+                {
+                    Debug.WriteLine("DownloadSaveGPXButton_Clicked : Successful connection");
+
+                    try
+                    {
+                        if (viewModel.SelectedLogHeader != null)
+                        {
+                            Debug.WriteLine("DownloadSaveGPXButton_Clicked : Before GetLogDataAsync");
+                            Debug.WriteLine($"Selected ordinal number: {viewModel.SelectedLogHeader.OrdinalNumber}");
+                            var logPointMemoryService = new LogPointMemoryExtractorService(connection);
+                            var logDataEntries = await logPointMemoryService.GetLogDataAsync(viewModel.SelectedLogHeader.OrdinalNumber);
+
+                            SaveGPXFile(logDataEntries);
+                        }
+                        else
+                        {
+                            Debug.WriteLine("DownloadSaveGPXButton_Clicked : One log header entry should be selected");
+                        }
+                    }
+                    finally
+                    {
+                        await connection.GattServer.Disconnect();
+                    }
+                }
+            }
+
+            DownloadSaveGPXButton.Clicked += DownloadSaveGPXButton_Clicked;
             //Save selected log header as GPX
         }
 
@@ -186,7 +181,6 @@ namespace Rangeman
             if (e.SelectedItem is LogHeaderViewModel selectedLogHeader)
             {
                 viewModel.SelectedLogHeader = selectedLogHeader;
-                scanCancellationTokenSource = new CancellationTokenSource();
             }
         }
     }

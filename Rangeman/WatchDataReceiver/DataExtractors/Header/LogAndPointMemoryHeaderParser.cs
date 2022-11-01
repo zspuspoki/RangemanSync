@@ -62,9 +62,13 @@ namespace Rangeman
 
             Debug.WriteLine($"year = {year}, month= {month}, day={day}, hour={hour}, minute={minute}, second={second}");
 
-            //var date = new DateTime(year, month, day, hour, minute, second);
+            if (year > 0 && month > 0 && day > 0)
+            {
+                var date = new DateTime(year, month, day, hour, minute, second);
+                return new LogHeaderDataInfo { DataCount = i4, DataSize = i5, Date = date };
+            }
 
-            return new LogHeaderDataInfo { DataCount = i4, DataSize = i5, /*Date = date*/ };
+            return null;
         }
 
         public int GetLogTotalLength(int i)

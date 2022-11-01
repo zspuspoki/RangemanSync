@@ -1,5 +1,8 @@
-﻿using nexus.protocols.ble;
+﻿using Android.Accessibilityservice.AccessibilityService;
+using nexus.protocols.ble;
+using Rangeman.Common;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Debug = System.Diagnostics.Debug;
 
@@ -7,6 +10,7 @@ namespace Rangeman.WatchDataReceiver
 {
     internal class RemoteWatchController
     {
+        private const int CommandDelay = 20;
         private readonly IBleGattServerConnection gattServer;
 
         public RemoteWatchController(IBleGattServerConnection gattServer)
@@ -67,20 +71,30 @@ namespace Rangeman.WatchDataReceiver
             await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
                 Guid.Parse(BLEConstants.CasioConvoyCharacteristic), new byte[] { 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 
+            await Task.Delay(CommandDelay);
 
             await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
                 Guid.Parse(BLEConstants.CasioConvoyCharacteristic), new byte[] { 0x04, 0x01, 0x18, 0x00, 0x18, 0x00, 0x00, 0x00, 0x58, 0x02 });
 
+            await Task.Delay(CommandDelay);
 
             await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
                 Guid.Parse(BLEConstants.CasioConvoyCharacteristic), new byte[] { 0x02, 0x00, 0x00, 0x00, 0x18, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 
+            await Task.Delay(CommandDelay);
 
             await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
                 Guid.Parse(BLEConstants.CasioConvoyCharacteristic), new byte[] { 0x02, 0xF0, 0x00, 0x10, 0x18, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF });
 
+            await Task.Delay(CommandDelay);
+        }
+
+        public async Task SendDownloadHeaderCommandToWatch()
+        {
             await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
                 Guid.Parse(BLEConstants.CasioDataRequestSPCharacteristic), new byte[] { 0x00, 0x0F, 0x00, 0x10, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00 });
+
+            await Task.Delay(CommandDelay);
         }
 
         public async Task SendInitializationCommandsToWatch()
@@ -89,23 +103,119 @@ namespace Rangeman.WatchDataReceiver
 
             await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid), Guid.Parse(BLEConstants.CasioReadRequestForAllFeaturesCharacteristic), new byte[] { 0x11 });
 
+            await Task.Delay(CommandDelay);
+
             await gattServer.WriteDescriptorValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
                                                   Guid.Parse(BLEConstants.CasioDataRequestSPCharacteristic),
                                                   Guid.Parse(BLEConstants.CCCDescriptor), new byte[] { 0x01, 0x00 });
 
+            await Task.Delay(CommandDelay);
 
             await gattServer.WriteDescriptorValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
                                   Guid.Parse(BLEConstants.CasioConvoyCharacteristic),
                                   Guid.Parse(BLEConstants.CCCDescriptor), new byte[] { 0x01, 0x00 });
 
+            await Task.Delay(CommandDelay);
 
             await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
                 Guid.Parse(BLEConstants.CasioDataRequestSPCharacteristic), new byte[] { 0x00, 0x0E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 
+            await Task.Delay(CommandDelay);
 
             await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
                 Guid.Parse(BLEConstants.CasioConvoyCharacteristic), new byte[] { 0x00, 0x00, 0x00 });
         }
 
+        public async Task StartCloseSequence()
+        {
+            Debug.WriteLine("StartCloseSequence() -- Start");
+
+            await Task.Delay(CommandDelay);
+
+            await StartCloseSequence_Sub1();
+
+            await Task.Delay(CommandDelay);
+
+            await StartCloseSequence_Sub2();
+
+            await Task.Delay(CommandDelay);
+
+            Debug.WriteLine("StartCloseSequence() -- Before writing 0x04, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00");
+
+            await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
+                Guid.Parse(BLEConstants.CasioDataRequestSPCharacteristic), new byte[] { 0x04, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+
+            await Task.Delay(CommandDelay);
+
+            Debug.WriteLine("StartCloseSequence() -- Before writing 0x04, 0x0E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00");
+
+            await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
+                Guid.Parse(BLEConstants.CasioDataRequestSPCharacteristic), new byte[] { 0x04, 0x0E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+
+            await Task.Delay(CommandDelay);
+
+            await gattServer.WriteDescriptorValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
+                      Guid.Parse(BLEConstants.CasioConvoyCharacteristic),
+                      Guid.Parse(BLEConstants.CCCDescriptor), new byte[] { 0x00, 0x00 });
+
+            await Task.Delay(CommandDelay);
+
+            await gattServer.WriteDescriptorValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
+                                                  Guid.Parse(BLEConstants.CasioDataRequestSPCharacteristic),
+                                                  Guid.Parse(BLEConstants.CCCDescriptor), new byte[] { 0x00, 0x00 });
+
+            await Task.Delay(CommandDelay);
+
+        }
+
+        private async Task StartCloseSequence_Sub1()
+        {
+            var taskCompletionSource = new TaskCompletionSource<byte[]>();
+
+            gattServer.NotifyCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid), Guid.Parse(BLEConstants.CasioConvoyCharacteristic),
+                (data) =>
+                {
+                    Debug.WriteLine($"--- StartCloseSequence_Sub1 - NotifyCharacteristicValue. Received data bytes : {Utils.GetPrintableBytesArray(data)}");
+                   
+                    if(data.SequenceEqual(new byte[] { 0x04, 0x00, 0x18, 0x00, 0x18, 0x00, 0x00, 0x00, 0x58, 0x02 }))
+                    {
+                        taskCompletionSource.SetResult(data);
+                    }
+                });
+
+            await Task.Delay(CommandDelay);
+
+            Debug.WriteLine("StartCloseSequence_Sub1() -- Before writing 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00");
+
+            await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
+                Guid.Parse(BLEConstants.CasioConvoyCharacteristic), new byte[] { 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+
+            //await taskCompletionSource.Task;
+        }
+
+        private async Task StartCloseSequence_Sub2()
+        {
+            var taskCompletionSource = new TaskCompletionSource<byte[]>();
+
+            gattServer.NotifyCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid), Guid.Parse(BLEConstants.CasioConvoyCharacteristic),
+                (data) =>
+                {
+                    Debug.WriteLine($"--- StartCloseSequence_Sub2 - NotifyCharacteristicValue. Received data bytes : {Utils.GetPrintableBytesArray(data)}");
+
+                    if (data.SequenceEqual(new byte[] { 0x04, 0x00, 0x18, 0x00, 0x18, 0x00, 0x00, 0x00, 0x58, 0x02 }))
+                    {
+                        taskCompletionSource.SetResult(data);
+                    }
+                });
+
+            await Task.Delay(CommandDelay);
+
+            Debug.WriteLine("StartCloseSequence_Sub2() -- Before writing 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00");
+
+            await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
+                Guid.Parse(BLEConstants.CasioConvoyCharacteristic), new byte[] { 0x04, 0x01, 0x48, 0x00, 0x50, 0x00, 0x04, 0x00, 0x58, 0x02 });
+
+            await taskCompletionSource.Task;
+        }
     }
 }

@@ -39,6 +39,8 @@ namespace employeeID
 
             await remoteWatchController.SendDownloadLogCommandsToWatch();
 
+            await remoteWatchController.SendDownloadHeaderCommandToWatch();
+
             var headerResultFromWatch = await allDataReceived.Task;
 
             if (headerResultFromWatch is LogAndPointMemoryHeaderParser dataExtractor)
@@ -48,8 +50,12 @@ namespace employeeID
                 for (var i = 1; i <= 20; i++)
                 {
                     var headerToAdd = dataExtractor.GetLogHeaderDataInfo(i);
-                    headerToAdd.OrdnalNumber = i;
-                    result.Add(headerToAdd);
+
+                    if (headerToAdd != null)
+                    {
+                        headerToAdd.OrdinalNumber = i;
+                        result.Add(headerToAdd);
+                    }
                 }
 
                 return result;
@@ -64,6 +70,10 @@ namespace employeeID
             {
                 throw new NotSupportedException("GetHeaderDataAsync should be called first before running this method");
             }
+
+            await remoteWatchController.SendInitializationCommandsToWatch();
+
+            await remoteWatchController.SendDownloadLogCommandsToWatch();
 
             var headerDataInfo = logAndPointMemoryHeaderParser.GetLogHeaderDataInfo(logEntryOrdinal); // it should be between 1 and 20
 

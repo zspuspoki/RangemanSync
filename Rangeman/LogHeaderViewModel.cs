@@ -6,5 +6,12 @@ namespace Rangeman
     {
         public DateTime HeaderTime { get; set; }
         public int OrdinalNumber { get; set; }
+        public string Label 
+        { 
+            get 
+            {
+                return $"{OrdinalNumber}. {HeaderTime.Year} - {HeaderTime.Month} - {HeaderTime.Day}";
+            } 
+        }
     }
 }

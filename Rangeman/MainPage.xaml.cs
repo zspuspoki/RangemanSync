@@ -1,8 +1,10 @@
 ﻿using employeeID;
 using nexus.protocols.ble;
+using Rangeman.DataExtractors.Data;
 using SharpGPX;
 using SharpGPX.GPX1_0;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 
 using Xamarin.Forms;
@@ -14,9 +16,11 @@ namespace Rangeman
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class MainPage : ContentPage
     {
+        private const string WatchDeviceName = "CASIO GPR-B1000";
         private IBluetoothLowEnergyAdapter ble;
         private LogPointMemoryExtractorService logPointMemoryService = null;
         private CancellationTokenSource scanCancellationTokenSource = new CancellationTokenSource();
+        private CancellationTokenSource downloadSaveGpxTokenSource = new CancellationTokenSource();
         private MainPageViewModel viewModel = null;
         private static SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1, 1);
 
@@ -46,6 +50,9 @@ namespace Rangeman
             await ble.ScanForBroadcasts(async (a) =>
             {
                 await semaphoreSlim.WaitAsync();
+
+                IBleGattServerConnection gattServerConnection = null;
+
                 try
                 {
                     if (a.Advertisement != null)
@@ -55,7 +62,7 @@ namespace Rangeman
                         Debug.WriteLine($"--- MainPage DownloadHeaders_Clicked, advertised device name: {advertisedName}");
 
                         if (advertisedName != null &&
-                            advertisedName.Contains("CASIO GPR-B1000"))
+                            advertisedName.Contains(WatchDeviceName))
                         {
                             Debug.WriteLine("--- MainPage DownloadHeaders_Clicked - advertised name contains CASIO");
 
@@ -65,6 +72,8 @@ namespace Rangeman
 
                             if (connection.IsSuccessful())
                             {
+                                gattServerConnection = connection.GattServer;
+
                                 logPointMemoryService = new LogPointMemoryExtractorService(connection);
                                 var headers = await logPointMemoryService.GetHeaderDataAsync();
                                 headers.ForEach(h => viewModel.LogHeaderList.Add(h.ToViewModel()));
@@ -80,6 +89,7 @@ namespace Rangeman
                 }
                 finally
                 {
+                    await gattServerConnection?.Disconnect();
                     semaphoreSlim.Release();
                 }
             }, scanCancellationTokenSource.Token);
@@ -87,34 +97,88 @@ namespace Rangeman
 
         private async void DownloadSaveGPXButton_Clicked(object sender, EventArgs e)
         {
-            if(logPointMemoryService != null)
+            Debug.WriteLine("--- MainPage - start DownloadSaveGPXButton_Clicked");
+
+            DownloadSaveGPXButton.Clicked -= DownloadSaveGPXButton_Clicked;
+
+            await ble.ScanForBroadcasts(async (a) =>
             {
-                if (viewModel.SelectedLogHeader != null)
-                {
-                    var logDataEntries = await logPointMemoryService.GetLogDataAsync(viewModel.SelectedLogHeader.OrdinalNumber);
-                    
-                    GpxClass gpx = new GpxClass();
-                    gpx.Tracks.Add(new SharpGPX.GPX1_1.trkType());
-                    gpx.Tracks[0].trkseg.Add(new SharpGPX.GPX1_1.trksegType());
+                Debug.WriteLine("--- MainPage - DownloadSaveGPXButton_Clicked before semaphoreSlim.WaitAsync()");
 
-                    foreach(var logEntry in logDataEntries)
+                await semaphoreSlim.WaitAsync();
+
+                IBleGattServerConnection gattServerConnection = null;
+
+                try
+                {
+                    if (a.Advertisement != null)
                     {
-                        var wpt = new SharpGPX.GPX1_1.wptType
-                        {
-                            lat = (decimal)logEntry.Latitude,
-                            lon = (decimal)logEntry.Longitude   // ele tag : pressure -> elevation conversion ?
-                        };
-                    }
+                        var advertisedName = a.Advertisement.DeviceName;
 
-                    var headerTime = viewModel.SelectedLogHeader.HeaderTime;
-                    gpx.ToFile($"GPR-B1000-Route-{headerTime.Year}-{headerTime.Month}-{headerTime.Day}");
+                        Debug.WriteLine($"--- MainPage DownloadSaveGPXButton_Clicked, advertised device name: {advertisedName}");
+
+                        if (advertisedName != null &&
+                            advertisedName.Contains(WatchDeviceName))
+                        {
+                            Debug.WriteLine("--- MainPage DownloadHeaders_Clicked - advertised name contains CASIO");
+
+                            downloadSaveGpxTokenSource.Cancel();
+
+                            var connection = await ble.ConnectToDevice(a);
+
+                            if (connection.IsSuccessful())
+                            {
+                                gattServerConnection = connection.GattServer;
+                                if (logPointMemoryService != null)
+                                {
+                                    if (viewModel.SelectedLogHeader != null)
+                                    {
+                                        var logDataEntries = await logPointMemoryService.GetLogDataAsync(viewModel.SelectedLogHeader.OrdinalNumber);
+
+                                        SaveGPXFile(logDataEntries);
+                                    }
+                                    else
+                                    {
+                                        Debug.WriteLine("DownloadSaveGPXButton_Clicked : One log header entry should be selected");
+                                    }
+                                }
+                            }
+                            else
+                            {
+
+                            }
+
+                            DownloadSaveGPXButton.Clicked += DownloadSaveGPXButton_Clicked;
+                        }
+                    }
                 }
-                else
+                finally
                 {
-                    Debug.WriteLine("DownloadSaveGPXButton_Clicked : One log header entry should be selected");
+                    gattServerConnection?.Disconnect();
+                    semaphoreSlim.Release();
                 }
-            }
+            }, downloadSaveGpxTokenSource.Token);
+
             //Save selected log header as GPX
+        }
+
+        private void SaveGPXFile(List<LogData> logDataEntries)
+        {
+            GpxClass gpx = new GpxClass();
+            gpx.Tracks.Add(new SharpGPX.GPX1_1.trkType());
+            gpx.Tracks[0].trkseg.Add(new SharpGPX.GPX1_1.trksegType());
+
+            foreach (var logEntry in logDataEntries)
+            {
+                var wpt = new SharpGPX.GPX1_1.wptType
+                {
+                    lat = (decimal)logEntry.Latitude,
+                    lon = (decimal)logEntry.Longitude   // ele tag : pressure -> elevation conversion ?
+                };
+            }
+
+            var headerTime = viewModel.SelectedLogHeader.HeaderTime;
+            gpx.ToFile($"GPR-B1000-Route-{headerTime.Year}-{headerTime.Month}-{headerTime.Day}");
         }
 
         private void LogHeadersList_ItemSelected(object sender, SelectedItemChangedEventArgs e)
@@ -122,6 +186,7 @@ namespace Rangeman
             if (e.SelectedItem is LogHeaderViewModel selectedLogHeader)
             {
                 viewModel.SelectedLogHeader = selectedLogHeader;
+                scanCancellationTokenSource = new CancellationTokenSource();
             }
         }
     }

@@ -12,7 +12,7 @@
                     <DataTemplate>
                         <ViewCell>
                             <StackLayout>
-                                <Label Text="{Binding HeaderTime}"></Label>
+                                <Label Text="{Binding Label}"></Label>
                             </StackLayout>
                         </ViewCell>
                     </DataTemplate>

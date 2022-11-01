@@ -7,5 +7,6 @@ namespace Rangeman
         public int DataCount { get; set; }
         public int DataSize { get; set; }
         public DateTime Date { get; set; }
+        public int OrdnalNumber { get; set; }
     }
 }

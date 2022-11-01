@@ -1,5 +1,7 @@
 ﻿using employeeID;
 using nexus.protocols.ble;
+using SharpGPX;
+using SharpGPX.GPX1_0;
 using System;
 using System.Threading;
 
@@ -13,7 +15,7 @@ namespace Rangeman
     public partial class MainPage : ContentPage
     {
         private IBluetoothLowEnergyAdapter ble;
-        private LogPointMemoryExtractorService dataExtractor = null;
+        private LogPointMemoryExtractorService logPointMemoryService = null;
         private CancellationTokenSource scanCancellationTokenSource = new CancellationTokenSource();
         private MainPageViewModel viewModel = null;
         private static SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1, 1);
@@ -63,7 +65,7 @@ namespace Rangeman
 
                             if (connection.IsSuccessful())
                             {
-                                var logPointMemoryService = new LogPointMemoryExtractorService(connection);
+                                logPointMemoryService = new LogPointMemoryExtractorService(connection);
                                 var headers = await logPointMemoryService.GetHeaderDataAsync();
                                 headers.ForEach(h => viewModel.LogHeaderList.Add(h.ToViewModel()));
                             }
@@ -83,8 +85,35 @@ namespace Rangeman
             }, scanCancellationTokenSource.Token);
         }
 
-        private void DownloadSaveGPXButton_Clicked(object sender, EventArgs e)
+        private async void DownloadSaveGPXButton_Clicked(object sender, EventArgs e)
         {
+            if(logPointMemoryService != null)
+            {
+                if (viewModel.SelectedLogHeader != null)
+                {
+                    var logDataEntries = await logPointMemoryService.GetLogDataAsync(viewModel.SelectedLogHeader.OrdinalNumber);
+                    
+                    GpxClass gpx = new GpxClass();
+                    gpx.Tracks.Add(new SharpGPX.GPX1_1.trkType());
+                    gpx.Tracks[0].trkseg.Add(new SharpGPX.GPX1_1.trksegType());
+
+                    foreach(var logEntry in logDataEntries)
+                    {
+                        var wpt = new SharpGPX.GPX1_1.wptType
+                        {
+                            lat = (decimal)logEntry.Latitude,
+                            lon = (decimal)logEntry.Longitude   // ele tag : pressure -> elevation conversion ?
+                        };
+                    }
+
+                    var headerTime = viewModel.SelectedLogHeader.HeaderTime;
+                    gpx.ToFile($"GPR-B1000-Route-{headerTime.Year}-{headerTime.Month}-{headerTime.Day}");
+                }
+                else
+                {
+                    Debug.WriteLine("DownloadSaveGPXButton_Clicked : One log header entry should be selected");
+                }
+            }
             //Save selected log header as GPX
         }
 

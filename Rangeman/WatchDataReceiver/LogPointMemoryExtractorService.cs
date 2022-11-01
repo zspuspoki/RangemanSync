@@ -50,6 +50,7 @@ namespace employeeID
                 for (var i = 1; i <= 20; i++)
                 {
                     var headerToAdd = dataExtractor.GetLogHeaderDataInfo(i);
+                    headerToAdd.OrdnalNumber = i;
                     result.Add(headerToAdd);
                 }
 

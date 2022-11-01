@@ -6,7 +6,8 @@
         {
             return new LogHeaderViewModel
             {
-                HeaderTime = logHeaderDataInfo.Date
+                HeaderTime = logHeaderDataInfo.Date,
+                OrdinalNumber = logHeaderDataInfo.OrdnalNumber
             };
         }
     }

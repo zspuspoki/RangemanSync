@@ -137,7 +137,12 @@ namespace Rangeman
                             Debug.WriteLine("DownloadSaveGPXButton_Clicked : Before GetLogDataAsync");
                             Debug.WriteLine($"Selected ordinal number: {viewModel.SelectedLogHeader.OrdinalNumber}");
                             var logPointMemoryService = new LogPointMemoryExtractorService(connection);
-                            var logDataEntries = await logPointMemoryService.GetLogDataAsync(viewModel.SelectedLogHeader.OrdinalNumber);
+                            var selectedHeader = viewModel.SelectedLogHeader;
+                            var logDataEntries = await logPointMemoryService.GetLogDataAsync(selectedHeader.OrdinalNumber, 
+                                selectedHeader.DataSize, 
+                                selectedHeader.DataCount,
+                                selectedHeader.LogAddress,
+                                selectedHeader.LogTotalLength);
 
                             SaveGPXFile(logDataEntries);
                         }

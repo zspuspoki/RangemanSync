@@ -7,7 +7,11 @@
             return new LogHeaderViewModel
             {
                 HeaderTime = logHeaderDataInfo.Date,
-                OrdinalNumber = logHeaderDataInfo.OrdinalNumber
+                OrdinalNumber = logHeaderDataInfo.OrdinalNumber,
+                DataSize = logHeaderDataInfo.DataSize,
+                DataCount = logHeaderDataInfo.DataCount,
+                LogAddress = logHeaderDataInfo.LogAddress,
+                LogTotalLength = logHeaderDataInfo.LogTotalLength
             };
         }
     }

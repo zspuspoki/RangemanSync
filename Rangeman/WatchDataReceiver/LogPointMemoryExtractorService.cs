@@ -2,22 +2,18 @@
 using Rangeman;
 using Rangeman.WatchDataReceiver;
 using Rangeman.DataExtractors.Data;
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace employeeID
 {
     internal class LogPointMemoryExtractorService
     {
-        private readonly BlePeripheralConnectionRequest connection;
         private RemoteWatchController remoteWatchController;
-        private LogAndPointMemoryHeaderParser logAndPointMemoryHeaderParser;
-        private CasioConvoyAndCasioDataRequestObserver casioConvoyAndCasioDataRequestObserver;
 
         public LogPointMemoryExtractorService(BlePeripheralConnectionRequest connection)
         {
-            this.connection = connection;
             var gattServer = connection.GattServer;
             remoteWatchController = new RemoteWatchController(gattServer);
 
@@ -30,9 +26,9 @@ namespace employeeID
             //REceive StartReadyToTransDataSequence
 
             var allDataReceived = new TaskCompletionSource<IDataExtractor>();
-            logAndPointMemoryHeaderParser = new LogAndPointMemoryHeaderParser();
+            var logAndPointMemoryHeaderParser = new LogAndPointMemoryHeaderParser();
 
-            casioConvoyAndCasioDataRequestObserver = new CasioConvoyAndCasioDataRequestObserver(logAndPointMemoryHeaderParser, 
+            var casioConvoyAndCasioDataRequestObserver = new CasioConvoyAndCasioDataRequestObserver(logAndPointMemoryHeaderParser, 
                 remoteWatchController, allDataReceived);
 
             remoteWatchController.SubscribeToCharacteristicChanges(casioConvoyAndCasioDataRequestObserver);
@@ -54,6 +50,8 @@ namespace employeeID
                     if (headerToAdd != null)
                     {
                         headerToAdd.OrdinalNumber = i;
+                        headerToAdd.LogAddress = dataExtractor.GetLogAddress(i);
+                        headerToAdd.LogTotalLength = dataExtractor.GetLogTotalLength(i);
                         result.Add(headerToAdd);
                     }
                 }
@@ -64,28 +62,32 @@ namespace employeeID
             return null;
         }
 
-        public async Task<List<LogData>> GetLogDataAsync(int logEntryOrdinal)
+        public async Task<List<LogData>> GetLogDataAsync(int logEntryOrdinal, int headerDataSize, int headerDataCount, int logAddress, int logTotalLength)
         {
-            if (logAndPointMemoryHeaderParser == null)
-            {
-                throw new NotSupportedException("GetHeaderDataAsync should be called first before running this method");
-            }
+            Debug.WriteLine("GetLogDataAsync -- Before SendInitializationCommandsToWatch");
 
             await remoteWatchController.SendInitializationCommandsToWatch();
 
-            await remoteWatchController.SendDownloadLogCommandsToWatch();
+            Debug.WriteLine("GetLogDataAsync -- After SendInitializationCommandsToWatch");
 
-            var headerDataInfo = logAndPointMemoryHeaderParser.GetLogHeaderDataInfo(logEntryOrdinal); // it should be between 1 and 20
-
-            casioConvoyAndCasioDataRequestObserver.SetDataExtractor(new LogDataExtractor(headerDataInfo));
+            //REceive StartReadyToTransDataSequence
 
             var allDataReceived = new TaskCompletionSource<IDataExtractor>();
-            casioConvoyAndCasioDataRequestObserver.RestartDataReceiving(allDataReceived);
 
-            var logAddress = logAndPointMemoryHeaderParser.GetLogAddress(logEntryOrdinal);
-            var logTotalLength = logAndPointMemoryHeaderParser.GetLogTotalLength(logEntryOrdinal);
+            Debug.WriteLine("GetLogDataAsync -- Before creating observer");
+            var casioConvoyAndCasioDataRequestObserver = new CasioConvoyAndCasioDataRequestObserver(new LogDataExtractor(headerDataSize, headerDataCount),
+                remoteWatchController, allDataReceived);
+            Debug.WriteLine("GetLogDataAsync -- After creating observer");
 
+            remoteWatchController.SubscribeToCharacteristicChanges(casioConvoyAndCasioDataRequestObserver);
+
+            Debug.WriteLine("GetLogDataAsync -- Before SendDownloadLogCommandsToWatch");
+            await remoteWatchController.SendDownloadLogCommandsToWatch();
+            Debug.WriteLine("GetLogDataAsync -- After SendDownloadLogCommandsToWatch");
+
+            Debug.WriteLine("GetLogDataAsync -- Before SendPointMemoryOrLogDownload");
             await remoteWatchController.SendPointMemoryOrLogDownload(logAddress, logTotalLength);
+            Debug.WriteLine("GetLogDataAsync -- After SendPointMemoryOrLogDownload");
 
             var logDataResultFromWatch = await allDataReceived.Task;
 

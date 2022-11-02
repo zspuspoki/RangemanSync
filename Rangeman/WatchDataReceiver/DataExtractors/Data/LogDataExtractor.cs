@@ -8,11 +8,13 @@ namespace Rangeman.DataExtractors.Data
     internal class LogDataExtractor : IDataExtractor
     {
         private byte[] data;
-        private readonly LogHeaderDataInfo logHeaderDataInfo;
+        private readonly int headerDataSize;
+        private readonly int headerDataCount;
 
-        public LogDataExtractor(LogHeaderDataInfo logHeaderDataInfo)
+        public LogDataExtractor(int headerDataSize, int headerDataCount)
         {
-            this.logHeaderDataInfo = logHeaderDataInfo;
+            this.headerDataSize = headerDataSize;
+            this.headerDataCount = headerDataCount;
         }
 
         public void SetData(byte[] data)
@@ -22,7 +24,7 @@ namespace Rangeman.DataExtractors.Data
 
         public LogData GetLogData(int i)
         {
-            int i2 = logHeaderDataInfo.DataSize * i;
+            int i2 = headerDataSize * i;
             int i3 = (data[i2 + 1] & 255) | ((data[i2 + 2] & 255) << 8);
             int i4 = data[i2 + 7] & 255;
             int i6 = i2 + 28;
@@ -65,7 +67,7 @@ namespace Rangeman.DataExtractors.Data
         {
             List<LogData> result = new List<LogData>();
 
-            for(int i=0;i<logHeaderDataInfo.DataCount;i++)
+            for(int i=0;i<headerDataCount;i++)
             {
                 result.Add(GetLogData(i));
             }

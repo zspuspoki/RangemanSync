@@ -162,7 +162,7 @@ namespace Rangeman
             //Save selected log header as GPX
         }
 
-        private void SaveGPXFile(List<LogData> logDataEntries)
+        private async void SaveGPXFile(List<LogData> logDataEntries)
         {
             GpxClass gpx = new GpxClass();
             gpx.Tracks.Add(new SharpGPX.GPX1_1.trkType());
@@ -175,10 +175,16 @@ namespace Rangeman
                     lat = (decimal)logEntry.Latitude,
                     lon = (decimal)logEntry.Longitude   // ele tag : pressure -> elevation conversion ?
                 };
+
+                gpx.Tracks[0].trkseg[0].trkpt.Add(wpt);
             }
 
             var headerTime = viewModel.SelectedLogHeader.HeaderTime;
-            gpx.ToFile($"GPR-B1000-Route-{headerTime.Year}-{headerTime.Month}-{headerTime.Day}");
+            var fileName = $"GPR-B1000-Route-{headerTime.Year}-{headerTime.Month}-{headerTime.Day}-1.gpx";
+            var path = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryDocuments).AbsolutePath;
+            string filePath = System.IO.Path.Combine(path, fileName);
+            gpx.ToFile(filePath);
+            await DisplayAlert("Alert", $"File saved here: {filePath}", "OK");
         }
 
         private void LogHeadersList_ItemSelected(object sender, SelectedItemChangedEventArgs e)

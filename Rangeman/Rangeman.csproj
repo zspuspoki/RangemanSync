@@ -54,6 +54,9 @@
     </Compile>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Common\BLEConstants.cs" />
+    <Compile Include="ConfigPage.xaml.cs">
+      <DependentUpon>ConfigPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="LogHeaderViewModel.cs" />
     <Compile Include="LogHeaderViewModelConverter.cs" />
     <Compile Include="ViewModelBase.cs" />
@@ -144,6 +147,11 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="MapPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ConfigPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>

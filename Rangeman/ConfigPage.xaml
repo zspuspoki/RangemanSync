@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Rangeman.ConfigPage">
+    <ContentPage.Content>
+        <StackLayout>
+            <Frame BorderColor="Gray"
+                   CornerRadius="5"
+                   Padding="8">
+                <StackLayout>
+                    <Label Text="Map"
+                           FontSize="Medium"
+                           FontAttributes="Bold" />
+                    <BoxView Color="Gray"
+                             HeightRequest="2"
+                             HorizontalOptions="Fill" />
+                    <StackLayout Orientation="Horizontal">
+                        <CheckBox />
+                        <Label Text="Use mbtiles file from Documents folder"/>
+                    </StackLayout>
+                </StackLayout>
+            </Frame>
+            <Button Text="Apply changes" />
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

@@ -13,4 +13,9 @@
             <local:MapPage BindingContext="{Binding MapPageViewModel}" />
         </x:Arguments>
     </NavigationPage>
+    <NavigationPage Title="Config">
+        <x:Arguments>
+            <local:ConfigPage />
+        </x:Arguments>
+    </NavigationPage>    
 </TabbedPage>

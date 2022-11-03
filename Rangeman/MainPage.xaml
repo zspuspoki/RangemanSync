@@ -4,7 +4,7 @@
              x:Class="Rangeman.MainPage">
     <ContentPage.Content>
         <StackLayout>
-            <Label Text="Progress message" TextColor="Red" />
+            <Label Text="{Binding ProgressMessage}" TextColor="Red" />
             <ListView x:Name="LogHeadersList" ItemsSource="{Binding LogHeaderList}"
                       CachingStrategy="RecycleElement"
                       ItemSelected="LogHeadersList_ItemSelected">
@@ -20,13 +20,6 @@
             </ListView>
             <Button Text="Download Headers" Clicked="DownloadHeaders_Clicked" x:Name="DownloadHeadersButton"/>
             <Button Text="Download / Save as GPX" x:Name="DownloadSaveGPXButton" Clicked="DownloadSaveGPXButton_Clicked"/>
-            <!-- 
-        <StackLayout Orientation="Horizontal">
-            <Button x:Name="btnStatus" Text="Status" Clicked="btnStatus_Clicked"/>
-            <Button x:Name="btnScan" Text="Scan" Clicked="btnScan_Clicked"/>
-            <Label x:Name="txtErrorBle" Text=""></Label>
-        </StackLayout>
-        -->
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>

@@ -25,9 +25,11 @@ namespace Rangeman
         private readonly RemoteWatchController remoteWatchController;
         private TaskCompletionSource<IDataExtractor> taskCompletionSource;
 
-        public event EventHandler<IDataExtractor> AllDataReceived;
+        public event EventHandler<DataRequestObserverProgressChangedEventArgs> ProgressChanged;
 
-        public CasioConvoyAndCasioDataRequestObserver(IDataExtractor dataExtractor, RemoteWatchController remoteWatchController, TaskCompletionSource<IDataExtractor> taskCompletionSource)
+        public CasioConvoyAndCasioDataRequestObserver(IDataExtractor dataExtractor, 
+            RemoteWatchController remoteWatchController, 
+            TaskCompletionSource<IDataExtractor> taskCompletionSource)
         {
             this.dataExtractor = dataExtractor;
             this.remoteWatchController = remoteWatchController;
@@ -94,6 +96,8 @@ namespace Rangeman
                         currentDataIndexOnCurrentSector += bytesArrayToAdd.Length;
 
                         var sectorOffsetFromStart = currentSectorIndex * SectorSize;
+
+                        FireProgressChanged($"Reading data from the watch. Sector offset from start: {sectorOffsetFromStart}");
                         Debug.WriteLine($"OnNext - CasioConvoyAndCasioDataRequestObserver - Current sector offset : {sectorOffsetFromStart} Data index of sector: {currentDataIndexOnCurrentSector}");
 
                         if(headerSize == sectorOffsetFromStart + currentDataIndexOnCurrentSector)
@@ -154,11 +158,6 @@ namespace Rangeman
             {
                 taskCompletionSource.SetResult(dataExtractor);
             }
-
-            if (AllDataReceived != null)
-            {
-                AllDataReceived(this, dataExtractor);
-            }
         }
 
         public void RestartDataReceiving(TaskCompletionSource<IDataExtractor> taskCompletionSource)
@@ -185,6 +184,14 @@ namespace Rangeman
             currentSectorIndex = 0;
             currentDataIndexOnCurrentSector = 0;
             digestedByteCount = 0;
+        }
+
+        private void FireProgressChanged(string message)
+        {
+            if(ProgressChanged != null)
+            {
+                ProgressChanged(this, new DataRequestObserverProgressChangedEventArgs { Text = message });
+            }
         }
     }
 }

@@ -42,6 +42,7 @@ namespace Rangeman
         private async void DownloadHeaders_Clicked(object sender, EventArgs e)
         {
             Debug.WriteLine("--- MainPage - start DownloadHeaders_Clicked");
+            SetProgressMessage("Looking for Casio GPR-B1000 device. Please connect your watch.");
 
             DownloadHeadersButton.Clicked -= DownloadHeaders_Clicked;
 
@@ -71,15 +72,21 @@ namespace Rangeman
 
             if (device != null)
             {
+                SetProgressMessage("Found Casio device. Trying to connect ...");
                 var connection = await ble.ConnectToDevice(device);
 
                 if (connection.IsSuccessful())
                 {
                     try
                     {
+                        SetProgressMessage("Successfully connected to the watch.");
+
                         var logPointMemoryService = new LogPointMemoryExtractorService(connection);
+                        logPointMemoryService.ProgressChanged += LogPointMemoryService_ProgressChanged;
                         var headers = await logPointMemoryService.GetHeaderDataAsync();
                         headers.ForEach(h => viewModel.LogHeaderList.Add(h.ToViewModel()));
+                        
+                        logPointMemoryService.ProgressChanged -= LogPointMemoryService_ProgressChanged;
                     }
                     finally
                     {
@@ -94,6 +101,7 @@ namespace Rangeman
         private async void DownloadSaveGPXButton_Clicked(object sender, EventArgs e)
         {
             Debug.WriteLine("--- MainPage - start DownloadSaveGPXButton_Clicked");
+            SetProgressMessage("Looking for Casio GPR-B1000 device. Please connect your watch.");
 
             DownloadSaveGPXButton.Clicked -= DownloadSaveGPXButton_Clicked;
 
@@ -123,11 +131,13 @@ namespace Rangeman
             if (device != null)
             {
                 Debug.WriteLine("DownloadSaveGPXButton_Clicked : Before connecting");
+                SetProgressMessage("Found Casio device. Trying to connect ...");
                 var connection = await ble.ConnectToDevice(device);
                 Debug.WriteLine("DownloadSaveGPXButton_Clicked : After connecting");
 
                 if (connection.IsSuccessful())
                 {
+                    SetProgressMessage("Successfully connected to the watch.");
                     Debug.WriteLine("DownloadSaveGPXButton_Clicked : Successful connection");
 
                     try
@@ -137,6 +147,7 @@ namespace Rangeman
                             Debug.WriteLine("DownloadSaveGPXButton_Clicked : Before GetLogDataAsync");
                             Debug.WriteLine($"Selected ordinal number: {viewModel.SelectedLogHeader.OrdinalNumber}");
                             var logPointMemoryService = new LogPointMemoryExtractorService(connection);
+                            logPointMemoryService.ProgressChanged += LogPointMemoryService_ProgressChanged;
                             var selectedHeader = viewModel.SelectedLogHeader;
                             var logDataEntries = await logPointMemoryService.GetLogDataAsync(selectedHeader.OrdinalNumber, 
                                 selectedHeader.DataSize, 
@@ -144,6 +155,8 @@ namespace Rangeman
                                 selectedHeader.LogAddress,
                                 selectedHeader.LogTotalLength);
 
+                            logPointMemoryService.ProgressChanged -= LogPointMemoryService_ProgressChanged;
+                            
                             SaveGPXFile(logDataEntries);
                         }
                         else
@@ -162,9 +175,19 @@ namespace Rangeman
             //Save selected log header as GPX
         }
 
+        private void LogPointMemoryService_ProgressChanged(object sender, WatchDataReceiver.DataReceiverProgressEventArgs e)
+        {
+            SetProgressMessage(e.Text);
+        }
+
         private async void SaveGPXFile(List<LogData> logDataEntries)
         {
             GpxClass gpx = new GpxClass();
+            
+            gpx.Metadata.time = viewModel.SelectedLogHeader.HeaderTime;
+            gpx.Metadata.timeSpecified = true;
+            gpx.Metadata.desc = "Track exported from Casio GPR-B1000 watch";
+
             gpx.Tracks.Add(new SharpGPX.GPX1_1.trkType());
             gpx.Tracks[0].trkseg.Add(new SharpGPX.GPX1_1.trksegType());
 
@@ -173,14 +196,16 @@ namespace Rangeman
                 var wpt = new SharpGPX.GPX1_1.wptType
                 {
                     lat = (decimal)logEntry.Latitude,
-                    lon = (decimal)logEntry.Longitude   // ele tag : pressure -> elevation conversion ?
+                    lon = (decimal)logEntry.Longitude,   // ele tag : pressure -> elevation conversion ?
+                    time = logEntry.Date,
+                    timeSpecified = true,
                 };
 
                 gpx.Tracks[0].trkseg[0].trkpt.Add(wpt);
             }
 
             var headerTime = viewModel.SelectedLogHeader.HeaderTime;
-            var fileName = $"GPR-B1000-Route-{headerTime.Year}-{headerTime.Month}-{headerTime.Day}-1.gpx";
+            var fileName = $"GPR-B1000-Route-{headerTime.Year}-{headerTime.Month}-{headerTime.Day}-2.gpx";
             var path = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryDocuments).AbsolutePath;
             string filePath = System.IO.Path.Combine(path, fileName);
             gpx.ToFile(filePath);
@@ -193,6 +218,11 @@ namespace Rangeman
             {
                 viewModel.SelectedLogHeader = selectedLogHeader;
             }
+        }
+
+        private void SetProgressMessage(string message)
+        {
+            viewModel.ProgressMessage = message;
         }
     }
 }

@@ -66,6 +66,8 @@
     <Compile Include="ListItem.cs" />
     <Compile Include="WatchDataReceiver\DataExtractors\Header\LogAndPointMemoryHeaderParser.cs" />
     <Compile Include="WatchDataReceiver\DataExtractors\Header\LogHeaderDataInfo.cs" />
+    <Compile Include="WatchDataReceiver\DataReceiverProgressEventArgs.cs" />
+    <Compile Include="WatchDataReceiver\DataRequestObserverProgressChangedEventArgs.cs" />
     <Compile Include="WatchDataReceiver\LogPointMemoryExtractorService.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>

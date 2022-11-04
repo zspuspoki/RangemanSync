@@ -64,6 +64,8 @@ namespace Rangeman
 
             var mbTilesLayer = CreateMbTilesLayer(filePath, "regular");
             map.Layers.Add(mbTilesLayer);
+
+            this.map = map;
         }
 
         public Mapsui.Map Map

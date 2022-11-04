@@ -15,12 +15,12 @@
                              HeightRequest="2"
                              HorizontalOptions="Fill" />
                     <StackLayout Orientation="Horizontal">
-                        <CheckBox />
+                        <CheckBox IsChecked="{Binding UseMbTilesChecked}" />
                         <Label Text="Use mbtiles file from Documents folder"/>
                     </StackLayout>
                 </StackLayout>
             </Frame>
-            <Button Text="Apply changes" />
+            <Button Text="Apply changes" x:Name="ApplyButton" />
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>

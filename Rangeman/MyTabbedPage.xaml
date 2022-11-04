@@ -15,7 +15,7 @@
     </NavigationPage>
     <NavigationPage Title="Config">
         <x:Arguments>
-            <local:ConfigPage />
+            <local:ConfigPage BindingContext="{Binding ConfigPageViewModel}" />
         </x:Arguments>
     </NavigationPage>    
 </TabbedPage>

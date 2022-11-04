@@ -3,11 +3,9 @@ using nexus.protocols.ble;
 using nexus.protocols.ble.scan;
 using Rangeman.DataExtractors.Data;
 using SharpGPX;
-using SharpGPX.GPX1_0;
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 using Debug = System.Diagnostics.Debug;
@@ -20,7 +18,6 @@ namespace Rangeman
         private const string WatchDeviceName = "CASIO GPR-B1000";
         private IBluetoothLowEnergyAdapter ble;
         private MainPageViewModel viewModel = null;
-        private static SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1, 1);
 
         public MainPage()
         {

@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:rangeman="clr-namespace:Rangeman" x:DataType="rangeman:ConfigPageViewModel"
              x:Class="Rangeman.ConfigPage">
     <ContentPage.Content>
         <StackLayout>
@@ -20,7 +20,7 @@
                     </StackLayout>
                 </StackLayout>
             </Frame>
-            <Button Text="Apply changes" x:Name="ApplyButton" />
+            <Button Text="Apply changes" x:Name="ApplyButton" Command="{Binding Path=ApplyCommand}" />
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>

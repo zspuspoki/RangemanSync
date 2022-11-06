@@ -8,6 +8,9 @@ using Xamarin.Essentials;
 using Mapsui.Layers;
 using SQLite;
 using BruTile.MbTiles;
+using AndroidX.Lifecycle;
+using System.Diagnostics;
+using System.Linq;
 
 namespace Rangeman
 {
@@ -68,17 +71,38 @@ namespace Rangeman
             this.map = map;
         }
 
-        public Mapsui.Map Map
+        public string ClickOnMap(double longitude, double latitude)
         {
-            get
+            if (HasEndCoordinate && HasStartCoordinate)
             {
-                if(map == null)
+                if (TransitPointCoordinates.Count() == MapPageViewModel.MaxNumberOfTransitPoints)
                 {
-                    InitializeMap();
+                    return null;
                 }
-
-                return map;
             }
+
+            string pinTitle;
+            if (!HasStartCoordinate)
+            {
+                pinTitle = "S";
+                AddStartCoordinates(longitude, latitude);
+            }
+            else if (!HasEndCoordinate)
+            {
+                pinTitle = "E";
+                AddEndCoordinates(longitude, latitude);
+            }
+            else
+            {
+                var transitPointCoordinateCount = TransitPointCoordinates.Count();
+
+                Debug.WriteLine($"-- mapView_MapClicked: transitPointCoordinateCount = {transitPointCoordinateCount}");
+
+                pinTitle = $"{transitPointCoordinateCount + 1}";
+                AddTransitPointCoordinates(longitude, latitude);
+            }
+
+            return pinTitle;
         }
 
         private async void InitializeMap()
@@ -113,6 +137,20 @@ namespace Rangeman
             return mbTilesLayer;
         }
 
+        #region Properties
+        public Mapsui.Map Map
+        {
+            get
+            {
+                if (map == null)
+                {
+                    InitializeMap();
+                }
+
+                return map;
+            }
+        }
+
         public bool ProgressBarIsVisible { get => progressBarIsVisible; set { progressBarIsVisible = value; OnPropertyChanged("ProgressBarIsVisible"); } }
         public string ProgressBarPercentageMessage { get => progressBarPercentageMessage; set { progressBarPercentageMessage = value; OnPropertyChanged("ProgressBarPercentageMessage"); } }
         public double ProgressBarPercentageNumber { get => progressBarPercentageNumber; set { progressBarPercentageNumber = value; OnPropertyChanged("ProgressBarPercentageNumber"); } }
@@ -123,6 +161,6 @@ namespace Rangeman
         public IEnumerable<GpsCoordinates> StartEndCoordinates => startEndCoordinates;
         public IEnumerable<GpsCoordinates> TransitPointCoordinates => transitPointCordinates;
         public bool HasRoute { get; set; }
-
+        #endregion
     }
 }

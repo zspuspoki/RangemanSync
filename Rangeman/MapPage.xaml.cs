@@ -56,33 +56,16 @@ namespace Rangeman
 
         private void mapView_MapClicked(object sender, MapClickedEventArgs e)
         {
-            if (viewModel.HasEndCoordinate && viewModel.HasStartCoordinate)
+            string pinTitle = null;
+            
+            if (BindingContext is MapPageViewModel mapPageViewModel)
             {
-                if (viewModel.TransitPointCoordinates.Count() == MapPageViewModel.MaxNumberOfTransitPoints)
-                {
-                    return;
-                }
+                pinTitle = mapPageViewModel.ClickOnMap(e.Point.Longitude, e.Point.Latitude);
             }
 
-            string pinTitle;
-            if (!viewModel.HasStartCoordinate)
+            if(pinTitle == null)
             {
-                pinTitle = "S";
-                viewModel.AddStartCoordinates(e.Point.Longitude, e.Point.Latitude);
-            }
-            else if (!viewModel.HasEndCoordinate)
-            {
-                pinTitle = "E";
-                viewModel.AddEndCoordinates(e.Point.Longitude, e.Point.Latitude);
-            }
-            else
-            {
-                var transitPointCoordinateCount = viewModel.TransitPointCoordinates.Count();
-
-                Debug.WriteLine($"-- mapView_MapClicked: transitPointCoordinateCount = {transitPointCoordinateCount}");
-
-                pinTitle = $"{transitPointCoordinateCount + 1}";
-                viewModel.AddTransitPointCoordinates(e.Point.Longitude, e.Point.Latitude);
+                return;
             }
 
             ShowPinOnMap(pinTitle, e);

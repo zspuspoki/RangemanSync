@@ -13,7 +13,7 @@
                 <mapsui:MapView x:Name="mapView"
                      VerticalOptions="FillAndExpand"
                      HorizontalOptions="Fill"
-                     BackgroundColor="Gray" MapClicked="mapView_MapClicked" />
+                     BackgroundColor="Gray" MapClicked="mapView_MapClicked"/>
             </ContentView>
             
             <Grid AbsoluteLayout.LayoutBounds=".5, .5, AutoSize, AutoSize"
@@ -36,6 +36,18 @@
                       HeightRequest="65"
                       WidthRequest="65"
                       CornerRadius="25" Text="Send" Clicked="SendButton_Clicked" x:Name="SendButton" />
+
+            <Button AbsoluteLayout.LayoutBounds="0.5 , 1 , AutoSize, AutoSize"
+                      AbsoluteLayout.LayoutFlags="PositionProportional"
+                      HeightRequest="65"
+                      WidthRequest="65"
+                      CornerRadius="25" Text="Del node" x:Name="DeleteNodeButton" />
+
+            <Button AbsoluteLayout.LayoutBounds="1 , 1 , AutoSize, AutoSize"
+                      AbsoluteLayout.LayoutFlags="PositionProportional"
+                      HeightRequest="65"
+                      WidthRequest="65"
+                      CornerRadius="25" Text="Set node" x:Name="SelectNodeButton" />
         </AbsoluteLayout>
     </ContentPage.Content>
 </ContentPage>

@@ -18,8 +18,8 @@ namespace Rangeman
     {
         public const int MaxNumberOfTransitPoints = 9;
 
-        private List<GpsCoordinates> startEndCoordinates = new List<GpsCoordinates>();
-        private List<GpsCoordinates> transitPointCordinates = new List<GpsCoordinates>();
+        private List<GpsCoordinatesViewModel> startEndCoordinates = new List<GpsCoordinatesViewModel>();
+        private List<GpsCoordinatesViewModel> transitPointCordinates = new List<GpsCoordinatesViewModel>();
 
         private bool hasStartCoordinate;
         private bool hasEndCoordinate;
@@ -36,20 +36,20 @@ namespace Rangeman
 
         public void AddStartCoordinates(double longitude, double latitude)
         {
-            startEndCoordinates.Add(new GpsCoordinates { Longitude = longitude, Latitude = latitude });
+            startEndCoordinates.Add(new GpsCoordinatesViewModel { Longitude = longitude, Latitude = latitude });
             hasStartCoordinate = true;
         }
 
         public void AddEndCoordinates(double longitude, double latitude)
         {
-            startEndCoordinates.Add(new GpsCoordinates { Longitude = longitude, Latitude = latitude });
+            startEndCoordinates.Add(new GpsCoordinatesViewModel { Longitude = longitude, Latitude = latitude });
             hasEndCoordinate = true;
             HasRoute = true;
         }
 
         public void AddTransitPointCoordinates(double longitude, double latitude)
         {
-            transitPointCordinates.Add(new GpsCoordinates { Longitude = longitude, Latitude = latitude });
+            transitPointCordinates.Add(new GpsCoordinatesViewModel { Longitude = longitude, Latitude = latitude });
         }
 
         public void ResetCoordinates()
@@ -158,8 +158,8 @@ namespace Rangeman
         public Context Context { get; }
         public bool HasStartCoordinate => hasStartCoordinate;
         public bool HasEndCoordinate => hasEndCoordinate;
-        public IEnumerable<GpsCoordinates> StartEndCoordinates => startEndCoordinates;
-        public IEnumerable<GpsCoordinates> TransitPointCoordinates => transitPointCordinates;
+        public IEnumerable<GpsCoordinatesViewModel> StartEndCoordinates => startEndCoordinates;
+        public IEnumerable<GpsCoordinatesViewModel> TransitPointCoordinates => transitPointCordinates;
         public bool HasRoute { get; set; }
         #endregion
     }

@@ -185,7 +185,7 @@ namespace Rangeman.WatchDataSender
             return result;
         }
 
-        private List<byte[]> GetInterimGpsCoordinates(GpsCoordinates startCoordinate, GpsCoordinates endCoordinate)
+        private List<byte[]> GetInterimGpsCoordinates(GpsCoordinatesViewModel startCoordinate, GpsCoordinatesViewModel endCoordinate)
         {
             Debug.WriteLine($"-- MapPageDataConverter: Calculating interim points. Coor1: ({startCoordinate.Latitude}, {startCoordinate.Longitude}) Coor2: ({endCoordinate.Latitude}, {endCoordinate.Longitude})");
 
@@ -205,7 +205,7 @@ namespace Rangeman.WatchDataSender
             return result;
         }
 
-        private List<byte[]> GetInterimGpsCoordinates(GpsCoordinates startCoordinate, GpsCoordinates endCoordinate, int pointCount)
+        private List<byte[]> GetInterimGpsCoordinates(GpsCoordinatesViewModel startCoordinate, GpsCoordinatesViewModel endCoordinate, int pointCount)
         {
             Debug.WriteLine($"-- MapPageDataConverter: GetInterimGpsCoordinates (multipoint) Calculating interim points. Coor1: ({startCoordinate.Latitude}, {startCoordinate.Longitude}) Coor2: ({endCoordinate.Latitude}, {endCoordinate.Longitude})");
 

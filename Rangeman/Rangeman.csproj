@@ -53,50 +53,52 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="Common\BLEConstants.cs" />
-    <Compile Include="ConfigPage.xaml.cs">
+    <Compile Include="Services\Common\BLEConstants.cs" />
+    <Compile Include="Views\Config\ConfigPage.xaml.cs">
       <DependentUpon>ConfigPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ConfigPageViewModel.cs" />
-    <Compile Include="LogHeaderViewModel.cs" />
-    <Compile Include="LogHeaderViewModelConverter.cs" />
-    <Compile Include="ViewModelBase.cs" />
-    <Compile Include="WatchDataReceiver\CasioConvoyAndCasioDataRequestObserver.cs" />
-    <Compile Include="WatchDataReceiver\CharChangedObserver.cs" />
-    <Compile Include="WatchDataReceiver\DataExtractors\Data\LogData.cs" />
-    <Compile Include="WatchDataReceiver\DataExtractors\Data\LogDataExtractor.cs" />
-    <Compile Include="WatchDataReceiver\DataExtractors\IDataExtractor.cs" />
-    <Compile Include="GpsCoordinates.cs" />
-    <Compile Include="ListItem.cs" />
-    <Compile Include="WatchDataReceiver\DataExtractors\Header\LogAndPointMemoryHeaderParser.cs" />
-    <Compile Include="WatchDataReceiver\DataExtractors\Header\LogHeaderDataInfo.cs" />
-    <Compile Include="WatchDataReceiver\DataReceiverProgressEventArgs.cs" />
-    <Compile Include="WatchDataReceiver\DataRequestObserverProgressChangedEventArgs.cs" />
-    <Compile Include="WatchDataReceiver\LogPointMemoryExtractorService.cs" />
-    <Compile Include="MainPage.xaml.cs">
+    <Compile Include="Views\Config\ConfigPageViewModel.cs" />
+    <Compile Include="Views\Download\LogHeaderViewModel.cs" />
+    <Compile Include="Views\Download\LogHeaderViewModelConverter.cs" />
+    <Compile Include="Views\Map\CircularLinkedList.cs" />
+    <Compile Include="Views\Map\NodesViewModel.cs" />
+    <Compile Include="Views\Map\NodeViewModel.cs" />
+    <Compile Include="Views\ViewModelBase.cs" />
+    <Compile Include="Services\WatchDataReceiver\CasioConvoyAndCasioDataRequestObserver.cs" />
+    <Compile Include="Services\WatchDataReceiver\CharChangedObserver.cs" />
+    <Compile Include="Services\WatchDataReceiver\DataExtractors\Data\LogData.cs" />
+    <Compile Include="Services\WatchDataReceiver\DataExtractors\Data\LogDataExtractor.cs" />
+    <Compile Include="Services\WatchDataReceiver\DataExtractors\IDataExtractor.cs" />
+    <Compile Include="Views\Map\GpsCoordinatesViewModel.cs" />
+    <Compile Include="Services\WatchDataReceiver\DataExtractors\Header\LogAndPointMemoryHeaderParser.cs" />
+    <Compile Include="Services\WatchDataReceiver\DataExtractors\Header\LogHeaderDataInfo.cs" />
+    <Compile Include="Services\WatchDataReceiver\DataReceiverProgressEventArgs.cs" />
+    <Compile Include="Services\WatchDataReceiver\DataRequestObserverProgressChangedEventArgs.cs" />
+    <Compile Include="Services\WatchDataReceiver\LogPointMemoryExtractorService.cs" />
+    <Compile Include="Views\Download\MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MainPageViewModel.cs" />
-    <Compile Include="MapPage.xaml.cs">
+    <Compile Include="Views\Download\MainPageViewModel.cs" />
+    <Compile Include="Views\Map\MapPage.xaml.cs">
       <DependentUpon>MapPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MapPageViewModel.cs" />
-    <Compile Include="MyTabbedPage.xaml.cs">
+    <Compile Include="Views\Map\MapPageViewModel.cs" />
+    <Compile Include="Views\Tabs\MyTabbedPage.xaml.cs">
       <DependentUpon>MyTabbedPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MyTabbedPageViewModel.cs" />
-    <Compile Include="WatchDataReceiver\RemoteWatchController.cs" />
+    <Compile Include="Views\Tabs\MyTabbedPageViewModel.cs" />
+    <Compile Include="Services\WatchDataReceiver\RemoteWatchController.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Common\Util.cs" />
-    <Compile Include="WatchDataSender\BufferedConvoySender.cs" />
-    <Compile Include="WatchDataSender\CategoryToSend.cs" />
-    <Compile Include="WatchDataSender\ConnectionParameters.cs" />
-    <Compile Include="WatchDataSender\MapPageDataConverter.cs" />
-    <Compile Include="WatchDataSender\Crc16.cs" />
-    <Compile Include="WatchDataSender\DataSenderProgressEventArgs.cs" />
-    <Compile Include="WatchDataSender\RemoteWatchController.cs" />
-    <Compile Include="WatchDataSender\WatchDataSenderService.cs" />
+    <Compile Include="Services\Common\Util.cs" />
+    <Compile Include="Services\WatchDataSender\BufferedConvoySender.cs" />
+    <Compile Include="Services\WatchDataSender\CategoryToSend.cs" />
+    <Compile Include="Services\WatchDataSender\ConnectionParameters.cs" />
+    <Compile Include="Services\WatchDataSender\MapPageDataConverter.cs" />
+    <Compile Include="Services\WatchDataSender\Crc16.cs" />
+    <Compile Include="Services\WatchDataSender\DataSenderProgressEventArgs.cs" />
+    <Compile Include="Services\WatchDataSender\RemoteWatchController.cs" />
+    <Compile Include="Services\WatchDataSender\WatchDataSenderService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />
@@ -135,7 +137,7 @@
     <Folder Include="Resources\drawable\" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="MainPage.xaml">
+    <EmbeddedResource Include="Views\Download\MainPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
@@ -145,17 +147,17 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="MyTabbedPage.xaml">
+    <EmbeddedResource Include="Views\Tabs\MyTabbedPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="MapPage.xaml">
+    <EmbeddedResource Include="Views\Map\MapPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="ConfigPage.xaml">
+    <EmbeddedResource Include="Views\Config\ConfigPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>

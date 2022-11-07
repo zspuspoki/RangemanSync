@@ -9,6 +9,7 @@ namespace Rangeman.Views.Map
 
         private LinkedListNode<NodeViewModel> currentSelectedLinkedListNode = null;
         private NodeViewModel currentSelectedNode;
+        private NodeViewModel userSelectedPinNodeForDeletion;
 
         public NodeViewModel CurrentSelectedNode 
         { 
@@ -55,9 +56,23 @@ namespace Rangeman.Views.Map
             currentSelectedLinkedListNode = nodes.First;
         }
 
-        public void DeleteNode(NodeViewModel node)
+        public void SelectNodeForDeletion(string title, double longitude, double latitude)
         {
-            var linkedListNodeToDelete = nodes.Find(node);
+            var node = new NodeViewModel
+            {
+                Title = title,
+                Category = title == "S" &&
+                           title == "G" ? NodeCategory.StartEnd : NodeCategory.Transit,
+                Longitude = longitude,
+                Latitude = latitude
+            };
+
+            userSelectedPinNodeForDeletion = node;
+        }
+
+        public void DeleteSelectedNode()
+        {
+            var linkedListNodeToDelete = nodes.Find(userSelectedPinNodeForDeletion);
             linkedListNodeToDelete.Value.Longitude = 0;
             linkedListNodeToDelete.Value.Latitude = 0;
             linkedListNodeToDelete.Value.Visible = true;
@@ -74,7 +89,7 @@ namespace Rangeman.Views.Map
             SetCurrentNodeThatCanBePlacedOnMap(nodeTitle);
         }
 
-        public void AddNodeToMap(double longitude, double latitude)
+        public string AddNodeToMap(double longitude, double latitude)
         {
             if (currentSelectedLinkedListNode != null)
             {
@@ -88,7 +103,11 @@ namespace Rangeman.Views.Map
                     var missingNodeToAddViewModel = new MissingNodeToAddViewModel();
                     currentSelectedLinkedListNode = new LinkedListNode<NodeViewModel>(missingNodeToAddViewModel);
                 });
+
+                return nodeTitle;
             }
+
+            return null;
         }
 
         public IEnumerable<GpsCoordinatesViewModel> GetStartEndCoordinates()
@@ -99,6 +118,16 @@ namespace Rangeman.Views.Map
         public List<GpsCoordinatesViewModel> GetTransitPointCoordinates()
         {
             return GetCoordinatesByCategory(new NodeViewModel { Title = "1" }, NodeCategory.StartEnd);
+        }
+
+        public bool HasRoute()
+        {
+            var startNode = nodes.Find(new NodeViewModel { Title = "S" });
+            var goalNode = nodes.Find(new NodeViewModel { Title = "G" });
+            var startNodeHasCoordinates = startNode.Value.Longitude > 0 && startNode.Value.Latitude > 0;
+            var goalNodeHasCoordinates = goalNode.Value.Longitude > 0 && goalNode.Value.Latitude > 0;
+
+            return startNodeHasCoordinates && goalNodeHasCoordinates;
         }
 
         private List<GpsCoordinatesViewModel> GetCoordinatesByCategory(NodeViewModel firstNodeToLookFor, NodeCategory category)

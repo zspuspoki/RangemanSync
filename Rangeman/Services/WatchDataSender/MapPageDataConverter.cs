@@ -1,6 +1,7 @@
 ﻿using Android.Gms.Maps.Model;
 using Mapsui.Projection;
 using Rangeman.Common;
+using Rangeman.Views.Map;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,12 +12,12 @@ namespace Rangeman.WatchDataSender
 {
     internal class MapPageDataConverter
     {
-        private readonly MapPageViewModel mapPageViewModel;
+        private readonly NodesViewModel nodesViewModel;
         private List<byte[]> transitPointsWithInterimPoints;
 
-        public MapPageDataConverter(MapPageViewModel mapPageViewModel)
+        public MapPageDataConverter(NodesViewModel nodesViewModel)
         {
-            this.mapPageViewModel = mapPageViewModel;
+            this.nodesViewModel = nodesViewModel;
             transitPointsWithInterimPoints = GetTransitPointsWithInterimPoints();
         }
 
@@ -32,7 +33,7 @@ namespace Rangeman.WatchDataSender
             Debug.WriteLine($"--- GetHeaderByteArray: transitPointsWithInterimPoints.Count = {transitPointsWithInterimPoints.Count}");
 
             var nodeCount = (byte)(transitPointsWithInterimPoints.Count >> 1);
-            var transitPointCount = (byte)mapPageViewModel.TransitPointCoordinates.Count();
+            var transitPointCount = (byte)nodesViewModel.GetTransitPointCoordinates().Count();
 
             var infoBytes = new byte[] { 0, transitPointCount, 0, 0, 0, nodeCount, 0, 0, 0 }; // 9 bytes
 
@@ -68,13 +69,13 @@ namespace Rangeman.WatchDataSender
         {
             List<byte[]> resultList = new List<byte[]>();
             
-            foreach(var gpsCoordinatePair in mapPageViewModel.StartEndCoordinates)
+            foreach(var gpsCoordinatePair in nodesViewModel.GetStartEndCoordinates())
             {
                 resultList.Add(BitConverter.GetBytes(gpsCoordinatePair.Latitude));
                 resultList.Add(BitConverter.GetBytes(gpsCoordinatePair.Longitude));
             }
 
-            foreach(var gpsCoordinatePair in mapPageViewModel.TransitPointCoordinates)
+            foreach(var gpsCoordinatePair in nodesViewModel.GetTransitPointCoordinates())
             {
                 resultList.Add(BitConverter.GetBytes(gpsCoordinatePair.Latitude));
                 resultList.Add(BitConverter.GetBytes(gpsCoordinatePair.Longitude));
@@ -149,12 +150,12 @@ namespace Rangeman.WatchDataSender
         private List<byte[]> GetTransitPointsWithInterimPoints()
         {
             var result = new List<byte[]>();
-            var transitPointCount = mapPageViewModel.TransitPointCoordinates.Count();
+            var transitPointCount = nodesViewModel.GetTransitPointCoordinates().Count();
 
             if (transitPointCount > 0)
             {
-                var startEndCoordinates = mapPageViewModel.StartEndCoordinates.ToList();
-                var transitPoints = mapPageViewModel.TransitPointCoordinates.ToList();
+                var startEndCoordinates = nodesViewModel.GetStartEndCoordinates().ToList();
+                var transitPoints = nodesViewModel.GetTransitPointCoordinates().ToList();
                 var firstElement = startEndCoordinates[0]; //S
 
                 for (var i = 0; i <= transitPoints.Count; i++)

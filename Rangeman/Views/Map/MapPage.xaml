@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:local="clr-namespace:Rangeman.CustomControls;assembly=Rangeman"
-             xmlns:mapsui="clr-namespace:Mapsui.UI.Forms;assembly=Mapsui.UI.Forms" xmlns:controls="clr-namespace:Xamarin.Forms.Controls;assembly=CircularProgressBar"
+             xmlns:mapsui="clr-namespace:Mapsui.UI.Forms;assembly=Mapsui.UI.Forms" xmlns:controls="clr-namespace:Xamarin.Forms.Controls;assembly=CircularProgressBar" 
+             xmlns:map="clr-namespace:Rangeman.Views.Map"
              x:Class="Rangeman.MapPage">
     <ContentPage.Content>
         <AbsoluteLayout>
@@ -13,7 +13,7 @@
                 <mapsui:MapView x:Name="mapView"
                      VerticalOptions="FillAndExpand"
                      HorizontalOptions="Fill"
-                     BackgroundColor="Gray" MapClicked="mapView_MapClicked"/>
+                     BackgroundColor="Gray" MapClicked="mapView_MapClicked" PinClicked="mapView_PinClicked" />
             </ContentView>
             
             <Grid AbsoluteLayout.LayoutBounds=".5, .5, AutoSize, AutoSize"
@@ -41,13 +41,13 @@
                       AbsoluteLayout.LayoutFlags="PositionProportional"
                       HeightRequest="65"
                       WidthRequest="65"
-                      CornerRadius="25" Text="Del node" x:Name="DeleteNodeButton" />
+                      CornerRadius="25" Text="Del node" x:Name="DeleteNodeButton" Clicked="DeleteNodeButton_Clicked" />
 
             <Button AbsoluteLayout.LayoutBounds="1 , 1 , AutoSize, AutoSize"
                       AbsoluteLayout.LayoutFlags="PositionProportional"
                       HeightRequest="65"
                       WidthRequest="65"
-                      CornerRadius="25" Text="Set node" x:Name="SelectNodeButton" />
+                      CornerRadius="25" x:Name="SelectNodeButton" Clicked="SelectNodeButton_Clicked" Text="{Binding NodesViewModel.CurrentSelectedNode}"/>
         </AbsoluteLayout>
     </ContentPage.Content>
 </ContentPage>

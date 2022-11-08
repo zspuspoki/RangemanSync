@@ -54,6 +54,7 @@ namespace Rangeman.Views.Map
 
             nodes = new CircularLinkedList<NodeViewModel>(availableNodes);
             currentSelectedLinkedListNode = nodes.First;
+            CurrentSelectedNode = currentSelectedLinkedListNode.Value;
         }
 
         public void SelectNodeForDeletion(string title, double longitude, double latitude)

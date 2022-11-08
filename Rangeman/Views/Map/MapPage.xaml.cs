@@ -1,9 +1,9 @@
 ﻿using Mapsui.UI.Forms;
 using nexus.protocols.ble;
+using Rangeman.Services.BluetoothConnector;
 using Rangeman.WatchDataSender;
 using System;
 using System.Diagnostics;
-using System.Threading;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
@@ -14,9 +14,8 @@ namespace Rangeman
     public partial class MapPage : ContentPage
     {
         private IBluetoothLowEnergyAdapter ble;
-        private CancellationTokenSource scanCancellationTokenSource = new CancellationTokenSource();
         private MapPageViewModel viewModel = null;
-        private static SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1, 1);
+        private BluetoothConnectorService bluetoothConnectorService;
 
         public MapPage()
         {
@@ -32,6 +31,7 @@ namespace Rangeman
             {
                 viewModel = vm;
                 ble = BluetoothLowEnergyAdapter.ObtainDefaultAdapter(vm.Context);
+                this.bluetoothConnectorService = new BluetoothConnectorService(ble);
             }
         }
 
@@ -102,58 +102,25 @@ namespace Rangeman
             }
 
             SendButton.Clicked -= SendButton_Clicked;
-            await ble.ScanForBroadcasts(async (a) =>
-            {
-                await semaphoreSlim.WaitAsync();
-                try
+
+            await bluetoothConnectorService.FindAndConnectToWatch((message) => viewModel.ProgressMessage = message, 
+                async (connection) => 
                 {
-                    if (a.Advertisement != null)
-                    {
-                        var advertisedName = a.Advertisement.DeviceName;
+                    Debug.WriteLine("Map tab - Device Connection was successful");
+                    viewModel.ProgressMessage = "Connected to GPR-B1000 watch.";
 
-                        Debug.WriteLine($"--- MapPage SendButton_Clicked, advertised device name: {advertisedName}");
-                        viewModel.ProgressMessage = "Looking for Casio device...";
+                    MapPageDataConverter mapPageDataConverter = new MapPageDataConverter(viewModel.NodesViewModel);
 
-                        if (advertisedName != null &&
-                            advertisedName.Contains("CASIO GPR-B1000")
-                            && viewModel.NodesViewModel.HasRoute())
-                        {
-                            Debug.WriteLine("--- MapPage SendButton_Clicked - advertised name contains CASIO");
-                            viewModel.ProgressMessage = "Found Casio GPR-B1000. Starting connection...";
+                    var watchDataSenderService = new WatchDataSenderService(connection, mapPageDataConverter.GetDataByteArray(),
+                        mapPageDataConverter.GetHeaderByteArray());
 
-                            scanCancellationTokenSource.Cancel();
+                    watchDataSenderService.ProgressChanged += WatchDataSenderService_ProgressChanged;
+                    await watchDataSenderService.SendRoute();
 
-                            var connection = await ble.ConnectToDevice(a);
+                    Debug.WriteLine("Map tab - after awaiting SendRoute()");
+                });
 
-                            if (connection.IsSuccessful())
-                            {
-                                Debug.WriteLine("Map tab - Device Connection was successful");
-                                viewModel.ProgressMessage = "Connected to GPR-B1000 watch.";
-
-                                MapPageDataConverter mapPageDataConverter = new MapPageDataConverter(viewModel.NodesViewModel);
-
-                                var watchDataSenderService = new WatchDataSenderService(connection, mapPageDataConverter.GetDataByteArray(),
-                                    mapPageDataConverter.GetHeaderByteArray());
-
-                                watchDataSenderService.ProgressChanged += WatchDataSenderService_ProgressChanged;
-                                await watchDataSenderService.SendRoute();
-
-                                Debug.WriteLine("Map tab - after awaiting SendRoute()");
-                            }
-                            else
-                            {
-                                Debug.WriteLine("Map tab - Device Connection wasn't successful");
-                            }
-
-                            SendButton.Clicked += SendButton_Clicked;
-                        }
-                    }
-                }
-                finally
-                {
-                    semaphoreSlim.Release();
-                }
-            }, scanCancellationTokenSource.Token);
+            SendButton.Clicked += SendButton_Clicked;
         }
 
         private void WatchDataSenderService_ProgressChanged(object sender, DataSenderProgressEventArgs e)
@@ -176,7 +143,9 @@ namespace Rangeman
             {
                 if (BindingContext is MapPageViewModel mapPageViewModel)
                 {
-                    mapPageViewModel.NodesViewModel.SelectNodeForDeletion(e.Pin.Callout.Title, e.Point.Longitude, e.Point.Latitude);
+                    var pinTitle = e.Pin.Callout.Title;
+                    mapPageViewModel.NodesViewModel.SelectNodeForDeletion(pinTitle, e.Point.Longitude, e.Point.Latitude);
+                    mapPageViewModel.ProgressMessage = $"Selected node: {pinTitle} Please use the delete button to delete it.";
                     mapView.SelectedPin = e.Pin;
                 }
             }

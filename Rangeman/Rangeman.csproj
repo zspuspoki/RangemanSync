@@ -53,6 +53,7 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="Services\BluetoothConnector\BluetoothConnectorService.cs" />
     <Compile Include="Services\Common\BLEConstants.cs" />
     <Compile Include="Views\Config\ConfigPage.xaml.cs">
       <DependentUpon>ConfigPage.xaml</DependentUpon>

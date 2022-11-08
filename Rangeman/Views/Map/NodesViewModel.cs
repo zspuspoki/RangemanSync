@@ -79,6 +79,7 @@ namespace Rangeman.Views.Map
             linkedListNodeToDelete.Value.Visible = true;
 
             currentSelectedLinkedListNode = linkedListNodeToDelete;  // let's select it again, so it can be placed again on the map
+            CurrentSelectedNode = currentSelectedLinkedListNode.Value;
         }
 
         /// <summary>
@@ -87,7 +88,20 @@ namespace Rangeman.Views.Map
         public void ClickOnSelectNode()
         {
             var nodeTitle = currentSelectedLinkedListNode.Value.Title;
-            SetCurrentNodeThatCanBePlacedOnMap(nodeTitle);
+
+            do
+            {
+                var oldNode = currentSelectedLinkedListNode;
+                currentSelectedLinkedListNode = currentSelectedLinkedListNode.Next();
+                if(currentSelectedLinkedListNode == null)
+                {
+                    currentSelectedLinkedListNode = oldNode;
+                    break;
+                }
+            } while ((currentSelectedLinkedListNode.Value.Longitude > 0 &&
+                    currentSelectedLinkedListNode.Value.Longitude > 0) || 
+                    currentSelectedLinkedListNode.Value.Visible == false);
+            CurrentSelectedNode = currentSelectedLinkedListNode.Value;
         }
 
         public string AddNodeToMap(double longitude, double latitude)
@@ -155,7 +169,7 @@ namespace Rangeman.Views.Map
             while (currentSelectedLinkedListNode.Value.Longitude > 0 &&
                     currentSelectedLinkedListNode.Value.Longitude > 0)
             {
-                currentSelectedLinkedListNode = currentSelectedLinkedListNode.Next;
+                currentSelectedLinkedListNode = currentSelectedLinkedListNode.Next();
                 if (currentSelectedLinkedListNode.Value.Title == nodeTitle)
                 {
                     if(actionWhenOneCircleEndedWithoutResult != null)

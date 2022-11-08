@@ -2,5 +2,9 @@
 {
     internal class MissingNodeToAddViewModel : NodeViewModel
     {
+        public MissingNodeToAddViewModel()
+        {
+            Title = "";
+        }
     }
 }

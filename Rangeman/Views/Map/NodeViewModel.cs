@@ -27,7 +27,7 @@ namespace Rangeman.Views.Map
 
         public override string ToString()
         {
-            return $"Select {Title}";
+            return $"Set {Title}";
         }
     }
 }

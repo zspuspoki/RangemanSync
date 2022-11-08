@@ -80,15 +80,23 @@ namespace Rangeman
             };
             pin.Callout.Type = Mapsui.Rendering.Skia.CalloutType.Detail;
             pin.Callout.Content = 1;
-            pin.Callout.CalloutClicked += async (s, e) =>
-            {
-                e.Callout.Type = Mapsui.Rendering.Skia.CalloutType.Single;
-                e.Callout.Title = pinTitle;
-                e.Handled = true;
-            };
+            pin.Callout.Title = pinTitle;
+            pin.Callout.CalloutClicked += Pin_CalloutClicked;
 
             mapView.Pins.Add(pin);
             pin.ShowCallout();
+        }
+
+        private void Pin_CalloutClicked(object sender, CalloutClickedEventArgs e)
+        {
+            if (sender is Callout callout)
+            {
+                callout.CalloutClicked -= Pin_CalloutClicked;
+                Debug.WriteLine($"Map page: callout clicked. Number of taps: {e.NumOfTaps}");
+                e.Handled = true;
+                e.Callout.Type = Mapsui.Rendering.Skia.CalloutType.Single;
+                callout.CalloutClicked += Pin_CalloutClicked;
+            }
         }
 
         private async void SendButton_Clicked(object sender, EventArgs e)
@@ -138,16 +146,14 @@ namespace Rangeman
 
         private void mapView_PinClicked(object sender, PinClickedEventArgs e)
         {
-            var pin = sender as Pin;
-            if (pin != null)
+            if (BindingContext is MapPageViewModel mapPageViewModel)
             {
-                if (BindingContext is MapPageViewModel mapPageViewModel)
-                {
-                    var pinTitle = e.Pin.Callout.Title;
-                    mapPageViewModel.NodesViewModel.SelectNodeForDeletion(pinTitle, e.Point.Longitude, e.Point.Latitude);
-                    mapPageViewModel.ProgressMessage = $"Selected node: {pinTitle} Please use the delete button to delete it.";
-                    mapView.SelectedPin = e.Pin;
-                }
+                Debug.WriteLine("Map page: pin clicked");
+
+                var pinTitle = e.Pin.Callout.Title;
+                mapPageViewModel.NodesViewModel.SelectNodeForDeletion(pinTitle, e.Point.Longitude, e.Point.Latitude);
+                mapPageViewModel.ProgressMessage = $"Selected node: {pinTitle} Please use the delete button to delete it.";
+                mapView.SelectedPin = e.Pin;
             }
         }
 

@@ -13,7 +13,7 @@
                 <mapsui:MapView x:Name="mapView"
                      VerticalOptions="FillAndExpand"
                      HorizontalOptions="Fill"
-                     BackgroundColor="Gray" MapClicked="mapView_MapClicked" PinClicked="mapView_PinClicked" />
+                     BackgroundColor="Gray" MapClicked="mapView_MapClicked" />
             </ContentView>
             
             <Grid AbsoluteLayout.LayoutBounds=".5, .5, AutoSize, AutoSize"

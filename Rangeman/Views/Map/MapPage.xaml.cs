@@ -74,29 +74,38 @@ namespace Rangeman
         {
             var pin = new Pin(mapView)
             {
-                Label = "Test",
+                Label = "unset",
                 Position = e.Point,
                 RotateWithMap = true
             };
             pin.Callout.Type = Mapsui.Rendering.Skia.CalloutType.Detail;
             pin.Callout.Content = 1;
-            pin.Callout.Title = pinTitle;
-            pin.Callout.CalloutClicked += Pin_CalloutClicked;
+            pin.Callout.CalloutClicked += (s, e) =>
+            {
+                Debug.WriteLine($"Map page: entering callout clicked");
+                if (e.Callout.Title == "unset")
+                {
+                    Debug.WriteLine($"Map page: callout clicked. Number of taps: {e.NumOfTaps}");
+                    pin.Callout.Title = pinTitle;
+                    e.Handled = true;
+                    e.Callout.Type = Mapsui.Rendering.Skia.CalloutType.Single;
+                }
+                else
+                {
+                    if (BindingContext is MapPageViewModel mapPageViewModel)
+                    {
+                        Debug.WriteLine("Map: Callout click - other");
+                        e.Handled = true;
+                        var pinTitle = e.Callout.Title;
+                        mapPageViewModel.NodesViewModel.SelectNodeForDeletion(pinTitle, e.Point.Longitude, e.Point.Latitude);
+                        mapPageViewModel.ProgressMessage = $"Selected node: {pinTitle} Please use the delete button to delete it.";
+                        mapView.SelectedPin = e.Callout.Pin;
+                    }
+                }
+            };
 
             mapView.Pins.Add(pin);
             pin.ShowCallout();
-        }
-
-        private void Pin_CalloutClicked(object sender, CalloutClickedEventArgs e)
-        {
-            if (sender is Callout callout)
-            {
-                callout.CalloutClicked -= Pin_CalloutClicked;
-                Debug.WriteLine($"Map page: callout clicked. Number of taps: {e.NumOfTaps}");
-                e.Handled = true;
-                e.Callout.Type = Mapsui.Rendering.Skia.CalloutType.Single;
-                callout.CalloutClicked += Pin_CalloutClicked;
-            }
         }
 
         private async void SendButton_Clicked(object sender, EventArgs e)
@@ -144,25 +153,13 @@ namespace Rangeman
             }
         }
 
-        private void mapView_PinClicked(object sender, PinClickedEventArgs e)
-        {
-            if (BindingContext is MapPageViewModel mapPageViewModel)
-            {
-                Debug.WriteLine("Map page: pin clicked");
-
-                var pinTitle = e.Pin.Callout.Title;
-                mapPageViewModel.NodesViewModel.SelectNodeForDeletion(pinTitle, e.Point.Longitude, e.Point.Latitude);
-                mapPageViewModel.ProgressMessage = $"Selected node: {pinTitle} Please use the delete button to delete it.";
-                mapView.SelectedPin = e.Pin;
-            }
-        }
-
         private void DeleteNodeButton_Clicked(object sender, EventArgs e)
         {
             if (BindingContext is MapPageViewModel mapPageViewModel)
             {
                 mapPageViewModel.NodesViewModel.DeleteSelectedNode();
                 mapView.Pins.Remove(mapView.SelectedPin);
+                mapPageViewModel.ProgressMessage = "Successfully deleted node.";
             }
         }
 

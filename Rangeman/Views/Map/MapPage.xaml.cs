@@ -29,9 +29,11 @@ namespace Rangeman
             var vm = this.BindingContext as MapPageViewModel;
             if (vm != null)
             {
-                viewModel = vm;
-
-                viewModel.AddressPanelViewModel.PlaceOnMapClicked += AddressPanelViewModel_PlaceOnMapClicked;
+                if (viewModel == null)
+                {
+                    viewModel = vm;
+                    viewModel.AddressPanelViewModel.PlaceOnMapClicked += AddressPanelViewModel_PlaceOnMapClicked;
+                }
 
                 ble = BluetoothLowEnergyAdapter.ObtainDefaultAdapter(vm.Context);
                 this.bluetoothConnectorService = new BluetoothConnectorService(ble);
@@ -47,7 +49,7 @@ namespace Rangeman
                 return;
             }
 
-            ShowPinOnMap(pinTitle, p);
+            ShowPinOnMap(pinTitle, p, true);
         }
 
         protected override async void OnAppearing()
@@ -86,7 +88,7 @@ namespace Rangeman
             return pinTitle;
         }
 
-        private void ShowPinOnMap(string pinTitle, Position p)
+        private void ShowPinOnMap(string pinTitle, Position p, bool setTitleImmediately = false)
         {
             var pin = new Pin(mapView)
             {
@@ -96,6 +98,12 @@ namespace Rangeman
             };
             pin.Callout.Type = Mapsui.Rendering.Skia.CalloutType.Detail;
             pin.Callout.Content = 1;
+            
+            if(setTitleImmediately)
+            {
+                pin.Callout.Title = pinTitle;            
+            }
+
             pin.Callout.CalloutClicked += (s, e) =>
             {
                 Debug.WriteLine($"Map page: entering callout clicked");

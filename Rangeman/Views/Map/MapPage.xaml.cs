@@ -94,14 +94,14 @@ namespace Rangeman
             {
                 Label = "unset",
                 Position = p,
-                RotateWithMap = true
+                RotateWithMap = false
             };
-            pin.Callout.Type = Mapsui.Rendering.Skia.CalloutType.Detail;
-            pin.Callout.Content = 1;
+
+            pin.Callout.Type = Mapsui.Rendering.Skia.CalloutType.Single;
             
             if(setTitleImmediately)
             {
-                pin.Callout.Title = pinTitle;            
+                pin.Callout.Title = pinTitle;
             }
 
             pin.Callout.CalloutClicked += (s, e) =>

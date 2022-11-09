@@ -108,6 +108,11 @@ namespace Rangeman.Views.Map
         {
             if (currentSelectedLinkedListNode != null)
             {
+                if(currentSelectedLinkedListNode.Value is MissingNodeToAddViewModel)
+                {
+                    return null;
+                }
+
                 var nodeTitle = currentSelectedLinkedListNode.Value.Title;
                 currentSelectedLinkedListNode.Value.Longitude = longitude;
                 currentSelectedLinkedListNode.Value.Latitude = latitude;

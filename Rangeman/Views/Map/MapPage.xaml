@@ -5,49 +5,75 @@
              xmlns:map="clr-namespace:Rangeman.Views.Map"
              x:Class="Rangeman.MapPage">
     <ContentPage.Content>
-        <AbsoluteLayout>
-            <ContentView AbsoluteLayout.LayoutBounds="0,0,1,1"
+        <Grid RowDefinitions="{Binding GridViewRows}">
+            <AbsoluteLayout>
+                <ContentView AbsoluteLayout.LayoutBounds="0,0,1,1"
                        AbsoluteLayout.LayoutFlags="All" 
                        HorizontalOptions="FillAndExpand"
                        VerticalOptions="FillAndExpand" >
-                <mapsui:MapView x:Name="mapView"
+                    <mapsui:MapView x:Name="mapView"
                      VerticalOptions="FillAndExpand"
                      HorizontalOptions="Fill"
                      BackgroundColor="Gray" MapClicked="mapView_MapClicked" />
-            </ContentView>
-            
-            <Grid AbsoluteLayout.LayoutBounds=".5, .5, AutoSize, AutoSize"
+                </ContentView>
+
+                <Grid AbsoluteLayout.LayoutBounds=".5, .5, AutoSize, AutoSize"
                   AbsoluteLayout.LayoutFlags="PositionProportional"
                   IsVisible="{Binding ProgressBarIsVisible}">
-                <controls:CircularProgressBar 
+                    <controls:CircularProgressBar 
                     Progress="{Binding ProgressBarPercentageNumber}"
                     HeightRequest="100" 
                     WidthRequest="100" 
                     Color="Green"
                     />
-                <Label Text="{Binding ProgressBarPercentageMessage}" FontSize="24" TextColor="Red" Margin="26,30,0,0"/>
-            </Grid>
+                    <Label Text="{Binding ProgressBarPercentageMessage}" FontSize="24" TextColor="Red" Margin="26,30,0,0"/>
+                </Grid>
 
-            <Label AbsoluteLayout.LayoutBounds="0, 0, AutoSize, AutoSize"
+                <Label AbsoluteLayout.LayoutBounds="0, 0, AutoSize, AutoSize"
                       AbsoluteLayout.LayoutFlags="PositionProportional" TextColor="Red" BackgroundColor="White" Text="{Binding ProgressMessage}"/>
 
-            <Button AbsoluteLayout.LayoutBounds="0, 1, AutoSize, AutoSize"
+                <Button AbsoluteLayout.LayoutBounds="0, 1, AutoSize, AutoSize"
                       AbsoluteLayout.LayoutFlags="PositionProportional"
                       HeightRequest="65"
                       WidthRequest="65"
                       CornerRadius="25" Text="Send" Clicked="SendButton_Clicked" x:Name="SendButton" />
 
-            <Button AbsoluteLayout.LayoutBounds="0.5 , 1 , AutoSize, AutoSize"
+                <Button AbsoluteLayout.LayoutBounds="0.5 , 1 , AutoSize, AutoSize"
                       AbsoluteLayout.LayoutFlags="PositionProportional"
                       HeightRequest="65"
                       WidthRequest="65"
                       CornerRadius="25" Text="Del node" x:Name="DeleteNodeButton" Clicked="DeleteNodeButton_Clicked" />
 
-            <Button AbsoluteLayout.LayoutBounds="1 , 1 , AutoSize, AutoSize"
+                <Button AbsoluteLayout.LayoutBounds="1 , 1 , AutoSize, AutoSize"
                       AbsoluteLayout.LayoutFlags="PositionProportional"
                       HeightRequest="65"
                       WidthRequest="65"
                       CornerRadius="25" x:Name="SelectNodeButton" Clicked="SelectNodeButton_Clicked" Text="{Binding NodesViewModel.CurrentSelectedNode}"/>
-        </AbsoluteLayout>
+
+                <Button AbsoluteLayout.LayoutBounds="0, 0.5, AutoSize, AutoSize"
+                      AbsoluteLayout.LayoutFlags="PositionProportional"
+                      HeightRequest="65"
+                      WidthRequest="65"
+                      CornerRadius="25" Text="Addr" x:Name="AddressButton" Clicked="AddressButton_Clicked" />
+
+            </AbsoluteLayout>
+            <ScrollView Grid.Row="1">
+                <StackLayout Margin="16">
+                    <Entry x:Name="Street"
+                       Placeholder="Street"
+                       Text="" />
+                    <Entry x:Name="City"
+                       Placeholder="City"
+                       Text="" />
+                    <Entry x:Name="Country"
+                       Placeholder="Country"
+                       Text="" />
+                    <Button Text="Set Position"
+                        Margin="16,0" />
+                    <Button Text="Navigate To"
+                        Margin="16,0" />
+                </StackLayout>
+            </ScrollView>
+        </Grid>
     </ContentPage.Content>
 </ContentPage>

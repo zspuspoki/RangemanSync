@@ -3,28 +3,36 @@ using Mapsui.Projection;
 using Mapsui.Utilities;
 using Mapsui;
 using System;
-using System.Collections.Generic;
 using Xamarin.Essentials;
 using Mapsui.Layers;
 using SQLite;
 using BruTile.MbTiles;
 using Rangeman.Views.Map;
+using Xamarin.Forms;
 
 namespace Rangeman
 {
     internal class MapPageViewModel : ViewModelBase
     {
+        private bool addressPanelIsVisible = false;
         private bool progressBarIsVisible;
         private string progressBarPercentageMessage;
         private string progressMessage;
         private double progressBarPercentageNumber;
         private Mapsui.Map map;
         private NodesViewModel nodesViewModel;
+        private RowDefinitionCollection gridViewRows;
 
         public MapPageViewModel(Context context)
         {
             Context = context;
             nodesViewModel = new NodesViewModel();
+
+            gridViewRows = new RowDefinitionCollection
+            {
+                new RowDefinition { Height = new GridLength(2, GridUnitType.Star) },
+                new RowDefinition { Height = 0 }
+            };
         }
 
         public void UpdateMapToUseMbTilesFile()
@@ -38,6 +46,28 @@ namespace Rangeman
             map.Layers.Add(mbTilesLayer);
 
             this.map = map;
+        }
+
+        public void ToggleAddressPanelVisibility()
+        {
+            if (!addressPanelIsVisible)
+            {
+                GridViewRows = new RowDefinitionCollection
+                {
+                    new RowDefinition { Height = new GridLength(2, GridUnitType.Star) },
+                    new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }
+                };
+            }
+            else
+            {
+                GridViewRows = new RowDefinitionCollection
+                {
+                    new RowDefinition { Height = new GridLength(2, GridUnitType.Star) },
+                    new RowDefinition { Height = 0 }
+                };
+            }
+
+            addressPanelIsVisible = !addressPanelIsVisible;
         }
 
         private async void InitializeMap()
@@ -92,6 +122,7 @@ namespace Rangeman
         public string ProgressMessage { get => progressMessage; set { progressMessage = value; OnPropertyChanged("ProgressMessage"); } }
         public Context Context { get; }
         public NodesViewModel NodesViewModel { get => nodesViewModel; }
+        public RowDefinitionCollection GridViewRows { get => gridViewRows ; set { gridViewRows = value; OnPropertyChanged("GridViewRows"); } }
         #endregion
     }
 }

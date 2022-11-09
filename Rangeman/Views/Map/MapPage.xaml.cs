@@ -170,5 +170,13 @@ namespace Rangeman
                 mapPageViewModel.NodesViewModel.ClickOnSelectNode();
             }
         }
+
+        private void AddressButton_Clicked(object sender, EventArgs e)
+        {
+            if (BindingContext is MapPageViewModel mapPageViewModel)
+            {
+                mapPageViewModel.ToggleAddressPanelVisibility();
+            }
+        }
     }
 }

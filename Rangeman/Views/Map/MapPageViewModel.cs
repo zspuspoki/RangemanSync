@@ -21,12 +21,14 @@ namespace Rangeman
         private double progressBarPercentageNumber;
         private Mapsui.Map map;
         private NodesViewModel nodesViewModel;
+        private AddressPanelViewModel addressPanelViewModel;
         private RowDefinitionCollection gridViewRows;
 
         public MapPageViewModel(Context context)
         {
             Context = context;
             nodesViewModel = new NodesViewModel();
+            addressPanelViewModel = new AddressPanelViewModel();
 
             gridViewRows = new RowDefinitionCollection
             {
@@ -48,7 +50,7 @@ namespace Rangeman
             this.map = map;
         }
 
-        public void ToggleAddressPanelVisibility()
+        public bool ToggleAddressPanelVisibility()
         {
             if (!addressPanelIsVisible)
             {
@@ -68,6 +70,8 @@ namespace Rangeman
             }
 
             addressPanelIsVisible = !addressPanelIsVisible;
+
+            return addressPanelIsVisible;
         }
 
         private async void InitializeMap()
@@ -123,6 +127,7 @@ namespace Rangeman
         public Context Context { get; }
         public NodesViewModel NodesViewModel { get => nodesViewModel; }
         public RowDefinitionCollection GridViewRows { get => gridViewRows ; set { gridViewRows = value; OnPropertyChanged("GridViewRows"); } }
+        public AddressPanelViewModel AddressPanelViewModel { get => addressPanelViewModel; }
         #endregion
     }
 }

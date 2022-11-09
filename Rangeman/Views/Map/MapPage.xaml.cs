@@ -30,9 +30,24 @@ namespace Rangeman
             if (vm != null)
             {
                 viewModel = vm;
+
+                viewModel.AddressPanelViewModel.PlaceOnMapClicked += AddressPanelViewModel_PlaceOnMapClicked;
+
                 ble = BluetoothLowEnergyAdapter.ObtainDefaultAdapter(vm.Context);
                 this.bluetoothConnectorService = new BluetoothConnectorService(ble);
             }
+        }
+
+        private void AddressPanelViewModel_PlaceOnMapClicked(object sender, Position p)
+        {
+            var pinTitle = GetPinTitle(p.Longitude, p.Latitude);
+
+            if (pinTitle == null)
+            {
+                return;
+            }
+
+            ShowPinOnMap(pinTitle, p);
         }
 
         protected override async void OnAppearing()
@@ -55,27 +70,28 @@ namespace Rangeman
 
         private void mapView_MapClicked(object sender, MapClickedEventArgs e)
         {
-            string pinTitle = null;
-
-            if (BindingContext is MapPageViewModel mapPageViewModel)
-            {
-                pinTitle = mapPageViewModel.NodesViewModel.AddNodeToMap(e.Point.Longitude, e.Point.Latitude);
-            }
+            var pinTitle = GetPinTitle(e.Point.Longitude, e.Point.Latitude);
 
             if (pinTitle == null)
             {
                 return;
             }
 
-            ShowPinOnMap(pinTitle, e);
+            ShowPinOnMap(pinTitle, e.Point);
         }
 
-        private void ShowPinOnMap(string pinTitle, MapClickedEventArgs e)
+        private string GetPinTitle(double longitude, double latitude)
+        {
+            var pinTitle = viewModel.NodesViewModel.AddNodeToMap(longitude, latitude);
+            return pinTitle;
+        }
+
+        private void ShowPinOnMap(string pinTitle, Position p)
         {
             var pin = new Pin(mapView)
             {
                 Label = "unset",
-                Position = e.Point,
+                Position = p,
                 RotateWithMap = true
             };
             pin.Callout.Type = Mapsui.Rendering.Skia.CalloutType.Detail;
@@ -171,11 +187,16 @@ namespace Rangeman
             }
         }
 
-        private void AddressButton_Clicked(object sender, EventArgs e)
+        private async void AddressButton_Clicked(object sender, EventArgs e)
         {
             if (BindingContext is MapPageViewModel mapPageViewModel)
             {
-                mapPageViewModel.ToggleAddressPanelVisibility();
+                var addressPanelIsVisible = mapPageViewModel.ToggleAddressPanelVisibility();
+
+                if(addressPanelIsVisible)
+                {
+                    await mapPageViewModel.AddressPanelViewModel.UpdateUserPositionAsync();
+                }
             }
         }
     }

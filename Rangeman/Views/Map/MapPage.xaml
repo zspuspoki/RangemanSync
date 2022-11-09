@@ -61,17 +61,15 @@
                 <StackLayout Margin="16">
                     <Entry x:Name="Street"
                        Placeholder="Street"
-                       Text="" />
+                       Text="{Binding AddressPanelViewModel.Street}" />
                     <Entry x:Name="City"
                        Placeholder="City"
-                       Text="" />
+                       Text="{Binding AddressPanelViewModel.City}" />
                     <Entry x:Name="Country"
                        Placeholder="Country"
-                       Text="" />
-                    <Button Text="Set Position"
-                        Margin="16,0" />
-                    <Button Text="Navigate To"
-                        Margin="16,0" />
+                       Text="{Binding AddressPanelViewModel.Country}" />
+                    <Button Text="Place on map"
+                        Margin="16,0" Command="{Binding AddressPanelViewModel.PlaceOnMapCommand}" />
                 </StackLayout>
             </ScrollView>
         </Grid>

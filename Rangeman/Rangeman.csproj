@@ -61,6 +61,7 @@
     <Compile Include="Views\Config\ConfigPageViewModel.cs" />
     <Compile Include="Views\Download\LogHeaderViewModel.cs" />
     <Compile Include="Views\Download\LogHeaderViewModelConverter.cs" />
+    <Compile Include="Views\Map\AddressPanelViewModel.cs" />
     <Compile Include="Views\Map\CircularLinkedList.cs" />
     <Compile Include="Views\Map\MissingNodeToAddViewModel.cs" />
     <Compile Include="Views\Map\NodesViewModel.cs" />

@@ -59,15 +59,25 @@
             </AbsoluteLayout>
             <ScrollView Grid.Row="1">
                 <StackLayout Margin="16">
+                    <StackLayout Orientation="Horizontal">
+                        <CheckBox IsChecked="{Binding AddressPanelViewModel.UseGPSCoordinatesInsteadOfAddress}"/>
+                        <Label Text="Use GPS coordinates instead of an address"/>
+                    </StackLayout>
                     <Entry x:Name="Street"
                        Placeholder="Street"
-                       Text="{Binding AddressPanelViewModel.Street}" />
+                       Text="{Binding AddressPanelViewModel.Street}" IsVisible="{Binding AddressPanelViewModel.CanDisplayAddressEntries}" />
                     <Entry x:Name="City"
                        Placeholder="City"
-                       Text="{Binding AddressPanelViewModel.City}" />
+                       Text="{Binding AddressPanelViewModel.City}" IsVisible="{Binding AddressPanelViewModel.CanDisplayAddressEntries}" />
                     <Entry x:Name="Country"
                        Placeholder="Country"
-                       Text="{Binding AddressPanelViewModel.Country}" />
+                       Text="{Binding AddressPanelViewModel.Country}" IsVisible="{Binding AddressPanelViewModel.CanDisplayAddressEntries}" />
+                    <Entry x:Name="Longitude"
+                           Placeholder="Longitude"
+                           Text="{Binding AddressPanelViewModel.Longitude}" IsVisible="{Binding AddressPanelViewModel.UseGPSCoordinatesInsteadOfAddress}"/>
+                    <Entry x:Name="Latitude"
+                           Placeholder="Latitude"
+                           Text="{Binding AddressPanelViewModel.Latitude}" IsVisible="{Binding AddressPanelViewModel.UseGPSCoordinatesInsteadOfAddress}"/>
                     <Button Text="Place on map"
                         Margin="16,0" Command="{Binding AddressPanelViewModel.PlaceOnMapCommand}" />
                 </StackLayout>

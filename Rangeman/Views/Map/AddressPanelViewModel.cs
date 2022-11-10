@@ -15,6 +15,10 @@ namespace Rangeman.Views.Map
         private string country;
         private ICommand placeOnMapCommand;
         private Position position;
+        private bool useGPSCoordinatesInsteadOfAddress;
+        private bool canDisplayAddressEntries = true;
+        private double longitude;
+        private double latitude;
 
         public event EventHandler<Position> PlaceOnMapClicked;
 
@@ -64,5 +68,29 @@ namespace Rangeman.Views.Map
                 return placeOnMapCommand;
             }
         }
+
+        public bool UseGPSCoordinatesInsteadOfAddress 
+        { 
+            get=> useGPSCoordinatesInsteadOfAddress; 
+            set 
+            { 
+                useGPSCoordinatesInsteadOfAddress = value; 
+                OnPropertyChanged("UseGPSCoordinatesInsteadOfAddress");
+                CanDisplayAddressEntries = !useGPSCoordinatesInsteadOfAddress;
+            } 
+        }
+
+        public bool CanDisplayAddressEntries 
+        { 
+            get => canDisplayAddressEntries; 
+            set 
+            { 
+                canDisplayAddressEntries = value; 
+                OnPropertyChanged("CanDisplayAddressEntries"); 
+            } 
+        }
+
+        public double Longitude { get => longitude; set { longitude = value; OnPropertyChanged("Longitude"); } }
+        public double Latitude { get => latitude; set { latitude = value; OnPropertyChanged("latitude"); } }
     }
 }

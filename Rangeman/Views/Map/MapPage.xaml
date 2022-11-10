@@ -72,12 +72,12 @@
                     <Entry x:Name="Country"
                        Placeholder="Country"
                        Text="{Binding AddressPanelViewModel.Country}" IsVisible="{Binding AddressPanelViewModel.CanDisplayAddressEntries}" />
-                    <Entry x:Name="Longitude"
-                           Placeholder="Longitude"
-                           Text="{Binding AddressPanelViewModel.Longitude}" IsVisible="{Binding AddressPanelViewModel.UseGPSCoordinatesInsteadOfAddress}"/>
                     <Entry x:Name="Latitude"
                            Placeholder="Latitude"
                            Text="{Binding AddressPanelViewModel.Latitude}" IsVisible="{Binding AddressPanelViewModel.UseGPSCoordinatesInsteadOfAddress}"/>
+                    <Entry x:Name="Longitude"
+                           Placeholder="Longitude"
+                           Text="{Binding AddressPanelViewModel.Longitude}" IsVisible="{Binding AddressPanelViewModel.UseGPSCoordinatesInsteadOfAddress}"/>
                     <Button Text="Place on map"
                         Margin="16,0" Command="{Binding AddressPanelViewModel.PlaceOnMapCommand}" />
                 </StackLayout>

@@ -24,11 +24,20 @@ namespace Rangeman.Views.Map
 
         public async void PlaceOnMap()
         {
-            var location = (await Geocoding.GetLocationsAsync($"{street}, {city}, {country}")).FirstOrDefault();
+            double latitude = this.latitude;
+            double longitude = this.longitude;
 
-            if (location == null) return;
+            if (!UseGPSCoordinatesInsteadOfAddress)
+            {
+                var location = (await Geocoding.GetLocationsAsync($"{street}, {city}, {country}")).FirstOrDefault();
 
-            position = new Position(location.Latitude, location.Longitude);
+                if (location == null) return;
+
+                latitude = location.Latitude;
+                longitude = location.Longitude;
+            }
+
+            position = new Position(latitude, longitude);
 
             if(PlaceOnMapClicked != null)
             {
@@ -40,6 +49,9 @@ namespace Rangeman.Views.Map
         {
             var location = await Geolocation.GetLastKnownLocationAsync();
             position = new Position(location.Latitude, location.Longitude);
+            
+            Longitude = position.Longitude;
+            Latitude = position.Latitude;
             
             await SetAddressAsync(position);
         }
@@ -90,7 +102,24 @@ namespace Rangeman.Views.Map
             } 
         }
 
-        public double Longitude { get => longitude; set { longitude = value; OnPropertyChanged("Longitude"); } }
-        public double Latitude { get => latitude; set { latitude = value; OnPropertyChanged("latitude"); } }
+        public double Longitude 
+        { 
+            get => longitude; 
+            set 
+            { 
+                longitude = value; 
+                OnPropertyChanged("Longitude"); 
+            } 
+        }
+
+        public double Latitude 
+        { 
+            get => latitude; 
+            set 
+            { 
+                latitude = value; 
+                OnPropertyChanged("Latitude"); 
+            } 
+        }
     }
 }

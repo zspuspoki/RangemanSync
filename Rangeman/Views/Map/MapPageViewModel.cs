@@ -14,6 +14,8 @@ using Mapsui.Providers;
 using Mapsui.Styles;
 using System.Collections.Generic;
 using Brush = Mapsui.Styles.Brush;
+using Point = Mapsui.Geometries.Point;
+using System.Linq;
 
 namespace Rangeman
 {
@@ -54,18 +56,19 @@ namespace Rangeman
         {
             this.Map.Layers.Remove((layer) => layer.Name == LinesLayerName);
 
-            var lineString = new LineString();
-
-            List<Feature> featureList = new List<Feature>();
-
-            foreach (var wp in NodesViewModel.GetOrderedCoordinatesFromStartToGoal())
+            var points = new List<Point>();
+            foreach (var wp in NodesViewModel.GetLineConnectableCoordinatesFromStartToGoal())
             {
                 if (wp.Longitude != 0 && wp.Latitude != 0)
                 {
-                    var point = SphericalMercator.FromLonLat(wp.Longitude, wp.Latitude);
-                    lineString.Vertices.Add(point);
+                    points.Add(SphericalMercator.FromLonLat(wp.Longitude, wp.Latitude));
                 }
             }
+
+            Feature lineStringFeature = new Feature()
+            {
+                Geometry = new LineString(points)
+            };
 
             IStyle linestringStyle = new VectorStyle()
             {
@@ -74,15 +77,9 @@ namespace Rangeman
                 Line = { Color = Mapsui.Styles.Color.FromString("Blue"), Width = 4 }
             };
 
-            Feature lineStringFeature = new Feature()
-            {
-                Geometry = lineString
-            };
             lineStringFeature.Styles.Add(linestringStyle);
 
-            featureList.Add(lineStringFeature);
-
-            MemoryProvider memoryProvider = new MemoryProvider(featureList);
+            MemoryProvider memoryProvider = new MemoryProvider(lineStringFeature);
 
             var linesLayer = new MemoryLayer
             {

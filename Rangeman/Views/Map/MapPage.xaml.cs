@@ -184,6 +184,7 @@ namespace Rangeman
             {
                 mapPageViewModel.NodesViewModel.DeleteSelectedNode();
                 mapView.Pins.Remove(mapView.SelectedPin);
+                viewModel.AddLinesBetweenPinsAsLayer();
                 mapPageViewModel.ProgressMessage = "Successfully deleted node.";
             }
         }

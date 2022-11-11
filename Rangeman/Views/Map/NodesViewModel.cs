@@ -132,11 +132,7 @@ namespace Rangeman.Views.Map
 
         public IEnumerable<GpsCoordinatesViewModel> GetStartEndCoordinates()
         {
-            var result = new List<GpsCoordinatesViewModel>();
-            result.AddRange(GetCoordinatesByCategory(new NodeViewModel { Title = "S" }, NodeCategory.StartEnd));
-            result.AddRange(GetCoordinatesByCategory(new NodeViewModel { Title = "G" }, NodeCategory.StartEnd));
-
-            return result;
+            return GetCoordinatesByCategory(new NodeViewModel { Title = "S" }, NodeCategory.StartEnd);
         }
 
         public List<GpsCoordinatesViewModel> GetTransitPointCoordinates()
@@ -144,12 +140,39 @@ namespace Rangeman.Views.Map
             return GetCoordinatesByCategory(new NodeViewModel { Title = "1" }, NodeCategory.Transit);
         }
 
-        public List<GpsCoordinatesViewModel> GetOrderedCoordinatesFromStartToGoal()
+        public List<GpsCoordinatesViewModel> GetLineConnectableCoordinatesFromStartToGoal()
         {
             var result = new List<GpsCoordinatesViewModel>();
-            result.AddRange(GetCoordinatesByCategory(new NodeViewModel { Title = "S" }, NodeCategory.StartEnd));
-            result.AddRange(GetCoordinatesByCategory(new NodeViewModel { Title = "1" }, NodeCategory.Transit));
-            result.AddRange(GetCoordinatesByCategory(new NodeViewModel { Title = "G" }, NodeCategory.StartEnd));
+            result.AddRange(GetStartEndCoordinates());
+            
+            var transitpointCoordinates = GetTransitPointCoordinates();
+            var trimIndex = -1;
+            bool enableTrimming = false;
+
+            for(int i=1;i<transitpointCoordinates.Count;i++)
+            {
+                if (transitpointCoordinates[i].Longitude == 0 && transitpointCoordinates[i].Latitude == 0)
+                {
+                    trimIndex = i;
+                }
+                else
+                {
+                    if(trimIndex != -1)
+                    {
+                        enableTrimming = true;
+                        break;
+                    }
+                }
+            }
+
+            result.InsertRange(1, transitpointCoordinates);
+
+            if (enableTrimming)
+            {
+                trimIndex++;
+                result.RemoveRange(trimIndex, result.Count - trimIndex);
+            }
+
             return result;
         }
 

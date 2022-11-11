@@ -132,12 +132,25 @@ namespace Rangeman.Views.Map
 
         public IEnumerable<GpsCoordinatesViewModel> GetStartEndCoordinates()
         {
-            return GetCoordinatesByCategory(new NodeViewModel { Title = "S" }, NodeCategory.StartEnd);
+            var result = new List<GpsCoordinatesViewModel>();
+            result.AddRange(GetCoordinatesByCategory(new NodeViewModel { Title = "S" }, NodeCategory.StartEnd));
+            result.AddRange(GetCoordinatesByCategory(new NodeViewModel { Title = "G" }, NodeCategory.StartEnd));
+
+            return result;
         }
 
         public List<GpsCoordinatesViewModel> GetTransitPointCoordinates()
         {
-            return GetCoordinatesByCategory(new NodeViewModel { Title = "1" }, NodeCategory.StartEnd);
+            return GetCoordinatesByCategory(new NodeViewModel { Title = "1" }, NodeCategory.Transit);
+        }
+
+        public List<GpsCoordinatesViewModel> GetOrderedCoordinatesFromStartToGoal()
+        {
+            var result = new List<GpsCoordinatesViewModel>();
+            result.AddRange(GetCoordinatesByCategory(new NodeViewModel { Title = "S" }, NodeCategory.StartEnd));
+            result.AddRange(GetCoordinatesByCategory(new NodeViewModel { Title = "1" }, NodeCategory.Transit));
+            result.AddRange(GetCoordinatesByCategory(new NodeViewModel { Title = "G" }, NodeCategory.StartEnd));
+            return result;
         }
 
         public bool HasRoute()
@@ -163,7 +176,7 @@ namespace Rangeman.Views.Map
                 };
 
                 result.Add(gpsCoordinatesViewModel);
-                currentLinkedListNode = currentLinkedListNode.Next;
+                currentLinkedListNode = currentLinkedListNode.Next();
             }
 
             return result;

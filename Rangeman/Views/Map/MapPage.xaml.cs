@@ -130,6 +130,7 @@ namespace Rangeman
 
             mapView.Pins.Add(pin);
             pin.ShowCallout();
+            viewModel.AddLinesBetweenPinsAsLayer();
         }
 
         private async void SendButton_Clicked(object sender, EventArgs e)

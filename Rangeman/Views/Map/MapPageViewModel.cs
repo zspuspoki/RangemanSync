@@ -9,11 +9,18 @@ using SQLite;
 using BruTile.MbTiles;
 using Rangeman.Views.Map;
 using Xamarin.Forms;
+using Mapsui.Geometries;
+using Mapsui.Providers;
+using Mapsui.Styles;
+using System.Collections.Generic;
+using Brush = Mapsui.Styles.Brush;
 
 namespace Rangeman
 {
     internal class MapPageViewModel : ViewModelBase
     {
+        private const string LinesLayerName = "LinesBetweenPins";
+
         private bool addressPanelIsVisible = false;
         private bool progressBarIsVisible;
         private string progressBarPercentageMessage;
@@ -35,6 +42,56 @@ namespace Rangeman
                 new RowDefinition { Height = new GridLength(2, GridUnitType.Star) },
                 new RowDefinition { Height = 0 }
             };
+        }
+
+        /// <summary>
+        /// Creates a layer with lines between the pin points
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="geoWaypoints"></param>
+        /// <returns></returns>
+        public void AddLinesBetweenPinsAsLayer()
+        {
+            this.Map.Layers.Remove((layer) => layer.Name == LinesLayerName);
+
+            var lineString = new LineString();
+
+            List<Feature> featureList = new List<Feature>();
+
+            foreach (var wp in NodesViewModel.GetOrderedCoordinatesFromStartToGoal())
+            {
+                if (wp.Longitude != 0 && wp.Latitude != 0)
+                {
+                    var point = SphericalMercator.FromLonLat(wp.Longitude, wp.Latitude);
+                    lineString.Vertices.Add(point);
+                }
+            }
+
+            IStyle linestringStyle = new VectorStyle()
+            {
+                Fill = null,
+                Outline = null,
+                Line = { Color = Mapsui.Styles.Color.FromString("Blue"), Width = 4 }
+            };
+
+            Feature lineStringFeature = new Feature()
+            {
+                Geometry = lineString
+            };
+            lineStringFeature.Styles.Add(linestringStyle);
+
+            featureList.Add(lineStringFeature);
+
+            MemoryProvider memoryProvider = new MemoryProvider(featureList);
+
+            var linesLayer = new MemoryLayer
+            {
+                DataSource = memoryProvider,
+                Name = LinesLayerName,
+                Style = null
+            };
+
+            this.map.Layers.Add(linesLayer);
         }
 
         public void UpdateMapToUseMbTilesFile()

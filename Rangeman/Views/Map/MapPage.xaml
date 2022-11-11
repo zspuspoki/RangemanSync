@@ -3,7 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:mapsui="clr-namespace:Mapsui.UI.Forms;assembly=Mapsui.UI.Forms" xmlns:controls="clr-namespace:Xamarin.Forms.Controls;assembly=CircularProgressBar" 
              xmlns:map="clr-namespace:Rangeman.Views.Map"
+             xmlns:xct="http://xamarin.com/schemas/2020/toolkit"
              x:Class="Rangeman.MapPage">
+    <ContentPage.Resources>
+        <Style x:Key="InvalidEntryStyle" TargetType="Entry">
+            <Setter Property="TextColor" Value="Red" />
+        </Style>
+    </ContentPage.Resources>
     <ContentPage.Content>
         <Grid RowDefinitions="{Binding GridViewRows}">
             <AbsoluteLayout>
@@ -72,12 +78,38 @@
                     <Entry x:Name="Country"
                        Placeholder="Country"
                        Text="{Binding AddressPanelViewModel.Country}" IsVisible="{Binding AddressPanelViewModel.CanDisplayAddressEntries}" />
+                    
                     <Entry x:Name="Latitude"
                            Placeholder="Latitude"
-                           Text="{Binding AddressPanelViewModel.Latitude}" IsVisible="{Binding AddressPanelViewModel.UseGPSCoordinatesInsteadOfAddress}"/>
+                           Text="{Binding AddressPanelViewModel.Latitude}" 
+                           IsVisible="{Binding AddressPanelViewModel.UseGPSCoordinatesInsteadOfAddress}"
+                           Keyboard="Numeric">
+                        <Entry.Behaviors>
+                            <xct:NumericValidationBehavior InvalidStyle="{StaticResource InvalidEntryStyle}"
+                                                           MinimumValue="0"
+                                                           MaximumValue="100.0"
+                                                           MaximumDecimalPlaces="7"
+                                                           x:Name="LatitudeValidationRule" 
+                                                           Flags="ValidateOnAttaching, ValidateOnValueChanging" 
+                                                           IsValid="{Binding AddressPanelViewModel.IsLatitudeValid}"/>
+                        </Entry.Behaviors>
+                    </Entry>
+
                     <Entry x:Name="Longitude"
                            Placeholder="Longitude"
-                           Text="{Binding AddressPanelViewModel.Longitude}" IsVisible="{Binding AddressPanelViewModel.UseGPSCoordinatesInsteadOfAddress}"/>
+                           Text="{Binding AddressPanelViewModel.Longitude}" 
+                           IsVisible="{Binding AddressPanelViewModel.UseGPSCoordinatesInsteadOfAddress}"
+                           Keyboard="Numeric">
+                        <Entry.Behaviors>
+                            <xct:NumericValidationBehavior InvalidStyle="{StaticResource InvalidEntryStyle}"
+                                                           MinimumValue="0"
+                                                           MaximumValue="100.0"
+                                                           MaximumDecimalPlaces="7"
+                                                           x:Name="LongitudeValidationRule" 
+                                                           Flags="ValidateOnAttaching, ValidateOnValueChanging" 
+                                                           IsValid="{Binding AddressPanelViewModel.IsLongitudeValid}"/>
+                        </Entry.Behaviors>
+                    </Entry>
                     <Button Text="Place on map"
                         Margin="16,0" Command="{Binding AddressPanelViewModel.PlaceOnMapCommand}" />
                 </StackLayout>

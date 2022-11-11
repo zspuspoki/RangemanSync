@@ -1,4 +1,5 @@
-﻿using Mapsui.UI.Forms;
+﻿using Android.Media.Audiofx;
+using Mapsui.UI.Forms;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -35,6 +36,11 @@ namespace Rangeman.Views.Map
 
                 latitude = location.Latitude;
                 longitude = location.Longitude;
+            }
+
+            if(!IsLongitudeValid || !IsLatitudeValid)
+            {
+                return;
             }
 
             position = new Position(latitude, longitude);
@@ -121,5 +127,8 @@ namespace Rangeman.Views.Map
                 OnPropertyChanged("Latitude"); 
             } 
         }
+
+        public bool IsLongitudeValid { get; set; }
+        public bool IsLatitudeValid { get; set; }
     }
 }

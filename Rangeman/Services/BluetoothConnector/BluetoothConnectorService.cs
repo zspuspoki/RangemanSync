@@ -17,7 +17,7 @@ namespace Rangeman.Services.BluetoothConnector
             this.ble = ble;
         }
 
-        public async Task FindAndConnectToWatch(Action<string> progressMessageMethod, Action<BlePeripheralConnectionRequest> successfullyConnectedMethod)
+        public async Task FindAndConnectToWatch(Action<string> progressMessageMethod, Func<BlePeripheralConnectionRequest, Task<bool>> successfullyConnectedMethod)
         {
             if (progressMessageMethod is null)
             {
@@ -64,7 +64,11 @@ namespace Rangeman.Services.BluetoothConnector
                     {
                         progressMessageMethod("Successfully connected to the watch.");
 
-                        successfullyConnectedMethod(connection);
+                        await successfullyConnectedMethod(connection);
+                    }
+                    catch(Exception ex)
+                    {
+                        //TODO: LOg error
                     }
                     finally
                     {

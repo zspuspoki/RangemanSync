@@ -1,10 +1,12 @@
-﻿using employeeID;
+﻿using Android.Gms.Tasks;
+using employeeID;
 using nexus.protocols.ble;
 using Rangeman.DataExtractors.Data;
 using Rangeman.Services.BluetoothConnector;
 using SharpGPX;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 using Debug = System.Diagnostics.Debug;
@@ -50,6 +52,8 @@ namespace Rangeman
                 headers.ForEach(h => viewModel.LogHeaderList.Add(h.ToViewModel()));
 
                 logPointMemoryService.ProgressChanged -= LogPointMemoryService_ProgressChanged;
+
+                return true;
             });
 
             DownloadHeadersButton.Clicked += DownloadHeaders_Clicked;
@@ -80,10 +84,13 @@ namespace Rangeman
                     logPointMemoryService.ProgressChanged -= LogPointMemoryService_ProgressChanged;
 
                     SaveGPXFile(logDataEntries);
+
+                    return true;
                 }
                 else
                 {
                     Debug.WriteLine("DownloadSaveGPXButton_Clicked : One log header entry should be selected");
+                    return false;
                 }
             });
 

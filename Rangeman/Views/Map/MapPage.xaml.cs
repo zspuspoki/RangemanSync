@@ -160,6 +160,8 @@ namespace Rangeman
                     await watchDataSenderService.SendRoute();
 
                     Debug.WriteLine("Map tab - after awaiting SendRoute()");
+
+                    return true;
                 });
 
             SendButton.Clicked += SendButton_Clicked;

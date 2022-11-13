@@ -40,6 +40,9 @@ namespace Rangeman.WatchDataSender
                     var dataToAdd = (byte)~(data[i++]);
                     currentDataToSend.Add(dataToAdd);
                     oneDataChunkWithCrc.Add(dataToAdd);
+
+                    if (i % 256 == 0)
+                        break;
                 }
 
                 Debug.WriteLine($"--- BufferedConvoySender - i after while loop = {i}");

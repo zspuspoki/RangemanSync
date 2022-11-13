@@ -53,7 +53,7 @@ namespace Rangeman.WatchDataSender
                 BufferedConvoySender bufferedConvoySender = new BufferedConvoySender(this.connection.GattServer, category.Data);
                 await bufferedConvoySender.Send();
 
-                FireProgressEvent(ref progressPercent, 8, "Finished using buffered convoy sender");
+                FireProgressEvent(ref progressPercent, 8, $"Finished using buffered convoy sender. Category = { category.CategoryId }");
 
                 await remoteWatchController.CloseCurrentCategoryAndWaitForResponse(category.CategoryId);
 

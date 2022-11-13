@@ -150,7 +150,7 @@ namespace Rangeman.WatchDataSender
         private List<byte[]> GetTransitPointsWithInterimPoints()
         {
             var result = new List<byte[]>();
-            var transitPointCount = nodesViewModel.GetTransitPointCoordinates().Count();
+            var transitPointCount = nodesViewModel.GetTransitPointCoordinates().Count;
 
             if (transitPointCount > 0)
             {

@@ -145,6 +145,7 @@ namespace Rangeman
 
             SendButton.Clicked -= SendButton_Clicked;
 
+            viewModel.ProgressMessage = "Looking for Casio GPR-B1000 device. Please connect your watch.";
             await bluetoothConnectorService.FindAndConnectToWatch((message) => viewModel.ProgressMessage = message, 
                 async (connection) => 
                 {

@@ -130,22 +130,23 @@ namespace Rangeman.Views.Map
             return null;
         }
 
-        public IEnumerable<GpsCoordinatesViewModel> GetStartEndCoordinates()
+        public IEnumerable<GpsCoordinatesViewModel> GetStartEndCoordinates(bool removeEmptyEntries = true)
         {
-            return GetCoordinatesByCategory(new NodeViewModel { Title = "S" }, NodeCategory.StartEnd);
+            return GetCoordinatesByCategory(new NodeViewModel { Title = "S" }, NodeCategory.StartEnd, removeEmptyEntries);
         }
 
-        public List<GpsCoordinatesViewModel> GetTransitPointCoordinates()
+        public List<GpsCoordinatesViewModel> GetTransitPointCoordinates(bool removeEmptyEntries = true)
         {
-            return GetCoordinatesByCategory(new NodeViewModel { Title = "1" }, NodeCategory.Transit);
+            var result = GetCoordinatesByCategory(new NodeViewModel { Title = "1" }, NodeCategory.Transit, removeEmptyEntries);
+            return result;
         }
 
         public List<GpsCoordinatesViewModel> GetLineConnectableCoordinatesFromStartToGoal()
         {
             var result = new List<GpsCoordinatesViewModel>();
-            result.AddRange(GetStartEndCoordinates());
+            result.AddRange(GetStartEndCoordinates(false));
             
-            var transitpointCoordinates = GetTransitPointCoordinates();
+            var transitpointCoordinates = GetTransitPointCoordinates(false);
             var trimIndex = -1;
             bool enableTrimming = false;
 
@@ -186,16 +187,25 @@ namespace Rangeman.Views.Map
             return startNodeHasCoordinates && goalNodeHasCoordinates;
         }
 
-        private List<GpsCoordinatesViewModel> GetCoordinatesByCategory(NodeViewModel firstNodeToLookFor, NodeCategory category)
+        private List<GpsCoordinatesViewModel> GetCoordinatesByCategory(NodeViewModel firstNodeToLookFor, NodeCategory category, bool removeEmptyEntries)
         {
             var result = new List<GpsCoordinatesViewModel>();
             var currentLinkedListNode = nodes.Find(firstNodeToLookFor);
             while (currentLinkedListNode.Value.Category == category)
             {
+                var latitude = currentLinkedListNode.Value.Latitude;
+                var longitude = currentLinkedListNode.Value.Longitude;
+
+                if(removeEmptyEntries && longitude == 0 && latitude == 0)
+                {
+                    currentLinkedListNode = currentLinkedListNode.Next();
+                    continue;
+                }
+
                 var gpsCoordinatesViewModel = new GpsCoordinatesViewModel
                 {
-                    Latitude = currentLinkedListNode.Value.Latitude,
-                    Longitude = currentLinkedListNode.Value.Longitude
+                    Latitude = latitude,
+                    Longitude = longitude
                 };
 
                 result.Add(gpsCoordinatesViewModel);

@@ -20,7 +20,6 @@ namespace Rangeman
         public MapPage()
         {
             InitializeComponent();
-            NavigationPage.SetHasNavigationBar(this, false);
             this.BindingContextChanged += MapPage_BindingContextChanged;
         }
 

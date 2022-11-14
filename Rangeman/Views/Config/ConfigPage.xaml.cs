@@ -9,7 +9,6 @@ namespace Rangeman
         public ConfigPage()
         {
             InitializeComponent();
-            NavigationPage.SetHasNavigationBar(this, false);
         }
     }
 }

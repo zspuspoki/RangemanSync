@@ -1,8 +1,15 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Android.Views;
+using AndroidX.Lifecycle;
+using BruTile.Wmts.Generated;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using nexus.protocols.ble;
+using Rangeman.Services.BluetoothConnector;
+using Rangeman.Views.Map;
 using Serilog;
 using System;
+using System.IO;
 using Xamarin.Forms;
 
 namespace Rangeman
@@ -25,14 +32,19 @@ namespace Rangeman
 
         public static IServiceCollection AddViews(this IServiceCollection serviceCollection)
         {
-            //serviceCollection.AddView<AboutPage, AboutViewModel>()
-            //    .AddView<ItemsPage, ItemsViewModel>()
-            //    .AddView<ItemDetailPage>()
-            //    .AddView<NewItemPage>();
+            serviceCollection.AddViewTransient<ConfigPage, ConfigPageViewModel>();
+            serviceCollection.AddViewTransient<MainPage, MainPageViewModel>();
+            serviceCollection.AddSingleton<IMapPageView, MapPage>();
+            serviceCollection.AddSingleton<MapPage>((ctx) =>
+            {
+                var view = ctx.GetRequiredService<IMapPageView>() as MapPage;
+                view.BindingContext = ctx.GetRequiredService<MapPageViewModel>();
 
-            serviceCollection.AddView<ConfigPage, ConfigPageViewModel>();
-            serviceCollection.AddView<MainPage, MainPageViewModel>();
-            serviceCollection.AddView<MapPage, MapPageViewModel>();
+                view.Appearing += (sender, args) => (((BindableObject)sender).BindingContext as IPageLifeCycleAware)?.OnAppearing();
+                view.Disappearing += (sender, args) => (((BindableObject)sender).BindingContext as IPageLifeCycleAware)?.OnDisappearing();
+
+                return view;
+            });
             return serviceCollection;
         }
 
@@ -40,8 +52,15 @@ namespace Rangeman
         {
             return serviceCollection.AddLogging(builder =>
             {
-                builder.AddSerilog(new LoggerConfiguration().ReadFrom.Configuration(configurationRoot.GetSection("Logging"))
-                    .CreateLogger());
+                var path = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryDocuments).AbsolutePath; ;
+                
+                var loggerConfiguration = new LoggerConfiguration()
+                    .ReadFrom.Configuration(configurationRoot.GetSection("Logging"))
+                    .WriteTo.File(Path.Combine(path, "RangemanSyncLogs", "Log.log"), 
+                        rollingInterval: RollingInterval.Day,
+                        outputTemplate: "{Timestamp:HH:mm:ss} [{Level:u3}] {Message:lj} ({SourceContext}) {Exception}{NewLine}");
+
+                builder.AddSerilog(loggerConfiguration.CreateLogger());
             });
         }
 
@@ -55,18 +74,19 @@ namespace Rangeman
         public static IServiceCollection ConfigureRangemanProject(this IServiceCollection serviceCollection,
             IConfigurationRoot configurationRoot)
         {
-            //serviceCollection.AddTransient(typeof(MyRouteFactory<>))
-            //    .AddTransient<IDataStore<Item>, MockDataStore>()
-            //    .AddViews()
-            //    .AddViewModels<BaseViewModel>();
             serviceCollection.AddViewModels<MainPageViewModel>();
             serviceCollection.AddSingleton<MapPageViewModel>();
-            serviceCollection.AddTransient<ConfigPageViewModel>((ctx) =>
+            serviceCollection.AddViewModels<NodesViewModel>();
+            serviceCollection.AddViewModels<AddressPanelViewModel>();
+            serviceCollection.AddViewModels<ConfigPageViewModel>();
+
+            serviceCollection.AddSingleton<BluetoothConnectorService>((ctx) => 
             {
-                var mapPageViewModel = ctx.GetService<MapPageViewModel>();
-                var configPageViewModel = new ConfigPageViewModel();
-                configPageViewModel.UseMbTilesClicked += (s, e) => mapPageViewModel.UpdateMapToUseMbTilesFile();
-                return configPageViewModel;
+                var context = ctx.GetService<Android.Content.Context>();
+                var ble = BluetoothLowEnergyAdapter.ObtainDefaultAdapter(context);
+                var logger = ctx.GetService<Microsoft.Extensions.Logging.ILogger<BluetoothConnectorService>>();
+
+                return new BluetoothConnectorService(ble, logger);
             });
 
             serviceCollection.AddViews();
@@ -90,7 +110,7 @@ namespace Rangeman
             return serviceCollection;
         }
 
-        private static IServiceCollection AddView<TView, TViewModel>(this IServiceCollection serviceCollection) where TView : Page
+        private static IServiceCollection AddViewTransient<TView, TViewModel>(this IServiceCollection serviceCollection) where TView : Page
         {
             return serviceCollection.AddTransient<TView>(serviceProvider =>
             {

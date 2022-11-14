@@ -1,4 +1,5 @@
-﻿using nexus.protocols.ble;
+﻿using Microsoft.Extensions.Logging;
+using nexus.protocols.ble;
 using nexus.protocols.ble.scan;
 using System;
 using System.Diagnostics;
@@ -7,17 +8,21 @@ using System.Threading.Tasks;
 
 namespace Rangeman.Services.BluetoothConnector
 {
-    internal class BluetoothConnectorService
+    public class BluetoothConnectorService
     {
         private const string WatchDeviceName = "CASIO GPR-B1000";
         private readonly IBluetoothLowEnergyAdapter ble;
+        private readonly ILogger<BluetoothConnectorService> logger;
 
-        public BluetoothConnectorService(IBluetoothLowEnergyAdapter ble)
+        public BluetoothConnectorService(IBluetoothLowEnergyAdapter ble, ILogger<BluetoothConnectorService> logger)
         {
             this.ble = ble;
+            this.logger = logger;
         }
 
-        public async Task FindAndConnectToWatch(Action<string> progressMessageMethod, Func<BlePeripheralConnectionRequest, Task<bool>> successfullyConnectedMethod)
+        public async Task FindAndConnectToWatch(Action<string> progressMessageMethod, 
+                Func<BlePeripheralConnectionRequest,Task<bool>> successfullyConnectedMethod,
+                Func<Task<bool>> watchCommandExecutionFailed = null)
         {
             if (progressMessageMethod is null)
             {
@@ -68,7 +73,12 @@ namespace Rangeman.Services.BluetoothConnector
                     }
                     catch(Exception ex)
                     {
-                        //TODO: LOg error
+                        logger.LogError(ex, "An unexpected error occured during running watch commands");
+
+                        if(watchCommandExecutionFailed != null)
+                        {
+                            await watchCommandExecutionFailed();
+                        }
                     }
                     finally
                     {

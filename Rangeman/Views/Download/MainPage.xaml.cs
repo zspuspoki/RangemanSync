@@ -16,24 +16,12 @@ namespace Rangeman
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class MainPage : ContentPage
     {
-        private MainPageViewModel viewModel = null;
         private BluetoothConnectorService bluetoothConnectorService;
 
-        public MainPage()
+        public MainPage(BluetoothConnectorService bluetoothConnectorService)
         {
             InitializeComponent();
-            this.BindingContextChanged += MainPage_BindingContextChanged;
-        }
-
-        private void MainPage_BindingContextChanged(object sender, EventArgs e)
-        {
-            var vm = this.BindingContext as MainPageViewModel;
-            if(vm != null)
-            {
-                viewModel = vm;
-                var ble = BluetoothLowEnergyAdapter.ObtainDefaultAdapter(vm.Context);
-                this.bluetoothConnectorService = new BluetoothConnectorService(ble);
-            }
+            this.bluetoothConnectorService = bluetoothConnectorService;
         }
 
         private async void DownloadHeaders_Clicked(object sender, EventArgs e)
@@ -48,10 +36,15 @@ namespace Rangeman
                 var logPointMemoryService = new LogPointMemoryExtractorService(connection);
                 logPointMemoryService.ProgressChanged += LogPointMemoryService_ProgressChanged;
                 var headers = await logPointMemoryService.GetHeaderDataAsync();
-                headers.ForEach(h => viewModel.LogHeaderList.Add(h.ToViewModel()));
+                headers.ForEach(h => ViewModel.LogHeaderList.Add(h.ToViewModel()));
 
                 logPointMemoryService.ProgressChanged -= LogPointMemoryService_ProgressChanged;
 
+                return true;
+            },
+            async ()=> 
+            {
+                SetProgressMessage("An error occured during sending watch commands. Please try to connect again");
                 return true;
             });
 
@@ -67,13 +60,13 @@ namespace Rangeman
 
             await bluetoothConnectorService.FindAndConnectToWatch(SetProgressMessage, async (connection) =>
             {
-                if (viewModel.SelectedLogHeader != null)
+                if (ViewModel.SelectedLogHeader != null)
                 {
                     Debug.WriteLine("DownloadSaveGPXButton_Clicked : Before GetLogDataAsync");
-                    Debug.WriteLine($"Selected ordinal number: {viewModel.SelectedLogHeader.OrdinalNumber}");
+                    Debug.WriteLine($"Selected ordinal number: {ViewModel.SelectedLogHeader.OrdinalNumber}");
                     var logPointMemoryService = new LogPointMemoryExtractorService(connection);
                     logPointMemoryService.ProgressChanged += LogPointMemoryService_ProgressChanged;
-                    var selectedHeader = viewModel.SelectedLogHeader;
+                    var selectedHeader = ViewModel.SelectedLogHeader;
                     var logDataEntries = await logPointMemoryService.GetLogDataAsync(selectedHeader.OrdinalNumber,
                         selectedHeader.DataSize,
                         selectedHeader.DataCount,
@@ -91,6 +84,11 @@ namespace Rangeman
                     Debug.WriteLine("DownloadSaveGPXButton_Clicked : One log header entry should be selected");
                     return false;
                 }
+            },
+            async () =>
+            {
+                SetProgressMessage("An error occured during sending watch commands. Please try to connect again");
+                return true;
             });
 
             DownloadSaveGPXButton.Clicked += DownloadSaveGPXButton_Clicked;
@@ -106,7 +104,7 @@ namespace Rangeman
         {
             GpxClass gpx = new GpxClass();
             
-            gpx.Metadata.time = viewModel.SelectedLogHeader.HeaderTime;
+            gpx.Metadata.time = ViewModel.SelectedLogHeader.HeaderTime;
             gpx.Metadata.timeSpecified = true;
             gpx.Metadata.desc = "Track exported from Casio GPR-B1000 watch";
 
@@ -126,7 +124,7 @@ namespace Rangeman
                 gpx.Tracks[0].trkseg[0].trkpt.Add(wpt);
             }
 
-            var headerTime = viewModel.SelectedLogHeader.HeaderTime;
+            var headerTime = ViewModel.SelectedLogHeader.HeaderTime;
             var fileName = $"GPR-B1000-Route-{headerTime.Year}-{headerTime.Month}-{headerTime.Day}-2.gpx";
             var path = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryDocuments).AbsolutePath;
             string filePath = System.IO.Path.Combine(path, fileName);
@@ -138,13 +136,22 @@ namespace Rangeman
         {
             if (e.SelectedItem is LogHeaderViewModel selectedLogHeader)
             {
-                viewModel.SelectedLogHeader = selectedLogHeader;
+                ViewModel.SelectedLogHeader = selectedLogHeader;
             }
         }
 
         private void SetProgressMessage(string message)
         {
-            viewModel.ProgressMessage = message;
+            ViewModel.ProgressMessage = message;
+        }
+
+        public MainPageViewModel ViewModel
+        {
+            get
+            {
+                var vm = BindingContext as MainPageViewModel;
+                return vm;
+            }
         }
     }
 }

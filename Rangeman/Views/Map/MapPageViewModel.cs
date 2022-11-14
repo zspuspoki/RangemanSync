@@ -19,7 +19,7 @@ using System.Linq;
 
 namespace Rangeman
 {
-    internal class MapPageViewModel : ViewModelBase
+    public class MapPageViewModel : ViewModelBase
     {
         private const string LinesLayerName = "LinesBetweenPins";
 
@@ -33,11 +33,12 @@ namespace Rangeman
         private AddressPanelViewModel addressPanelViewModel;
         private RowDefinitionCollection gridViewRows;
 
-        public MapPageViewModel(Context context)
+        public MapPageViewModel(Context context, NodesViewModel nodesViewModel, 
+            AddressPanelViewModel addressPanelViewModel)
         {
             Context = context;
-            nodesViewModel = new NodesViewModel();
-            addressPanelViewModel = new AddressPanelViewModel();
+            this.nodesViewModel = nodesViewModel;
+            this.addressPanelViewModel = addressPanelViewModel;
 
             gridViewRows = new RowDefinitionCollection
             {

@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 
 namespace Rangeman
 {
-    internal class MainPageViewModel : ViewModelBase
+    public class MainPageViewModel : ViewModelBase
     {
         private string progressMessage;
 

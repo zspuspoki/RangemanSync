@@ -7,7 +7,7 @@ namespace Rangeman.Views.Map
         StartEnd,
         Transit
     }
-    internal class NodeViewModel : IEquatable<NodeViewModel>
+    public class NodeViewModel : IEquatable<NodeViewModel>
     {
         public string Title { get; set; }
         public double Longitude { get; set; }

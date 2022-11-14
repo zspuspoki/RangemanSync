@@ -1,6 +1,4 @@
-﻿using Android.Media.Audiofx;
-using Mapsui.UI.Forms;
-using System;
+﻿using Mapsui.UI.Forms;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -9,7 +7,7 @@ using Xamarin.Forms;
 
 namespace Rangeman.Views.Map
 {
-    internal class AddressPanelViewModel : ViewModelBase
+    public class AddressPanelViewModel : ViewModelBase
     {
         private string street;
         private string city;
@@ -20,8 +18,12 @@ namespace Rangeman.Views.Map
         private bool canDisplayAddressEntries = true;
         private double longitude;
         private double latitude;
+        private readonly IMapPageView mapPageView;
 
-        public event EventHandler<Position> PlaceOnMapClicked;
+        public AddressPanelViewModel(IMapPageView mapPageView)
+        {
+            this.mapPageView = mapPageView;
+        }
 
         public async void PlaceOnMap()
         {
@@ -45,10 +47,7 @@ namespace Rangeman.Views.Map
 
             position = new Position(latitude, longitude);
 
-            if(PlaceOnMapClicked != null)
-            {
-                PlaceOnMapClicked(this, position);
-            }
+            mapPageView.PlaceOnMapClicked(position);
         }
 
         public async Task UpdateUserPositionAsync()

@@ -1,6 +1,6 @@
 ﻿namespace Rangeman
 {
-    internal class GpsCoordinatesViewModel
+    public class GpsCoordinatesViewModel
     {
         public double Longitude { get; set; }
         public double Latitude { get; set; }

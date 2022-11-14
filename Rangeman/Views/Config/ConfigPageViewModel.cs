@@ -8,8 +8,12 @@ namespace Rangeman
     {
         private bool useMbTilesChecked;
         private ICommand applyCommand;
+        private readonly MapPageViewModel mapPageViewModel;
 
-        public event EventHandler UseMbTilesClicked;
+        public ConfigPageViewModel(MapPageViewModel mapPageViewModel)
+        {
+            this.mapPageViewModel = mapPageViewModel;
+        }
 
         public bool UseMbTilesChecked 
         { 
@@ -43,10 +47,7 @@ namespace Rangeman
         {
             if (UseMbTilesChecked)
             {
-                if (UseMbTilesClicked != null)
-                {
-                    UseMbTilesClicked(this, new EventArgs());
-                }
+                mapPageViewModel.UpdateMapToUseMbTilesFile();
             }
         }
     }

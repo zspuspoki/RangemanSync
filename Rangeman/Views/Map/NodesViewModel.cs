@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Rangeman.Views.Map
 {
-    internal class NodesViewModel : ViewModelBase
+    public class NodesViewModel : ViewModelBase
     {
         private CircularLinkedList<NodeViewModel> nodes;
 

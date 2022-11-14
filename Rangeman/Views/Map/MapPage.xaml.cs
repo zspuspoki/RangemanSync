@@ -1,6 +1,7 @@
 ﻿using Mapsui.UI.Forms;
 using nexus.protocols.ble;
 using Rangeman.Services.BluetoothConnector;
+using Rangeman.Views.Map;
 using Rangeman.WatchDataSender;
 using System;
 using System.Diagnostics;
@@ -11,32 +12,14 @@ using Xamarin.Forms.Xaml;
 namespace Rangeman
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
-    public partial class MapPage : ContentPage
+    public partial class MapPage : ContentPage, IMapPageView
     {
-        private IBluetoothLowEnergyAdapter ble;
-        private MapPageViewModel viewModel = null;
         private BluetoothConnectorService bluetoothConnectorService;
 
-        public MapPage()
+        public MapPage(BluetoothConnectorService bluetoothConnectorService)
         {
             InitializeComponent();
-            this.BindingContextChanged += MapPage_BindingContextChanged;
-        }
-
-        private void MapPage_BindingContextChanged(object sender, EventArgs e)
-        {
-            var vm = this.BindingContext as MapPageViewModel;
-            if (vm != null)
-            {
-                if (viewModel == null)
-                {
-                    viewModel = vm;
-                    viewModel.AddressPanelViewModel.PlaceOnMapClicked += AddressPanelViewModel_PlaceOnMapClicked;
-                }
-
-                ble = BluetoothLowEnergyAdapter.ObtainDefaultAdapter(vm.Context);
-                this.bluetoothConnectorService = new BluetoothConnectorService(ble);
-            }
+            this.bluetoothConnectorService = bluetoothConnectorService;
         }
 
         private void AddressPanelViewModel_PlaceOnMapClicked(object sender, Position p)
@@ -83,7 +66,7 @@ namespace Rangeman
 
         private string GetPinTitle(double longitude, double latitude)
         {
-            var pinTitle = viewModel.NodesViewModel.AddNodeToMap(longitude, latitude);
+            var pinTitle = ViewModel.NodesViewModel.AddNodeToMap(longitude, latitude);
             return pinTitle;
         }
 
@@ -129,14 +112,14 @@ namespace Rangeman
 
             mapView.Pins.Add(pin);
             pin.ShowCallout();
-            viewModel.AddLinesBetweenPinsAsLayer();
+            ViewModel.AddLinesBetweenPinsAsLayer();
         }
 
         private async void SendButton_Clicked(object sender, EventArgs e)
         {
             Debug.WriteLine("--- MapPage - start SendButton_Clicked");
 
-            if (!viewModel.NodesViewModel.HasRoute())
+            if (!ViewModel.NodesViewModel.HasRoute())
             {
                 await DisplayAlert("Alert", "Please create a route before pressing Send.", "OK");
                 return;
@@ -144,14 +127,14 @@ namespace Rangeman
 
             SendButton.Clicked -= SendButton_Clicked;
 
-            viewModel.ProgressMessage = "Looking for Casio GPR-B1000 device. Please connect your watch.";
-            await bluetoothConnectorService.FindAndConnectToWatch((message) => viewModel.ProgressMessage = message, 
+            ViewModel.ProgressMessage = "Looking for Casio GPR-B1000 device. Please connect your watch.";
+            await bluetoothConnectorService.FindAndConnectToWatch((message) => ViewModel.ProgressMessage = message, 
                 async (connection) => 
                 {
                     Debug.WriteLine("Map tab - Device Connection was successful");
-                    viewModel.ProgressMessage = "Connected to GPR-B1000 watch.";
+                    ViewModel.ProgressMessage = "Connected to GPR-B1000 watch.";
 
-                    MapPageDataConverter mapPageDataConverter = new MapPageDataConverter(viewModel.NodesViewModel);
+                    MapPageDataConverter mapPageDataConverter = new MapPageDataConverter(ViewModel.NodesViewModel);
 
                     var watchDataSenderService = new WatchDataSenderService(connection, mapPageDataConverter.GetDataByteArray(),
                         mapPageDataConverter.GetHeaderByteArray());
@@ -162,6 +145,11 @@ namespace Rangeman
                     Debug.WriteLine("Map tab - after awaiting SendRoute()");
 
                     return true;
+                },
+                async ()=> 
+                {
+                    ViewModel.ProgressMessage = "An error occured during sending watch commands. Please try to connect again";
+                    return true;
                 });
 
             SendButton.Clicked += SendButton_Clicked;
@@ -171,12 +159,12 @@ namespace Rangeman
         {
             if (sender is WatchDataSenderService)
             {
-                viewModel.ProgressBarIsVisible = true;
-                viewModel.ProgressMessage = e.Text;
-                viewModel.ProgressBarPercentageMessage = e.PercentageText;
-                viewModel.ProgressBarPercentageNumber = e.PercentageNumber;
+                ViewModel.ProgressBarIsVisible = true;
+                ViewModel.ProgressMessage = e.Text;
+                ViewModel.ProgressBarPercentageMessage = e.PercentageText;
+                ViewModel.ProgressBarPercentageNumber = e.PercentageNumber;
 
-                Debug.WriteLine($"Current progress bar percentage number: {viewModel.ProgressBarPercentageNumber}");
+                Debug.WriteLine($"Current progress bar percentage number: {ViewModel.ProgressBarPercentageNumber}");
             }
         }
 
@@ -186,7 +174,7 @@ namespace Rangeman
             {
                 mapPageViewModel.NodesViewModel.DeleteSelectedNode();
                 mapView.Pins.Remove(mapView.SelectedPin);
-                viewModel.AddLinesBetweenPinsAsLayer();
+                ViewModel.AddLinesBetweenPinsAsLayer();
                 mapPageViewModel.ProgressMessage = "Successfully deleted node.";
             }
         }
@@ -209,6 +197,27 @@ namespace Rangeman
                 {
                     await mapPageViewModel.AddressPanelViewModel.UpdateUserPositionAsync();
                 }
+            }
+        }
+
+        public void PlaceOnMapClicked(Position p)
+        {
+            var pinTitle = GetPinTitle(p.Longitude, p.Latitude);
+
+            if (pinTitle == null)
+            {
+                return;
+            }
+
+            ShowPinOnMap(pinTitle, p, true);
+        }
+
+        public MapPageViewModel ViewModel
+        {
+            get
+            {
+                var vm = BindingContext as MapPageViewModel;
+                return vm;
             }
         }
     }

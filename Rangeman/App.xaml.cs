@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
@@ -12,14 +10,23 @@ namespace Rangeman
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class App : Application
     {
-        public App(Android.Content.Context context)
+        public App(Action<ConfigurationBuilder> configuration, 
+            Action<IServiceCollection, IConfigurationRoot> dependencyServiceConfiguration)
         {
             InitializeComponent();
 
-            var tabbedPage = new Rangeman.MyTabbedPage(); //new MainPage(context);
-            tabbedPage.BindingContext = new MyTabbedPageViewModel(context);
+            IConfigurationRoot configurationRoot = Setup.Configuration
+                .ConfigureRangemanProject()
+                .ConfigureRangemanAppProject(configuration)
+                .Build();
 
-            MainPage = tabbedPage;
+            IServiceProvider serviceProvider = Setup.DependencyInjection
+                .ConfigureLogging(configurationRoot)
+                .ConfigureRangemanProject(configurationRoot)
+                .ConfigureRangemanAppProject(configurationRoot, dependencyServiceConfiguration)
+                .BuildServiceProvider();
+
+            MainPage = new AppShell(serviceProvider);
         }
 
         protected override void OnStart()

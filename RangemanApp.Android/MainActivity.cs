@@ -18,7 +18,9 @@ namespace employeeID.Droid
             BluetoothLowEnergyAdapter.Init(this);
             Platform.Init(this, savedInstanceState);
             global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
-            LoadApplication(new App(ApplicationContext));
+
+            var setup = new Setup(ApplicationContext);
+            LoadApplication(new App(setup.Configuration, setup.DependencyInjection));
 
             await Permissions.RequestAsync<AppPermissions>();
         }

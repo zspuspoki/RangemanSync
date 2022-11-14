@@ -2,7 +2,7 @@
 
 namespace Rangeman
 {
-    internal class ViewModelBase : INotifyPropertyChanged
+    internal class ViewModelBase : INotifyPropertyChanged, IPageLifeCycleAware
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -11,6 +11,14 @@ namespace Rangeman
             var handler = PropertyChanged;
             if (handler != null)
                 handler(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        public virtual void OnAppearing()
+        {
+        }
+
+        public virtual void OnDisappearing()
+        {
         }
     }
 }

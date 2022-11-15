@@ -26,6 +26,12 @@ namespace Rangeman
             logger.LogInformation("MainPage instatiated");
         }
 
+        private async void DisconnectButton_Clicked(object sender, EventArgs e)
+        {
+            await bluetoothConnectorService.DisconnectFromWatch(SetProgressMessage);
+            ViewModel.DisconnectButtonIsVisible = false;
+        }
+
         private async void DownloadHeaders_Clicked(object sender, EventArgs e)
         {
             Debug.WriteLine("--- MainPage - start DownloadHeaders_Clicked");
@@ -33,7 +39,7 @@ namespace Rangeman
 
             DownloadHeadersButton.Clicked -= DownloadHeaders_Clicked;
 
-            await bluetoothConnectorService.FindAndConnectToWatch(SetProgressMessage, async (connection) => 
+            await bluetoothConnectorService.FindAndConnectToWatch(SetProgressMessage, async (connection) =>
             {
                 var logPointMemoryService = new LogPointMemoryExtractorService(connection);
                 logPointMemoryService.ProgressChanged += LogPointMemoryService_ProgressChanged;
@@ -42,13 +48,16 @@ namespace Rangeman
 
                 logPointMemoryService.ProgressChanged -= LogPointMemoryService_ProgressChanged;
 
+                ViewModel.DisconnectButtonIsVisible = false;
+
                 return true;
             },
-            async ()=> 
+            async () =>
             {
                 SetProgressMessage("An error occured during sending watch commands. Please try to connect again");
                 return true;
-            });
+            },
+            () => ViewModel.DisconnectButtonIsVisible = true);
 
             DownloadHeadersButton.Clicked += DownloadHeaders_Clicked;
         }
@@ -155,5 +164,6 @@ namespace Rangeman
                 return vm;
             }
         }
+
     }
 }

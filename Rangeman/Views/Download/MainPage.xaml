@@ -18,8 +18,9 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-            <Button Text="Download Headers" Clicked="DownloadHeaders_Clicked" x:Name="DownloadHeadersButton"/>
-            <Button Text="Download / Save as GPX" x:Name="DownloadSaveGPXButton" Clicked="DownloadSaveGPXButton_Clicked"/>
+            <Button Text="Download Headers" Clicked="DownloadHeaders_Clicked" x:Name="DownloadHeadersButton" IsVisible="{Binding WatchCommandButtonsAreVisible}"/>
+            <Button Text="Download / Save as GPX" x:Name="DownloadSaveGPXButton" Clicked="DownloadSaveGPXButton_Clicked" IsVisible="{Binding WatchCommandButtonsAreVisible}"/>
+            <Button Text="Disconnect watch" x:Name="DisconnectButton" Clicked="DisconnectButton_Clicked"  IsVisible="{Binding DisconnectButtonIsVisible}"/>
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>

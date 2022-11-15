@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using nexus.core;
 using nexus.protocols.ble;
 using nexus.protocols.ble.scan;
 using System;
@@ -14,6 +15,9 @@ namespace Rangeman.Services.BluetoothConnector
         private readonly IBluetoothLowEnergyAdapter ble;
         private readonly ILogger<BluetoothConnectorService> logger;
 
+        private CancellationTokenSource scanCancellationTokenSource = null;
+        private BlePeripheralConnectionRequest currentConnection;
+
         public BluetoothConnectorService(IBluetoothLowEnergyAdapter ble, ILogger<BluetoothConnectorService> logger)
         {
             this.ble = ble;
@@ -22,7 +26,8 @@ namespace Rangeman.Services.BluetoothConnector
 
         public async Task FindAndConnectToWatch(Action<string> progressMessageMethod, 
                 Func<BlePeripheralConnectionRequest,Task<bool>> successfullyConnectedMethod,
-                Func<Task<bool>> watchCommandExecutionFailed = null)
+                Func<Task<bool>> watchCommandExecutionFailed = null,
+                Action beforeStartScanningMethod = null)
         {
             if (progressMessageMethod is null)
             {
@@ -34,7 +39,13 @@ namespace Rangeman.Services.BluetoothConnector
                 throw new ArgumentNullException(nameof(successfullyConnectedMethod));
             }
 
-            CancellationTokenSource scanCancellationTokenSource = new CancellationTokenSource();
+            scanCancellationTokenSource = new CancellationTokenSource();
+
+            if(beforeStartScanningMethod!= null)
+            {
+                beforeStartScanningMethod();
+            }
+
             IBlePeripheral device = null;
 
             await ble.ScanForBroadcasts((a) =>
@@ -61,15 +72,15 @@ namespace Rangeman.Services.BluetoothConnector
             if (device != null)
             {
                 progressMessageMethod("Found Casio device. Trying to connect ...");
-                var connection = await ble.ConnectToDevice(device);
+                currentConnection = await ble.ConnectToDevice(device);
 
-                if (connection.IsSuccessful())
+                if (currentConnection.IsSuccessful())
                 {
                     try
                     {
                         progressMessageMethod("Successfully connected to the watch.");
 
-                        await successfullyConnectedMethod(connection);
+                        await successfullyConnectedMethod(currentConnection);
                     }
                     catch(Exception ex)
                     {
@@ -82,12 +93,44 @@ namespace Rangeman.Services.BluetoothConnector
                     }
                     finally
                     {
-                        await connection.GattServer.Disconnect();
+                        await currentConnection.GattServer.Disconnect();
                     }
                 }
             }
+        }
 
+        public async Task DisconnectFromWatch(Action<string> progressMessageMethod)
+        {
+            try
+            {
+                if (progressMessageMethod is null)
+                {
+                    throw new ArgumentNullException(nameof(progressMessageMethod));
+                }
 
+                logger.LogInformation("Started DisconnectFromWatch");
+
+                if(scanCancellationTokenSource != null && !scanCancellationTokenSource.IsCancellationRequested)
+                {
+                    scanCancellationTokenSource.Cancel();
+                    progressMessageMethod("Bluetooth: GPR-B1000 device scanning successfully aborted.");
+                }
+
+                if (currentConnection.ConnectionResult == ConnectionResult.Success)
+                {
+                    if (currentConnection.GattServer != null)
+                    {
+                        await currentConnection.GattServer.Disconnect();
+                        currentConnection.GattServer.TryDispose();
+                        progressMessageMethod("Watch successfully disconnected from the phone.");
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                logger.LogError(ex, "An unexpected error occured during disconnecting the watch.");
+                progressMessageMethod("An unexpected error occured during disconnecting the watch.");
+            }
         }
     }
 }

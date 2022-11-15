@@ -1,12 +1,10 @@
-﻿using Android.Gms.Tasks;
-using employeeID;
-using nexus.protocols.ble;
+﻿using employeeID;
+using Microsoft.Extensions.Logging;
 using Rangeman.DataExtractors.Data;
 using Rangeman.Services.BluetoothConnector;
 using SharpGPX;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 using Debug = System.Diagnostics.Debug;
@@ -17,11 +15,15 @@ namespace Rangeman
     public partial class MainPage : ContentPage
     {
         private BluetoothConnectorService bluetoothConnectorService;
+        private readonly ILogger<MainPage> logger;
 
-        public MainPage(BluetoothConnectorService bluetoothConnectorService)
+        public MainPage(BluetoothConnectorService bluetoothConnectorService, ILogger<MainPage> logger)
         {
             InitializeComponent();
             this.bluetoothConnectorService = bluetoothConnectorService;
+            this.logger = logger;
+
+            logger.LogInformation("MainPage instatiated");
         }
 
         private async void DownloadHeaders_Clicked(object sender, EventArgs e)

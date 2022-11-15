@@ -1,5 +1,6 @@
 ﻿using nexus.protocols.ble;
 using Rangeman.Common;
+using Rangeman.Services.Common;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -31,7 +32,8 @@ namespace Rangeman.WatchDataSender
                     Debug.WriteLine($"--- SendInitCommandsAndWaitForCCCData - NotifyCharacteristicValue. data equals to convoy data : {Utils.GetPrintableBytesArray(convoyData)}");
                     taskCompletionSource.SetResult(data);
                 }
-            });
+            }, 
+            ()=> taskCompletionSource.TrySetResult(new byte[] { }));
 
             Debug.WriteLine("--- SendInitCommandsAndWaitForCCCData - Before writing CasioDataRequestSPCharacteristic");
             await gattServer.WriteDescriptorValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
@@ -85,7 +87,8 @@ namespace Rangeman.WatchDataSender
 
                     taskCompletionSource.SetResult(connectionParameters);
                 }
-            });
+            },
+            () => taskCompletionSource.TrySetResult(new ConnectionParameters(new byte[] { })));
 
             Debug.WriteLine("--- SendCategoryAndWaitForConnectionParams - Before writing CasioDataRequestSPCharacteristic");
             await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
@@ -111,7 +114,8 @@ namespace Rangeman.WatchDataSender
                 { 
                     taskCompletionSource.SetResult(data);
                 }
-            });
+            },
+            () => taskCompletionSource.TrySetResult(new byte[] { }));
 
 
             long currentParameterDataSizeOf1Sector = parameters.DataSizeOf1Sector * parameters.OffsetSector;
@@ -161,7 +165,8 @@ namespace Rangeman.WatchDataSender
                         Debug.WriteLine("--- CloseCurrentCategoryAndWaitForResponse - Sequence is equals");
                         taskCompletionSource.SetResult(data);
                     }
-                });
+                },
+            () => taskCompletionSource.TrySetResult(new byte[] { }));
 
             Debug.WriteLine($"--- CloseCurrentCategoryAndWaitForResponse - Before awaiting task");
             await taskCompletionSource.Task;
@@ -186,7 +191,8 @@ namespace Rangeman.WatchDataSender
                     {
                         taskCompletionSource.SetResult(data);
                     }
-                });
+                },
+            () => taskCompletionSource.TrySetResult(new byte[] { }));
 
             await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
                 Guid.Parse(BLEConstants.CasioDataRequestSPCharacteristic), new byte[] { 0x04, 0x12, 0x00, 0x00, 0x00 });  // category 18

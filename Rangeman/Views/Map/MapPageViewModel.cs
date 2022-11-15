@@ -32,6 +32,9 @@ namespace Rangeman
         private NodesViewModel nodesViewModel;
         private AddressPanelViewModel addressPanelViewModel;
         private RowDefinitionCollection gridViewRows;
+        private bool watchCommandButtonsAreVisible = true;
+        private bool disconnectButtonIsVisible = false;
+
 
         public MapPageViewModel(Context context, NodesViewModel nodesViewModel, 
             AddressPanelViewModel addressPanelViewModel)
@@ -183,6 +186,17 @@ namespace Rangeman
         public NodesViewModel NodesViewModel { get => nodesViewModel; }
         public RowDefinitionCollection GridViewRows { get => gridViewRows ; set { gridViewRows = value; OnPropertyChanged("GridViewRows"); } }
         public AddressPanelViewModel AddressPanelViewModel { get => addressPanelViewModel; }
+        public bool WatchCommandButtonsAreVisible { get => watchCommandButtonsAreVisible; set { watchCommandButtonsAreVisible = value; OnPropertyChanged("WatchCommandButtonsAreVisible"); } }
+        public bool DisconnectButtonIsVisible
+        {
+            get => disconnectButtonIsVisible;
+            set
+            {
+                disconnectButtonIsVisible = value;
+                OnPropertyChanged("DisconnectButtonIsVisible");
+                WatchCommandButtonsAreVisible = !value;
+            }
+        }
         #endregion
     }
 }

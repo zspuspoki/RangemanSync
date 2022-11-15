@@ -42,25 +42,32 @@
                       AbsoluteLayout.LayoutFlags="PositionProportional"
                       HeightRequest="65"
                       WidthRequest="65"
-                      CornerRadius="25" Text="Send" Clicked="SendButton_Clicked" x:Name="SendButton" />
+                      CornerRadius="25" Text="Send" Clicked="SendButton_Clicked" x:Name="SendButton" IsVisible="{Binding WatchCommandButtonsAreVisible}" />
 
                 <Button AbsoluteLayout.LayoutBounds="0.5 , 1 , AutoSize, AutoSize"
                       AbsoluteLayout.LayoutFlags="PositionProportional"
                       HeightRequest="65"
                       WidthRequest="65"
-                      CornerRadius="25" Text="Del node" x:Name="DeleteNodeButton" Clicked="DeleteNodeButton_Clicked" />
+                      CornerRadius="25" Text="Del node" x:Name="DeleteNodeButton" Clicked="DeleteNodeButton_Clicked" IsVisible="{Binding WatchCommandButtonsAreVisible}" />
 
                 <Button AbsoluteLayout.LayoutBounds="1 , 1 , AutoSize, AutoSize"
                       AbsoluteLayout.LayoutFlags="PositionProportional"
                       HeightRequest="65"
                       WidthRequest="65"
-                      CornerRadius="25" x:Name="SelectNodeButton" Clicked="SelectNodeButton_Clicked" Text="{Binding NodesViewModel.CurrentSelectedNode}"/>
+                      CornerRadius="25" x:Name="SelectNodeButton" Clicked="SelectNodeButton_Clicked" Text="{Binding NodesViewModel.CurrentSelectedNode}" IsVisible="{Binding WatchCommandButtonsAreVisible}"/>
+
+                <Button AbsoluteLayout.LayoutBounds="1 , 1 , AutoSize, AutoSize"
+                      AbsoluteLayout.LayoutFlags="PositionProportional"
+                      HeightRequest="65"
+                      WidthRequest="65"
+                      CornerRadius="25" x:Name="DisconnectButton" Clicked="DisconnectButton_Clicked" Text="End"  IsVisible="{Binding DisconnectButtonIsVisible}"/>
+
 
                 <Button AbsoluteLayout.LayoutBounds="0, 0.5, AutoSize, AutoSize"
                       AbsoluteLayout.LayoutFlags="PositionProportional"
                       HeightRequest="65"
                       WidthRequest="65"
-                      CornerRadius="25" Text="Addr" x:Name="AddressButton" Clicked="AddressButton_Clicked" />
+                      CornerRadius="25" Text="Addr" x:Name="AddressButton" Clicked="AddressButton_Clicked" IsVisible="{Binding WatchCommandButtonsAreVisible}" />
 
             </AbsoluteLayout>
             <ScrollView Grid.Row="1">

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Rangeman.WatchDataSender
+﻿namespace Rangeman.WatchDataSender
 {
     internal class ConnectionParameters
     {
@@ -15,10 +13,13 @@ namespace Rangeman.WatchDataSender
         {
             this.data = data;
 
-            GetMtuSize();
-            GetDataSizeOf1Sector();
-            GetOffsetSector();
-            GetAreaNumber();
+            if (data.Length > 0)
+            {
+                GetMtuSize();
+                GetDataSizeOf1Sector();
+                GetOffsetSector();
+                GetAreaNumber();
+            }
         }
 
         private void GetAreaNumber()

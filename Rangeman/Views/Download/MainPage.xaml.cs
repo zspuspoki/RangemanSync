@@ -89,6 +89,8 @@ namespace Rangeman
 
                     SaveGPXFile(logDataEntries);
 
+                    ViewModel.DisconnectButtonIsVisible = false;
+
                     return true;
                 }
                 else
@@ -101,7 +103,8 @@ namespace Rangeman
             {
                 SetProgressMessage("An error occured during sending watch commands. Please try to connect again");
                 return true;
-            });
+            },
+            () => ViewModel.DisconnectButtonIsVisible = true);
 
             DownloadSaveGPXButton.Clicked += DownloadSaveGPXButton_Clicked;
             //Save selected log header as GPX

@@ -128,8 +128,8 @@ namespace Rangeman
             SendButton.Clicked -= SendButton_Clicked;
 
             ViewModel.ProgressMessage = "Looking for Casio GPR-B1000 device. Please connect your watch.";
-            await bluetoothConnectorService.FindAndConnectToWatch((message) => ViewModel.ProgressMessage = message, 
-                async (connection) => 
+            await bluetoothConnectorService.FindAndConnectToWatch((message) => ViewModel.ProgressMessage = message,
+                async (connection) =>
                 {
                     Debug.WriteLine("Map tab - Device Connection was successful");
                     ViewModel.ProgressMessage = "Connected to GPR-B1000 watch.";
@@ -143,14 +143,16 @@ namespace Rangeman
                     await watchDataSenderService.SendRoute();
 
                     Debug.WriteLine("Map tab - after awaiting SendRoute()");
+                    ViewModel.DisconnectButtonIsVisible = false;
 
                     return true;
                 },
-                async ()=> 
+                async () =>
                 {
                     ViewModel.ProgressMessage = "An error occured during sending watch commands. Please try to connect again";
                     return true;
-                });
+                },
+                () => ViewModel.DisconnectButtonIsVisible = true);
 
             SendButton.Clicked += SendButton_Clicked;
         }
@@ -200,6 +202,12 @@ namespace Rangeman
             }
         }
 
+        private async void DisconnectButton_Clicked(object sender, EventArgs e)
+        {
+            await bluetoothConnectorService.DisconnectFromWatch((m) => ViewModel.ProgressMessage = m);
+            ViewModel.DisconnectButtonIsVisible = false;
+        }
+
         public void PlaceOnMapClicked(Position p)
         {
             var pinTitle = GetPinTitle(p.Longitude, p.Latitude);
@@ -220,5 +228,6 @@ namespace Rangeman
                 return vm;
             }
         }
+
     }
 }

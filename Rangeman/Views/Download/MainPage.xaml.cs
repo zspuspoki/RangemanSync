@@ -43,7 +43,8 @@ namespace Rangeman
             {
                 var logPointMemoryService = new LogPointMemoryExtractorService(connection);
                 logPointMemoryService.ProgressChanged += LogPointMemoryService_ProgressChanged;
-                var headers = await logPointMemoryService.GetHeaderDataAsync();
+                var headersTask = logPointMemoryService.GetHeaderDataAsync();
+                var headers = await headersTask;
                 headers.ForEach(h => ViewModel.LogHeaderList.Add(h.ToViewModel()));
 
                 logPointMemoryService.ProgressChanged -= LogPointMemoryService_ProgressChanged;

@@ -72,7 +72,7 @@ namespace Rangeman.Services.BluetoothConnector
             if (device != null)
             {
                 progressMessageMethod("Found Casio device. Trying to connect ...");
-                currentConnection = await ble.ConnectToDevice(device);
+                currentConnection = await ble.ConnectToDevice(device); 
 
                 if (currentConnection.IsSuccessful())
                 {
@@ -122,6 +122,7 @@ namespace Rangeman.Services.BluetoothConnector
                     {
                         await currentConnection.GattServer.Disconnect();
                         currentConnection.GattServer.TryDispose();
+
                         progressMessageMethod("Watch successfully disconnected from the phone.");
                     }
                 }

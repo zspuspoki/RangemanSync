@@ -34,6 +34,11 @@ namespace Rangeman
         {
             Debug.WriteLine("Inside GetLogHeaderDataInfo v9.");
 
+            if(headerData.Length == 0)
+            {
+                return null;
+            }
+
             int i2 = (i * 64) + 0;
             var currentDataArray = headerData;
 

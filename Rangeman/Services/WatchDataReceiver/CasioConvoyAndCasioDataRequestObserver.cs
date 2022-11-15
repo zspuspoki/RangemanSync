@@ -20,6 +20,8 @@ namespace Rangeman
         private int digestedByteCount = 0; // every 256 bytes - we have a CRC code
         private bool dataReceivingIsAllowed = true;
 
+        private bool successFullyEndedTransmission = false;
+
         private static readonly object key = new object();
         private IDataExtractor dataExtractor;
         private readonly RemoteWatchController remoteWatchController;
@@ -39,6 +41,13 @@ namespace Rangeman
         public void OnCompleted()
         {
             Debug.WriteLine("-- Finished with CasioConvoyAndCasioDataRequestObserver");
+
+            if (!successFullyEndedTransmission)
+            {
+                dataExtractor.SetData(new byte[] { });
+            }
+
+            taskCompletionSource.TrySetResult(this.dataExtractor);
         }
 
         public void OnError(Exception error)
@@ -157,6 +166,7 @@ namespace Rangeman
             if(taskCompletionSource != null)
             {
                 taskCompletionSource.SetResult(dataExtractor);
+                successFullyEndedTransmission = true;
             }
         }
 

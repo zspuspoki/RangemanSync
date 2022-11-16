@@ -8,7 +8,7 @@
                    CornerRadius="5"
                    Padding="8">
                 <StackLayout>
-                    <Label Text="Map"
+                    <Label Text="Map" TextColor="Black"
                            FontSize="Medium"
                            FontAttributes="Bold" />
                     <BoxView Color="Gray"
@@ -16,7 +16,7 @@
                              HorizontalOptions="Fill" />
                     <StackLayout Orientation="Horizontal">
                         <CheckBox IsChecked="{Binding UseMbTilesChecked}" />
-                        <Label Text="Use mbtiles file from Documents folder"/>
+                        <Label TextColor="Black" Text="Use mbtiles file from Documents folder"/>
                     </StackLayout>
                 </StackLayout>
             </Frame>

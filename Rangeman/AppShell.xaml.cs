@@ -17,6 +17,7 @@ namespace Rangeman
             Routing.RegisterRoute("Config", ServiceProvider.GetRequiredService<MyRouteFactory<ConfigPage>>());
 
             InitializeComponent();
+            BindingContext = ServiceProvider.GetRequiredService<AppShellViewModel>();
         }
 
         public IServiceProvider ServiceProvider { get; }

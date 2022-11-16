@@ -5,6 +5,7 @@ using Rangeman.Services.BluetoothConnector;
 using SharpGPX;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 using Debug = System.Diagnostics.Debug;
@@ -16,13 +17,14 @@ namespace Rangeman
     {
         private BluetoothConnectorService bluetoothConnectorService;
         private readonly ILogger<MainPage> logger;
+        private readonly AppShellViewModel appShellViewModel;
 
-        public MainPage(BluetoothConnectorService bluetoothConnectorService, ILogger<MainPage> logger)
+        public MainPage(BluetoothConnectorService bluetoothConnectorService, ILogger<MainPage> logger, AppShellViewModel appShellViewModel)
         {
             InitializeComponent();
             this.bluetoothConnectorService = bluetoothConnectorService;
             this.logger = logger;
-
+            this.appShellViewModel = appShellViewModel;
             logger.LogInformation("MainPage instatiated");
         }
 
@@ -38,6 +40,7 @@ namespace Rangeman
             SetProgressMessage("Looking for Casio GPR-B1000 device. Please connect your watch.");
 
             DownloadHeadersButton.Clicked -= DownloadHeaders_Clicked;
+            DisableOtherTabs();
 
             await bluetoothConnectorService.FindAndConnectToWatch(SetProgressMessage, async (connection) =>
             {
@@ -61,7 +64,20 @@ namespace Rangeman
             },
             () => ViewModel.DisconnectButtonIsVisible = true);
 
+            EnableOtherTabs();
             DownloadHeadersButton.Clicked += DownloadHeaders_Clicked;
+        }
+
+        private void DisableOtherTabs()
+        {
+            appShellViewModel.ConfigPageIsEnabled = false;
+            appShellViewModel.MapPageIsEnabled = false;
+        }
+
+        private void EnableOtherTabs()
+        {
+            appShellViewModel.ConfigPageIsEnabled = true;
+            appShellViewModel.MapPageIsEnabled = true;
         }
 
         private async void DownloadSaveGPXButton_Clicked(object sender, EventArgs e)
@@ -70,6 +86,7 @@ namespace Rangeman
             SetProgressMessage("Looking for Casio GPR-B1000 device. Please connect your watch.");
 
             DownloadSaveGPXButton.Clicked -= DownloadSaveGPXButton_Clicked;
+            DisableOtherTabs();
 
             await bluetoothConnectorService.FindAndConnectToWatch(SetProgressMessage, async (connection) =>
             {
@@ -107,6 +124,7 @@ namespace Rangeman
             },
             () => ViewModel.DisconnectButtonIsVisible = true);
 
+            DisableOtherTabs();
             DownloadSaveGPXButton.Clicked += DownloadSaveGPXButton_Clicked;
             //Save selected log header as GPX
         }
@@ -144,6 +162,20 @@ namespace Rangeman
             var fileName = $"GPR-B1000-Route-{headerTime.Year}-{headerTime.Month}-{headerTime.Day}-2.gpx";
             var path = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryDocuments).AbsolutePath;
             string filePath = System.IO.Path.Combine(path, fileName);
+
+            if(File.Exists(filePath))
+            {
+                var action = await DisplayAlert("Overwrite?", "File already exists. Would you like to overwrite it ?", "Yes", "No");
+                if(action)
+                {
+                    File.Delete(filePath);
+                }
+                else
+                {
+                    return;
+                }
+            }
+
             gpx.ToFile(filePath);
             await DisplayAlert("Alert", $"File saved here: {filePath}", "OK");
         }

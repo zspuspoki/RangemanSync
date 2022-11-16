@@ -15,23 +15,13 @@ namespace Rangeman
     public partial class MapPage : ContentPage, IMapPageView
     {
         private BluetoothConnectorService bluetoothConnectorService;
+        private readonly AppShellViewModel appShellViewModel;
 
-        public MapPage(BluetoothConnectorService bluetoothConnectorService)
+        public MapPage(BluetoothConnectorService bluetoothConnectorService, AppShellViewModel appShellViewModel)
         {
             InitializeComponent();
             this.bluetoothConnectorService = bluetoothConnectorService;
-        }
-
-        private void AddressPanelViewModel_PlaceOnMapClicked(object sender, Position p)
-        {
-            var pinTitle = GetPinTitle(p.Longitude, p.Latitude);
-
-            if (pinTitle == null)
-            {
-                return;
-            }
-
-            ShowPinOnMap(pinTitle, p, true);
+            this.appShellViewModel = appShellViewModel;
         }
 
         protected override async void OnAppearing()
@@ -126,6 +116,7 @@ namespace Rangeman
             }
 
             SendButton.Clicked -= SendButton_Clicked;
+            DisableOtherTabs();
 
             ViewModel.ProgressMessage = "Looking for Casio GPR-B1000 device. Please connect your watch.";
             await bluetoothConnectorService.FindAndConnectToWatch((message) => ViewModel.ProgressMessage = message,
@@ -144,6 +135,7 @@ namespace Rangeman
 
                     Debug.WriteLine("Map tab - after awaiting SendRoute()");
                     ViewModel.DisconnectButtonIsVisible = false;
+                    ViewModel.ProgressBarIsVisible = false;
 
                     return true;
                 },
@@ -154,7 +146,20 @@ namespace Rangeman
                 },
                 () => ViewModel.DisconnectButtonIsVisible = true);
 
+            EnableOtherTabs();
             SendButton.Clicked += SendButton_Clicked;
+        }
+
+        private void EnableOtherTabs()
+        {
+            appShellViewModel.ConfigPageIsEnabled = true;
+            appShellViewModel.DownloadPageIsEnabled = true;
+        }
+
+        private void DisableOtherTabs()
+        {
+            appShellViewModel.ConfigPageIsEnabled = false;
+            appShellViewModel.DownloadPageIsEnabled = false;
         }
 
         private void WatchDataSenderService_ProgressChanged(object sender, DataSenderProgressEventArgs e)

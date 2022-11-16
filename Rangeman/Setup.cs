@@ -90,6 +90,7 @@ namespace Rangeman
             });
 
             serviceCollection.AddViews();
+            serviceCollection.AddSingleton<AppShellViewModel>();
 
             return serviceCollection;
         }

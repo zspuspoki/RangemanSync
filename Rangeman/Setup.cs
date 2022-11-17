@@ -1,7 +1,4 @@
-﻿using Android.Views;
-using AndroidX.Lifecycle;
-using BruTile.Wmts.Generated;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using nexus.protocols.ble;
@@ -52,7 +49,7 @@ namespace Rangeman
                 
                 var loggerConfiguration = new LoggerConfiguration()
                     .ReadFrom.Configuration(configurationRoot.GetSection("Logging"))
-                    .WriteTo.File(Path.Combine(path, "RangemanSyncLogs", "Log.log"), 
+                    .WriteTo.File(Path.Combine(path, Constants.LogSubFolder, "Log.log"), 
                         rollingInterval: RollingInterval.Day,
                         outputTemplate: "{Timestamp:HH:mm:ss} [{Level:u3}] {Message:lj} ({SourceContext}) {Exception}{NewLine}");
 

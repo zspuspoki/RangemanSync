@@ -57,6 +57,7 @@
     </Compile>
     <Compile Include="AppShellViewModel.cs" />
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="Constants.cs" />
     <Compile Include="IPageLifeCycleAware.cs" />
     <Compile Include="MyDataTemplateExtension.cs" />
     <Compile Include="RouteFactory.cs" />

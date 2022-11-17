@@ -1,5 +1,6 @@
-﻿using System;
+﻿using System.IO;
 using System.Windows.Input;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 
 namespace Rangeman
@@ -7,6 +8,8 @@ namespace Rangeman
     internal class ConfigPageViewModel : ViewModelBase
     {
         private bool useMbTilesChecked;
+        private bool sendLogFilesChecked;
+
         private ICommand applyCommand;
         private readonly MapPageViewModel mapPageViewModel;
 
@@ -23,6 +26,16 @@ namespace Rangeman
                 useMbTilesChecked = value; 
                 OnPropertyChanged("UseMbTilesChecked"); 
             } 
+        }
+
+        public bool SendLogFilesChecked
+        {
+            get => sendLogFilesChecked;
+            set
+            {
+                sendLogFilesChecked = value;
+                OnPropertyChanged("SendLogFilesChecked");
+            }
         }
 
         public ICommand ApplyCommand
@@ -43,12 +56,38 @@ namespace Rangeman
             return true;
         }
 
-        private void ApplySettings()
+        private async void ApplySettings()
         {
             if (UseMbTilesChecked)
             {
                 mapPageViewModel.UpdateMapToUseMbTilesFile();
             }
+
+            if(sendLogFilesChecked)
+            {
+                SendEmailToDevSupport();
+            }
+        }
+
+        private async void SendEmailToDevSupport()
+        {
+            var message = new EmailMessage
+            {
+                Subject = "Error report",
+                Body = "Dear Support, Something is wrong with my app, please help. I've attached the logs.",
+            };
+
+            var path = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryDocuments).AbsolutePath;
+            var logDir = Path.Combine(path, Constants.LogSubFolder);
+            var files = Directory.GetFiles(logDir);
+
+            foreach(var file in files)
+            {
+                message.Attachments.Add(new EmailAttachment(file));
+            }
+
+            await Email.ComposeAsync(message);
+            SendLogFilesChecked = false;
         }
     }
 }

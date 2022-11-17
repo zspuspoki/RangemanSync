@@ -1,48 +1,46 @@
 ﻿using Android.Content;
-using Mapsui.Projection;
-using Mapsui.Utilities;
-using Mapsui;
-using System;
-using Xamarin.Essentials;
-using Mapsui.Layers;
-using SQLite;
-using BruTile.MbTiles;
 using Rangeman.Views.Map;
 using Xamarin.Forms;
-using Mapsui.Geometries;
-using Mapsui.Providers;
-using Mapsui.Styles;
-using System.Collections.Generic;
-using Brush = Mapsui.Styles.Brush;
-using Point = Mapsui.Geometries.Point;
-using System.Linq;
+using Rangeman.Services.BluetoothConnector;
+using Rangeman.WatchDataSender;
+using System.Diagnostics;
+using System.Windows.Input;
 
 namespace Rangeman
 {
     public class MapPageViewModel : ViewModelBase
     {
-        private const string LinesLayerName = "LinesBetweenPins";
-
         private bool addressPanelIsVisible = false;
         private bool progressBarIsVisible;
         private string progressBarPercentageMessage;
         private string progressMessage;
         private double progressBarPercentageNumber;
-        private Mapsui.Map map;
+
         private NodesViewModel nodesViewModel;
         private AddressPanelViewModel addressPanelViewModel;
+        private readonly IMapPageView mapPageView;
+        private readonly AppShellViewModel appShellViewModel;
+        private readonly BluetoothConnectorService bluetoothConnectorService;
         private RowDefinitionCollection gridViewRows;
         private bool watchCommandButtonsAreVisible = true;
         private bool disconnectButtonIsVisible = false;
 
+        private bool sendButtonCanbePressed = true;
+        private bool deleteButtonCanbePressed = true;
+        private bool selectButtonCanbePressed = true;
+        private bool addressButtonCanbePressed = true;
+        private bool disconnectButtonCanbePressed = true;
 
         public MapPageViewModel(Context context, NodesViewModel nodesViewModel, 
-            AddressPanelViewModel addressPanelViewModel)
+            AddressPanelViewModel addressPanelViewModel, IMapPageView mapPageView, 
+            AppShellViewModel appShellViewModel, BluetoothConnectorService bluetoothConnectorService)
         {
             Context = context;
             this.nodesViewModel = nodesViewModel;
             this.addressPanelViewModel = addressPanelViewModel;
-
+            this.mapPageView = mapPageView;
+            this.appShellViewModel = appShellViewModel;
+            this.bluetoothConnectorService = bluetoothConnectorService;
             gridViewRows = new RowDefinitionCollection
             {
                 new RowDefinition { Height = new GridLength(2, GridUnitType.Star) },
@@ -50,62 +48,11 @@ namespace Rangeman
             };
         }
 
-        /// <summary>
-        /// Creates a layer with lines between the pin points
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="geoWaypoints"></param>
-        /// <returns></returns>
-        public void AddLinesBetweenPinsAsLayer()
-        {
-            this.Map.Layers.Remove((layer) => layer.Name == LinesLayerName);
-
-            var points = new List<Point>();
-            foreach (var wp in NodesViewModel.GetLineConnectableCoordinatesFromStartToGoal())
-            {
-                if (wp.Longitude != 0 && wp.Latitude != 0)
-                {
-                    points.Add(SphericalMercator.FromLonLat(wp.Longitude, wp.Latitude));
-                }
-            }
-
-            Feature lineStringFeature = new Feature()
-            {
-                Geometry = new LineString(points)
-            };
-
-            IStyle linestringStyle = new VectorStyle()
-            {
-                Fill = null,
-                Outline = null,
-                Line = { Color = Mapsui.Styles.Color.FromString("Blue"), Width = 4 }
-            };
-
-            lineStringFeature.Styles.Add(linestringStyle);
-
-            MemoryProvider memoryProvider = new MemoryProvider(lineStringFeature);
-
-            var linesLayer = new MemoryLayer
-            {
-                DataSource = memoryProvider,
-                Name = LinesLayerName,
-                Style = null
-            };
-
-            this.map.Layers.Add(linesLayer);
-        }
+       
 
         public void UpdateMapToUseMbTilesFile()
         {
-            var map = new Mapsui.Map();
-            var fileName = "map.mbtiles";
-            var path = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryDocuments).AbsolutePath;
-            string filePath = System.IO.Path.Combine(path, fileName);
-
-            var mbTilesLayer = CreateMbTilesLayer(filePath, "regular");
-            map.Layers.Add(mbTilesLayer);
-
-            this.map = map;
+            mapPageView.UpdateMapToUseMbTilesFile();            
         }
 
         public bool ToggleAddressPanelVisibility()
@@ -132,51 +79,110 @@ namespace Rangeman
             return addressPanelIsVisible;
         }
 
-        private async void InitializeMap()
+        #region Button commands
+        #region Button click handlers
+        private async void SendButton_Clicked()
         {
-            map = new Mapsui.Map
+            Debug.WriteLine("--- MapPage - start SendButton_Clicked");
+
+            if (!NodesViewModel.HasRoute())
             {
-                CRS = "EPSG:3857",
-                Transformation = new MinimalTransformation()
-            };
+                await mapPageView.DisplayAlert("Alert", "Please create a route before pressing Send.", "OK");
+                return;
+            }
 
-            var tileLayer = OpenStreetMap.CreateTileLayer();
+            sendButtonCanbePressed = false;
+            DisableOtherTabs();
 
-            map.Layers.Add(tileLayer);
-            map.Widgets.Add(new Mapsui.Widgets.ScaleBar.ScaleBarWidget(map)
-            {
-                TextAlignment = Mapsui.Widgets.Alignment.Center,
-                HorizontalAlignment = Mapsui.Widgets.HorizontalAlignment.Left,
-                VerticalAlignment = Mapsui.Widgets.VerticalAlignment.Bottom
-            });
-
-            var location = await Geolocation.GetLocationAsync();
-            var smc = SphericalMercator.FromLonLat(location.Longitude, location.Latitude);
-
-            var mapResolutions = map.Resolutions;
-            map.Home = n => n.NavigateTo(smc, map.Resolutions[17]);
-        }
-
-        private static TileLayer CreateMbTilesLayer(string path, string name)
-        {
-            var mbTilesTileSource = new MbTilesTileSource(new SQLiteConnectionString(path, true));
-            var mbTilesLayer = new TileLayer(mbTilesTileSource) { Name = name };
-            return mbTilesLayer;
-        }
-
-        #region Properties
-        public Mapsui.Map Map
-        {
-            get
-            {
-                if (map == null)
+            ProgressMessage = "Looking for Casio GPR-B1000 device. Please connect your watch.";
+            await bluetoothConnectorService.FindAndConnectToWatch((message) => ProgressMessage = message,
+                async (connection) =>
                 {
-                    InitializeMap();
-                }
+                    Debug.WriteLine("Map tab - Device Connection was successful");
+                    ProgressMessage = "Connected to GPR-B1000 watch.";
 
-                return map;
+                    MapPageDataConverter mapPageDataConverter = new MapPageDataConverter(NodesViewModel);
+
+                    var watchDataSenderService = new WatchDataSenderService(connection, mapPageDataConverter.GetDataByteArray(),
+                        mapPageDataConverter.GetHeaderByteArray());
+
+                    watchDataSenderService.ProgressChanged += WatchDataSenderService_ProgressChanged;
+                    await watchDataSenderService.SendRoute();
+
+                    Debug.WriteLine("Map tab - after awaiting SendRoute()");
+                    DisconnectButtonIsVisible = false;
+                    ProgressBarIsVisible = false;
+
+                    return true;
+                },
+                async () =>
+                {
+                    ProgressMessage = "An error occured during sending watch commands. Please try to connect again";
+                    return true;
+                },
+                () => DisconnectButtonIsVisible = true);
+
+            EnableOtherTabs();
+            sendButtonCanbePressed = true;
+        }
+
+        private void DeleteNodeButton_Clicked()
+        {
+            NodesViewModel.DeleteSelectedNode();
+            mapPageView.RemoveSelectedPin();
+            mapPageView.AddLinesBetweenPinsAsLayer();
+            ProgressMessage = "Successfully deleted node.";
+        }
+
+        private void SelectNodeButton_Clicked()
+        {
+            NodesViewModel.ClickOnSelectNode();
+        }
+
+        private async void AddressButton_Clicked()
+        {
+            var addressPanelIsVisible = ToggleAddressPanelVisibility();
+
+            if (addressPanelIsVisible)
+            {
+                await AddressPanelViewModel.UpdateUserPositionAsync();
             }
         }
+
+        private async void DisconnectButton_Clicked()
+        {
+            await bluetoothConnectorService.DisconnectFromWatch((m) => ProgressMessage = m);
+            DisconnectButtonIsVisible = false;
+        }
+        #endregion
+
+        #region Helper methods
+        private void WatchDataSenderService_ProgressChanged(object sender, DataSenderProgressEventArgs e)
+        {
+            ProgressBarIsVisible = true;
+            ProgressMessage = e.Text;
+            ProgressBarPercentageMessage = e.PercentageText;
+            ProgressBarPercentageNumber = e.PercentageNumber;
+
+            Debug.WriteLine($"Current progress bar percentage number: {ProgressBarPercentageNumber}");
+        }
+
+        private void EnableOtherTabs()
+        {
+            appShellViewModel.ConfigPageIsEnabled = true;
+            appShellViewModel.DownloadPageIsEnabled = true;
+        }
+
+        private void DisableOtherTabs()
+        {
+            appShellViewModel.ConfigPageIsEnabled = false;
+            appShellViewModel.DownloadPageIsEnabled = false;
+        }
+        #endregion
+
+        #endregion
+
+        #region Properties
 
         public bool ProgressBarIsVisible { get => progressBarIsVisible; set { progressBarIsVisible = value; OnPropertyChanged("ProgressBarIsVisible"); } }
         public string ProgressBarPercentageMessage { get => progressBarPercentageMessage; set { progressBarPercentageMessage = value; OnPropertyChanged("ProgressBarPercentageMessage"); } }
@@ -197,6 +203,74 @@ namespace Rangeman
                 WatchCommandButtonsAreVisible = !value;
             }
         }
+
+        #region Button Commands
+        public ICommand SendCommand
+        {
+            get
+            {
+                if (applyCommand == null)
+                {
+                    applyCommand = new Command((o) => ApplySettings(), (o) => CanApplySettings());
+                }
+
+                return applyCommand;
+            }
+        }
+
+        public ICommand DeleteCommand
+        {
+            get
+            {
+                if (applyCommand == null)
+                {
+                    applyCommand = new Command((o) => ApplySettings(), (o) => CanApplySettings());
+                }
+
+                return applyCommand;
+            }
+        }
+
+        public ICommand SelectCommand
+        {
+            get
+            {
+                if (applyCommand == null)
+                {
+                    applyCommand = new Command((o) => ApplySettings(), (o) => CanApplySettings());
+                }
+
+                return applyCommand;
+            }
+        }
+
+        public ICommand AddressCommand
+        {
+            get
+            {
+                if (applyCommand == null)
+                {
+                    applyCommand = new Command((o) => ApplySettings(), (o) => CanApplySettings());
+                }
+
+                return applyCommand;
+            }
+        }
+
+        public ICommand DisconnectCommand
+        {
+            get
+            {
+                if (applyCommand == null)
+                {
+                    applyCommand = new Command((o) => ApplySettings(), (o) => CanApplySettings());
+                }
+
+                return applyCommand;
+            }
+        }
+
+        #endregion
         #endregion
     }
 }

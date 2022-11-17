@@ -1,36 +1,72 @@
-﻿using Mapsui.UI.Forms;
+﻿using BruTile.MbTiles;
+using Mapsui;
+using Mapsui.Geometries;
+using Mapsui.Layers;
+using Mapsui.Projection;
+using Mapsui.Providers;
+using Mapsui.Styles;
+using Mapsui.UI.Forms;
+using Mapsui.Utilities;
 using nexus.protocols.ble;
 using Rangeman.Services.BluetoothConnector;
 using Rangeman.Views.Map;
 using Rangeman.WatchDataSender;
+using SQLite;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
+using Point = Mapsui.Geometries.Point;
 
 namespace Rangeman
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class MapPage : ContentPage, IMapPageView
     {
-        private BluetoothConnectorService bluetoothConnectorService;
-        private readonly AppShellViewModel appShellViewModel;
+        private const string LinesLayerName = "LinesBetweenPins";
 
-        public MapPage(BluetoothConnectorService bluetoothConnectorService, AppShellViewModel appShellViewModel)
+        public MapPage()
         {
             InitializeComponent();
-            this.bluetoothConnectorService = bluetoothConnectorService;
-            this.appShellViewModel = appShellViewModel;
+
+            InitializeMap();
         }
+
+        private async void InitializeMap()
+        {
+            var map = new Mapsui.Map
+            {
+                CRS = "EPSG:3857",
+                Transformation = new MinimalTransformation()
+            };
+
+            var tileLayer = OpenStreetMap.CreateTileLayer();
+
+            map.Layers.Add(tileLayer);
+            map.Widgets.Add(new Mapsui.Widgets.ScaleBar.ScaleBarWidget(map)
+            {
+                TextAlignment = Mapsui.Widgets.Alignment.Center,
+                HorizontalAlignment = Mapsui.Widgets.HorizontalAlignment.Left,
+                VerticalAlignment = Mapsui.Widgets.VerticalAlignment.Bottom
+            });
+
+            var location = await Geolocation.GetLocationAsync();
+            var smc = SphericalMercator.FromLonLat(location.Longitude, location.Latitude);
+
+            var mapResolutions = map.Resolutions;
+            map.Home = n => n.NavigateTo(smc, map.Resolutions[17]);
+
+            mapView.Map = map;
+        }
+
+
 
         protected override async void OnAppearing()
         {
             base.OnAppearing();
-            if (BindingContext is MapPageViewModel mapPageViewModel)
-            {
-                mapView.Map = mapPageViewModel.Map;
-            }
 
             var location = await Geolocation.GetLastKnownLocationAsync();
 
@@ -52,6 +88,51 @@ namespace Rangeman
             }
 
             ShowPinOnMap(pinTitle, e.Point);
+        }
+
+        /// <summary>
+        /// Creates a layer with lines between the pin points
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="geoWaypoints"></param>
+        /// <returns></returns>
+        public void AddLinesBetweenPinsAsLayer()
+        {
+            mapView.Map.Layers.Remove((layer) => layer.Name == LinesLayerName);
+
+            var points = new List<Point>();
+            foreach (var wp in ViewModel.NodesViewModel.GetLineConnectableCoordinatesFromStartToGoal())
+            {
+                if (wp.Longitude != 0 && wp.Latitude != 0)
+                {
+                    points.Add(SphericalMercator.FromLonLat(wp.Longitude, wp.Latitude));
+                }
+            }
+
+            Feature lineStringFeature = new Feature()
+            {
+                Geometry = new LineString(points)
+            };
+
+            IStyle linestringStyle = new VectorStyle()
+            {
+                Fill = null,
+                Outline = null,
+                Line = { Color = Mapsui.Styles.Color.FromString("Blue"), Width = 4 }
+            };
+
+            lineStringFeature.Styles.Add(linestringStyle);
+
+            MemoryProvider memoryProvider = new MemoryProvider(lineStringFeature);
+
+            var linesLayer = new MemoryLayer
+            {
+                DataSource = memoryProvider,
+                Name = LinesLayerName,
+                Style = null
+            };
+
+            mapView.Map.Layers.Add(linesLayer);
         }
 
         private string GetPinTitle(double longitude, double latitude)
@@ -102,115 +183,7 @@ namespace Rangeman
 
             mapView.Pins.Add(pin);
             pin.ShowCallout();
-            ViewModel.AddLinesBetweenPinsAsLayer();
-        }
-
-        private async void SendButton_Clicked(object sender, EventArgs e)
-        {
-            Debug.WriteLine("--- MapPage - start SendButton_Clicked");
-
-            if (!ViewModel.NodesViewModel.HasRoute())
-            {
-                await DisplayAlert("Alert", "Please create a route before pressing Send.", "OK");
-                return;
-            }
-
-            SendButton.Clicked -= SendButton_Clicked;
-            DisableOtherTabs();
-
-            ViewModel.ProgressMessage = "Looking for Casio GPR-B1000 device. Please connect your watch.";
-            await bluetoothConnectorService.FindAndConnectToWatch((message) => ViewModel.ProgressMessage = message,
-                async (connection) =>
-                {
-                    Debug.WriteLine("Map tab - Device Connection was successful");
-                    ViewModel.ProgressMessage = "Connected to GPR-B1000 watch.";
-
-                    MapPageDataConverter mapPageDataConverter = new MapPageDataConverter(ViewModel.NodesViewModel);
-
-                    var watchDataSenderService = new WatchDataSenderService(connection, mapPageDataConverter.GetDataByteArray(),
-                        mapPageDataConverter.GetHeaderByteArray());
-
-                    watchDataSenderService.ProgressChanged += WatchDataSenderService_ProgressChanged;
-                    await watchDataSenderService.SendRoute();
-
-                    Debug.WriteLine("Map tab - after awaiting SendRoute()");
-                    ViewModel.DisconnectButtonIsVisible = false;
-                    ViewModel.ProgressBarIsVisible = false;
-
-                    return true;
-                },
-                async () =>
-                {
-                    ViewModel.ProgressMessage = "An error occured during sending watch commands. Please try to connect again";
-                    return true;
-                },
-                () => ViewModel.DisconnectButtonIsVisible = true);
-
-            EnableOtherTabs();
-            SendButton.Clicked += SendButton_Clicked;
-        }
-
-        private void EnableOtherTabs()
-        {
-            appShellViewModel.ConfigPageIsEnabled = true;
-            appShellViewModel.DownloadPageIsEnabled = true;
-        }
-
-        private void DisableOtherTabs()
-        {
-            appShellViewModel.ConfigPageIsEnabled = false;
-            appShellViewModel.DownloadPageIsEnabled = false;
-        }
-
-        private void WatchDataSenderService_ProgressChanged(object sender, DataSenderProgressEventArgs e)
-        {
-            if (sender is WatchDataSenderService)
-            {
-                ViewModel.ProgressBarIsVisible = true;
-                ViewModel.ProgressMessage = e.Text;
-                ViewModel.ProgressBarPercentageMessage = e.PercentageText;
-                ViewModel.ProgressBarPercentageNumber = e.PercentageNumber;
-
-                Debug.WriteLine($"Current progress bar percentage number: {ViewModel.ProgressBarPercentageNumber}");
-            }
-        }
-
-        private void DeleteNodeButton_Clicked(object sender, EventArgs e)
-        {
-            if (BindingContext is MapPageViewModel mapPageViewModel)
-            {
-                mapPageViewModel.NodesViewModel.DeleteSelectedNode();
-                mapView.Pins.Remove(mapView.SelectedPin);
-                ViewModel.AddLinesBetweenPinsAsLayer();
-                mapPageViewModel.ProgressMessage = "Successfully deleted node.";
-            }
-        }
-
-        private void SelectNodeButton_Clicked(object sender, EventArgs e)
-        {
-            if (BindingContext is MapPageViewModel mapPageViewModel)
-            {
-                mapPageViewModel.NodesViewModel.ClickOnSelectNode();
-            }
-        }
-
-        private async void AddressButton_Clicked(object sender, EventArgs e)
-        {
-            if (BindingContext is MapPageViewModel mapPageViewModel)
-            {
-                var addressPanelIsVisible = mapPageViewModel.ToggleAddressPanelVisibility();
-
-                if(addressPanelIsVisible)
-                {
-                    await mapPageViewModel.AddressPanelViewModel.UpdateUserPositionAsync();
-                }
-            }
-        }
-
-        private async void DisconnectButton_Clicked(object sender, EventArgs e)
-        {
-            await bluetoothConnectorService.DisconnectFromWatch((m) => ViewModel.ProgressMessage = m);
-            ViewModel.DisconnectButtonIsVisible = false;
+            AddLinesBetweenPinsAsLayer();
         }
 
         public void PlaceOnMapClicked(Position p)
@@ -223,6 +196,36 @@ namespace Rangeman
             }
 
             ShowPinOnMap(pinTitle, p, true);
+        }
+
+        public void UpdateMapToUseMbTilesFile()
+        {
+            var map = new Mapsui.Map();
+            var fileName = "map.mbtiles";
+            var path = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryDocuments).AbsolutePath;
+            string filePath = System.IO.Path.Combine(path, fileName);
+
+            var mbTilesLayer = CreateMbTilesLayer(filePath, "regular");
+            map.Layers.Add(mbTilesLayer);
+
+            mapView.Map = map;
+        }
+
+        private static TileLayer CreateMbTilesLayer(string path, string name)
+        {
+            var mbTilesTileSource = new MbTilesTileSource(new SQLiteConnectionString(path, true));
+            var mbTilesLayer = new TileLayer(mbTilesTileSource) { Name = name };
+            return mbTilesLayer;
+        }
+
+        public void RemoveSelectedPin()
+        {
+            mapView.Pins.Remove(mapView.SelectedPin);
+        }
+
+        Task IMapPageView.DisplayAlert(string title, string message, string button)
+        {
+            return DisplayAlert(title, message, button);
         }
 
         public MapPageViewModel ViewModel

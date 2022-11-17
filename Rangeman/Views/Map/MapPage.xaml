@@ -42,25 +42,25 @@
                       AbsoluteLayout.LayoutFlags="PositionProportional"
                       HeightRequest="65"
                       WidthRequest="65"
-                      CornerRadius="25" Text="Send" Clicked="SendButton_Clicked" x:Name="SendButton" IsVisible="{Binding WatchCommandButtonsAreVisible}" />
+                      CornerRadius="25" Text="Send" x:Name="SendButton" IsVisible="{Binding WatchCommandButtonsAreVisible}" />
 
                 <Button AbsoluteLayout.LayoutBounds="0.5 , 1 , AutoSize, AutoSize"
                       AbsoluteLayout.LayoutFlags="PositionProportional"
                       HeightRequest="65"
                       WidthRequest="65"
-                      CornerRadius="25" Text="Del node" x:Name="DeleteNodeButton" Clicked="DeleteNodeButton_Clicked" IsVisible="{Binding WatchCommandButtonsAreVisible}" />
+                      CornerRadius="25" Text="Del node" x:Name="DeleteNodeButton" IsVisible="{Binding WatchCommandButtonsAreVisible}" />
 
                 <Button AbsoluteLayout.LayoutBounds="1 , 1 , AutoSize, AutoSize"
                       AbsoluteLayout.LayoutFlags="PositionProportional"
                       HeightRequest="65"
                       WidthRequest="65"
-                      CornerRadius="25" x:Name="SelectNodeButton" Clicked="SelectNodeButton_Clicked" Text="{Binding NodesViewModel.CurrentSelectedNode}" IsVisible="{Binding WatchCommandButtonsAreVisible}"/>
+                      CornerRadius="25" x:Name="SelectNodeButton" Text="{Binding NodesViewModel.CurrentSelectedNode}" IsVisible="{Binding WatchCommandButtonsAreVisible}"/>
 
                 <Button AbsoluteLayout.LayoutBounds="1 , 1 , AutoSize, AutoSize"
                       AbsoluteLayout.LayoutFlags="PositionProportional"
                       HeightRequest="65"
                       WidthRequest="65"
-                      CornerRadius="25" x:Name="DisconnectButton" Clicked="DisconnectButton_Clicked" Text="End"  IsVisible="{Binding DisconnectButtonIsVisible}"/>
+                      CornerRadius="25" x:Name="DisconnectButton" Text="End"  IsVisible="{Binding DisconnectButtonIsVisible}"/>
 
 
                 <Button AbsoluteLayout.LayoutBounds="0, 0.5, AutoSize, AutoSize"

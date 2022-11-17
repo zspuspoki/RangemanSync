@@ -10,5 +10,6 @@ namespace Rangeman.Views.Map
         void AddLinesBetweenPinsAsLayer();
         void RemoveSelectedPin();
         Task DisplayAlert(string title, string message, string button);
+        void ShowOnMap(Position p);
     }
 }

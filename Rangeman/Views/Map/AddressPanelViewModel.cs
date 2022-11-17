@@ -13,6 +13,7 @@ namespace Rangeman.Views.Map
         private string city;
         private string country;
         private ICommand placeOnMapCommand;
+        private ICommand showOnMap;
         private Position position;
         private bool useGPSCoordinatesInsteadOfAddress;
         private bool canDisplayAddressEntries = true;
@@ -25,7 +26,30 @@ namespace Rangeman.Views.Map
             this.mapPageView = mapPageView;
         }
 
-        public async void PlaceOnMap()
+        public void PlaceOnMap()
+        {
+            SetPosition();
+            mapPageView.PlaceOnMapClicked(position);
+        }
+
+        public void ShowOnMap()
+        {
+            SetPosition();
+            mapPageView.ShowOnMap(position);
+        }
+
+        public async Task UpdateUserPositionAsync()
+        {
+            var location = await Geolocation.GetLastKnownLocationAsync();
+            position = new Position(location.Latitude, location.Longitude);
+            
+            Longitude = position.Longitude;
+            Latitude = position.Latitude;
+            
+            await SetAddressAsync(position);
+        }
+
+        private async void SetPosition()
         {
             double latitude = this.latitude;
             double longitude = this.longitude;
@@ -40,25 +64,12 @@ namespace Rangeman.Views.Map
                 longitude = location.Longitude;
             }
 
-            if(!IsLongitudeValid || !IsLatitudeValid)
+            if (!IsLongitudeValid || !IsLatitudeValid)
             {
                 return;
             }
 
             position = new Position(latitude, longitude);
-
-            mapPageView.PlaceOnMapClicked(position);
-        }
-
-        public async Task UpdateUserPositionAsync()
-        {
-            var location = await Geolocation.GetLastKnownLocationAsync();
-            position = new Position(location.Latitude, location.Longitude);
-            
-            Longitude = position.Longitude;
-            Latitude = position.Latitude;
-            
-            await SetAddressAsync(position);
         }
 
         private async Task SetAddressAsync(Position p)
@@ -83,6 +94,19 @@ namespace Rangeman.Views.Map
                 }
 
                 return placeOnMapCommand;
+            }
+        }
+
+        public ICommand ShowOnMapCommand
+        {
+            get
+            {
+                if (showOnMap == null)
+                {
+                    showOnMap = new Command((o) => ShowOnMap(), (o) => true);
+                }
+
+                return showOnMap;
             }
         }
 

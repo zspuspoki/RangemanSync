@@ -1,4 +1,5 @@
-﻿using BruTile.MbTiles;
+﻿using Android.Locations;
+using BruTile.MbTiles;
 using Mapsui;
 using Mapsui.Geometries;
 using Mapsui.Layers;
@@ -228,6 +229,12 @@ namespace Rangeman
         Task IMapPageView.DisplayAlert(string title, string message, string button)
         {
             return DisplayAlert(title, message, button);
+        }
+
+        public void ShowOnMap(Position position)
+        {
+            var smc = SphericalMercator.FromLonLat(position.Longitude, position.Latitude);
+            mapView.Navigator.NavigateTo(smc, mapView.Map.Resolutions[17]);
         }
 
         public MapPageViewModel ViewModel

@@ -127,7 +127,10 @@
                                                            IsValid="{Binding AddressPanelViewModel.IsLongitudeValid}"/>
                         </Entry.Behaviors>
                     </Entry>
-                    <Button Text="Place on map"
+                    <Button Text="Show on map"
+                        Margin="16,0" Command="{Binding AddressPanelViewModel.ShowOnMapCommand}" />
+
+                    <Button Text="Insert pin here"
                         Margin="16,0" Command="{Binding AddressPanelViewModel.PlaceOnMapCommand}" />
                 </StackLayout>
             </ScrollView>

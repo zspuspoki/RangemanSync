@@ -12,7 +12,7 @@ namespace Rangeman
         {
             ServiceProvider = serviceProvider;
 
-            Routing.RegisterRoute("Download", ServiceProvider.GetRequiredService<MyRouteFactory<MainPage>>());
+            Routing.RegisterRoute("Download", ServiceProvider.GetRequiredService<MyRouteFactory<DownloadPage>>());
             Routing.RegisterRoute("Map", ServiceProvider.GetRequiredService<MyRouteFactory<MapPage>>());
             Routing.RegisterRoute("Config", ServiceProvider.GetRequiredService<MyRouteFactory<ConfigPage>>());
 

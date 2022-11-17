@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using nexus.protocols.ble;
 using Rangeman.Services.BluetoothConnector;
+using Rangeman.Views.Download;
 using Rangeman.Views.Map;
 using Serilog;
 using System;
@@ -33,18 +34,13 @@ namespace Rangeman
         public static IServiceCollection AddViews(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddViewTransient<ConfigPage, ConfigPageViewModel>();
-            serviceCollection.AddViewTransient<MainPage, MainPageViewModel>();
+
+            serviceCollection.AddSingleton<IDownloadPageView, DownloadPage>();
+            serviceCollection.AddViewSingleton<IDownloadPageView, DownloadPage, DownloadPageViewModel>();
+
             serviceCollection.AddSingleton<IMapPageView, MapPage>();
-            serviceCollection.AddSingleton<MapPage>((ctx) =>
-            {
-                var view = ctx.GetRequiredService<IMapPageView>() as MapPage;
-                view.BindingContext = ctx.GetRequiredService<MapPageViewModel>();
+            serviceCollection.AddViewSingleton<IMapPageView, MapPage, MapPageViewModel>();
 
-                view.Appearing += (sender, args) => (((BindableObject)sender).BindingContext as IPageLifeCycleAware)?.OnAppearing();
-                view.Disappearing += (sender, args) => (((BindableObject)sender).BindingContext as IPageLifeCycleAware)?.OnDisappearing();
-
-                return view;
-            });
             return serviceCollection;
         }
 
@@ -74,7 +70,7 @@ namespace Rangeman
         public static IServiceCollection ConfigureRangemanProject(this IServiceCollection serviceCollection,
             IConfigurationRoot configurationRoot)
         {
-            serviceCollection.AddViewModels<MainPageViewModel>();
+            serviceCollection.AddViewModels<DownloadPageViewModel>();
             serviceCollection.AddSingleton<MapPageViewModel>();
             serviceCollection.AddViewModels<NodesViewModel>();
             serviceCollection.AddViewModels<AddressPanelViewModel>();
@@ -127,11 +123,14 @@ namespace Rangeman
             });
         }
 
-        private static IServiceCollection AddView<TView>(this IServiceCollection serviceCollection) where TView : Page
+        private static IServiceCollection AddViewSingleton<TViewInterface, TView, TViewModel>(this IServiceCollection serviceCollection) where TView : Page
         {
-            return serviceCollection.AddTransient<TView>(serviceProvider =>
+            return serviceCollection.AddSingleton<TView>(serviceProvider =>
             {
-                TView view = ActivatorUtilities.CreateInstance<TView>(serviceProvider);
+                var viewInterface= serviceProvider.GetRequiredService<TViewInterface>();
+                TView view = (TView)Convert.ChangeType(viewInterface, typeof(TView));
+
+                view.BindingContext = serviceProvider.GetRequiredService<TViewModel>();
 
                 view.Appearing += (sender, args) => (((BindableObject)sender).BindingContext as IPageLifeCycleAware)?.OnAppearing();
                 view.Disappearing += (sender, args) => (((BindableObject)sender).BindingContext as IPageLifeCycleAware)?.OnDisappearing();

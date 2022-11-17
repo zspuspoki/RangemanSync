@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Rangeman.MainPage">
+             x:Class="Rangeman.DownloadPage">
     <ContentPage.Content>
         <StackLayout>
             <Label Text="{Binding ProgressMessage}" TextColor="Red" />
@@ -18,9 +18,9 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-            <Button Text="Download Headers" Clicked="DownloadHeaders_Clicked" x:Name="DownloadHeadersButton" IsVisible="{Binding WatchCommandButtonsAreVisible}"/>
-            <Button Text="Download / Save as GPX" x:Name="DownloadSaveGPXButton" Clicked="DownloadSaveGPXButton_Clicked" IsVisible="{Binding WatchCommandButtonsAreVisible}"/>
-            <Button Text="Disconnect watch" x:Name="DisconnectButton" Clicked="DisconnectButton_Clicked"  IsVisible="{Binding DisconnectButtonIsVisible}"/>
+            <Button Text="Download Headers"  x:Name="DownloadHeadersButton" Command="{Binding Path=DownloadHeadersCommand}" IsVisible="{Binding WatchCommandButtonsAreVisible}"/>
+            <Button Text="Download / Save as GPX" x:Name="DownloadSaveGPXButton" Command="{Binding Path=SaveGPXCommand}" IsVisible="{Binding WatchCommandButtonsAreVisible}"/>
+            <Button Text="Disconnect watch" x:Name="DisconnectButton" Command="{Binding Path=DisconnectCommand}"  IsVisible="{Binding DisconnectButtonIsVisible}"/>
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>

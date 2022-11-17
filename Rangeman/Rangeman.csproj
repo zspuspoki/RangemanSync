@@ -69,6 +69,7 @@
       <DependentUpon>ConfigPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Config\ConfigPageViewModel.cs" />
+    <Compile Include="Views\Download\IDownloadPageView.cs" />
     <Compile Include="Views\Download\LogHeaderViewModel.cs" />
     <Compile Include="Views\Download\LogHeaderViewModelConverter.cs" />
     <Compile Include="Views\Map\AddressPanelViewModel.cs" />
@@ -89,10 +90,10 @@
     <Compile Include="Services\WatchDataReceiver\DataReceiverProgressEventArgs.cs" />
     <Compile Include="Services\WatchDataReceiver\DataRequestObserverProgressChangedEventArgs.cs" />
     <Compile Include="Services\WatchDataReceiver\LogPointMemoryExtractorService.cs" />
-    <Compile Include="Views\Download\MainPage.xaml.cs">
-      <DependentUpon>MainPage.xaml</DependentUpon>
+    <Compile Include="Views\Download\DownloadPage.xaml.cs">
+      <DependentUpon>DownloadPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Download\MainPageViewModel.cs" />
+    <Compile Include="Views\Download\DownloadPageViewModel.cs" />
     <Compile Include="Views\Map\MapPage.xaml.cs">
       <DependentUpon>MapPage.xaml</DependentUpon>
     </Compile>
@@ -180,7 +181,7 @@
     <Folder Include="Resources\drawable\" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Views\Download\MainPage.xaml">
+    <EmbeddedResource Include="Views\Download\DownloadPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>

@@ -124,7 +124,7 @@ namespace Rangeman
             },
             () => ViewModel.DisconnectButtonIsVisible = true);
 
-            DisableOtherTabs();
+            EnableOtherTabs();
             DownloadSaveGPXButton.Clicked += DownloadSaveGPXButton_Clicked;
             //Save selected log header as GPX
         }

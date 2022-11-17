@@ -8,7 +8,7 @@
              Shell.NavBarIsVisible="False">
     <TabBar>
         <Tab Title="Main">
-            <ShellContent Title="Download" ContentTemplate="{e:MyDataTemplate local:MainPage}" Route="Download" IsVisible="{Binding DownloadPageIsEnabled}"  />
+            <ShellContent Title="Download" ContentTemplate="{e:MyDataTemplate local:DownloadPage}" Route="Download" IsVisible="{Binding DownloadPageIsEnabled}"  />
             <ShellContent Title="Map" ContentTemplate="{e:MyDataTemplate local:MapPage}" Route="Map" IsVisible="{Binding MapPageIsEnabled}" />
             <ShellContent Title="Config" ContentTemplate="{e:MyDataTemplate local:ConfigPage}" Route="Config" IsVisible="{Binding ConfigPageIsEnabled }"/>
         </Tab>

@@ -1,5 +1,6 @@
 ﻿using Android.Content;
 using employeeID;
+using Microsoft.Extensions.Logging;
 using Rangeman.DataExtractors.Data;
 using Rangeman.Services.BluetoothConnector;
 using Rangeman.Views.Download;
@@ -18,9 +19,11 @@ namespace Rangeman
         private string progressMessage;
         private bool watchCommandButtonsAreVisible = true;
         private bool disconnectButtonIsVisible = false;
+        private ILogger<DownloadPageViewModel> logger;
         private readonly BluetoothConnectorService bluetoothConnectorService;
         private readonly AppShellViewModel appShellViewModel;
         private readonly IDownloadPageView downloadPageView;
+        private readonly ILoggerFactory loggerFactory;
         private bool disconnectButtonCanBePressed = true;
         private bool downloadHeadersButtonCanBePressed = true;
         private bool saveGPXButtonCanBePressed = true;
@@ -29,12 +32,16 @@ namespace Rangeman
         private ICommand downloadHeadersCommand;
         private ICommand saveGPXCommand;
 
-        public DownloadPageViewModel(Context context, BluetoothConnectorService bluetoothConnectorService, AppShellViewModel appShellViewModel, IDownloadPageView downloadPageView)
+        public DownloadPageViewModel(Context context, BluetoothConnectorService bluetoothConnectorService, 
+            AppShellViewModel appShellViewModel, IDownloadPageView downloadPageView,
+            ILoggerFactory loggerFactory)
         {
             Context = context;
             this.bluetoothConnectorService = bluetoothConnectorService;
             this.appShellViewModel = appShellViewModel;
             this.downloadPageView = downloadPageView;
+            this.loggerFactory = loggerFactory;
+            this.logger = loggerFactory.CreateLogger<DownloadPageViewModel>();
         }
 
         #region Button handlers
@@ -48,7 +55,7 @@ namespace Rangeman
 
         private async void DownloadHeaders_Clicked()
         {
-            Debug.WriteLine("--- MainPage - start DownloadHeaders_Clicked");
+            logger.LogInformation("--- MainPage - start DownloadHeaders_Clicked");
             SetProgressMessage("Looking for Casio GPR-B1000 device. Please connect your watch.");
 
             downloadHeadersButtonCanBePressed = false;
@@ -56,7 +63,7 @@ namespace Rangeman
 
             await bluetoothConnectorService.FindAndConnectToWatch(SetProgressMessage, async (connection) =>
             {
-                var logPointMemoryService = new LogPointMemoryExtractorService(connection);
+                var logPointMemoryService = new LogPointMemoryExtractorService(connection, loggerFactory);
                 logPointMemoryService.ProgressChanged += LogPointMemoryService_ProgressChanged;
                 var headersTask = logPointMemoryService.GetHeaderDataAsync();
                 var headers = await headersTask;
@@ -82,7 +89,7 @@ namespace Rangeman
 
         private async void DownloadSaveGPXButton_Clicked()
         {
-            Debug.WriteLine("--- MainPage - start DownloadSaveGPXButton_Clicked");
+            logger.LogInformation("--- MainPage - start DownloadSaveGPXButton_Clicked");
             SetProgressMessage("Looking for Casio GPR-B1000 device. Please connect your watch.");
 
             saveGPXButtonCanBePressed = false;
@@ -92,9 +99,9 @@ namespace Rangeman
             {
                 if (SelectedLogHeader != null)
                 {
-                    Debug.WriteLine("DownloadSaveGPXButton_Clicked : Before GetLogDataAsync");
-                    Debug.WriteLine($"Selected ordinal number: {SelectedLogHeader.OrdinalNumber}");
-                    var logPointMemoryService = new LogPointMemoryExtractorService(connection);
+                    logger.LogDebug("DownloadSaveGPXButton_Clicked : Before GetLogDataAsync");
+                    logger.LogDebug($"Selected ordinal number: {SelectedLogHeader.OrdinalNumber}");
+                    var logPointMemoryService = new LogPointMemoryExtractorService(connection, loggerFactory);
                     logPointMemoryService.ProgressChanged += LogPointMemoryService_ProgressChanged;
                     var selectedHeader = SelectedLogHeader;
                     var logDataEntries = await logPointMemoryService.GetLogDataAsync(selectedHeader.OrdinalNumber,
@@ -113,7 +120,7 @@ namespace Rangeman
                 }
                 else
                 {
-                    Debug.WriteLine("DownloadSaveGPXButton_Clicked : One log header entry should be selected");
+                    logger.LogDebug("DownloadSaveGPXButton_Clicked : One log header entry should be selected");
                     return false;
                 }
             },

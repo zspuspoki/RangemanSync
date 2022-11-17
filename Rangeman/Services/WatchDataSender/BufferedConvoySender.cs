@@ -1,4 +1,5 @@
-﻿using nexus.protocols.ble;
+﻿using Microsoft.Extensions.Logging;
+using nexus.protocols.ble;
 using Rangeman.Common;
 using System;
 using System.Collections.Generic;
@@ -12,11 +13,13 @@ namespace Rangeman.WatchDataSender
         private const int MaxNumberOfBytesToWriteConvoy = 107;
         private readonly IBleGattServerConnection gattServer;
         private readonly byte[] data;
+        private ILogger<BufferedConvoySender> logger;
 
-        public BufferedConvoySender(IBleGattServerConnection gattServer, byte[] data)
+        public BufferedConvoySender(IBleGattServerConnection gattServer, byte[] data, ILoggerFactory loggerFactory)
         {
             this.gattServer = gattServer;
             this.data = data;
+            this.logger = loggerFactory.CreateLogger<BufferedConvoySender>();
         }
 
         public async Task Send()
@@ -27,13 +30,13 @@ namespace Rangeman.WatchDataSender
             List<byte> currentDataToSend = new List<byte>();
             List<byte> oneDataChunkWithCrc = new List<byte>();
 
-            Debug.WriteLine($"--- BufferedConvoySender - data.Length = {data.Length}");
+            logger.LogDebug($"--- BufferedConvoySender - data.Length = {data.Length}");
 
             while (i < data.Length)
             {
                 currentDataToSend.Add(0x05); // 0x05 is the type code of convoy data
 
-                Debug.WriteLine($"--- BufferedConvoySender - currentConvoyDataCount = {currentConvoyDataCount}");
+                logger.LogDebug($"--- BufferedConvoySender - currentConvoyDataCount = {currentConvoyDataCount}");
 
                 while (i < data.Length && currentConvoyDataCount++ < MaxNumberOfBytesToWriteConvoy)
                 {
@@ -45,14 +48,14 @@ namespace Rangeman.WatchDataSender
                         break;
                 }
 
-                Debug.WriteLine($"--- BufferedConvoySender - i after while loop = {i}");
+                logger.LogDebug($"--- BufferedConvoySender - i after while loop = {i}");
 
                 if(i % 256 == 0)
                 {
                     var crc16 = new Crc16(Crc16Mode.CcittKermit);
                     var crc = crc16.ComputeChecksumBytes(oneDataChunkWithCrc.ToArray());
 
-                    Debug.WriteLine($"--- BufferedConvoySender - crc code  : {Utils.GetPrintableBytesArray(crc)}");
+                    logger.LogDebug($"--- BufferedConvoySender - crc code  : {Utils.GetPrintableBytesArray(crc)}");
 
                     foreach(var crcByte in crc)
                     {
@@ -64,7 +67,7 @@ namespace Rangeman.WatchDataSender
 
                 var currentByteArrayToSend = currentDataToSend.ToArray();
 
-                Debug.WriteLine($"-- BufferedConvoySender - before sending data: {Utils.GetPrintableBytesArray(currentByteArrayToSend)}");
+                logger.LogDebug($"-- BufferedConvoySender - before sending data: {Utils.GetPrintableBytesArray(currentByteArrayToSend)}");
 
                 await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
                     Guid.Parse(BLEConstants.CasioConvoyCharacteristic), currentByteArrayToSend);

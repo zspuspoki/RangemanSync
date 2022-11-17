@@ -1,4 +1,5 @@
-﻿using nexus.protocols.ble;
+﻿using Microsoft.Extensions.Logging;
+using nexus.protocols.ble;
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -12,21 +13,25 @@ namespace Rangeman.WatchDataSender
         private readonly BlePeripheralConnectionRequest connection;
         private readonly byte[] data;
         private readonly byte[] header;
+        private readonly ILoggerFactory loggerFactory;
+        private ILogger<WatchDataSenderService> logger;
 
-        public WatchDataSenderService(BlePeripheralConnectionRequest connection, byte[] data, byte[] header)
+        public WatchDataSenderService(BlePeripheralConnectionRequest connection, byte[] data, byte[] header, ILoggerFactory loggerFactory)
         {
             this.connection = connection;
             this.data = data;
             this.header = header;
+            this.loggerFactory = loggerFactory;
+            this.logger = loggerFactory.CreateLogger<WatchDataSenderService>();
         }
 
         public async Task SendRoute()
         {
             var progressPercent = 8;
 
-            Debug.WriteLine("--- Starting SendRoute()");
+            logger.LogInformation("--- Starting SendRoute()");
 
-            var remoteWatchController = new RemoteWatchController(this.connection.GattServer);
+            var remoteWatchController = new RemoteWatchController(this.connection.GattServer, loggerFactory);
 
             await remoteWatchController.SendInitCommandsAndWaitForCCCData(new byte[] { 00, 00, 00 });
 
@@ -50,7 +55,7 @@ namespace Rangeman.WatchDataSender
 
                 FireProgressEvent(ref progressPercent, 8, "Sent connection settings based on params");
 
-                BufferedConvoySender bufferedConvoySender = new BufferedConvoySender(this.connection.GattServer, category.Data);
+                BufferedConvoySender bufferedConvoySender = new BufferedConvoySender(this.connection.GattServer, category.Data, loggerFactory);
                 await bufferedConvoySender.Send();
 
                 FireProgressEvent(ref progressPercent, 8, $"Finished using buffered convoy sender. Category = { category.CategoryId }");

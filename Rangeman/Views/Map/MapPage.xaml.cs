@@ -1,5 +1,4 @@
-﻿using Android.Locations;
-using BruTile.MbTiles;
+﻿using BruTile.MbTiles;
 using Mapsui;
 using Mapsui.Geometries;
 using Mapsui.Layers;
@@ -8,6 +7,7 @@ using Mapsui.Providers;
 using Mapsui.Styles;
 using Mapsui.UI.Forms;
 using Mapsui.Utilities;
+using Microsoft.Extensions.Logging;
 using Rangeman.Views.Map;
 using SQLite;
 using System;
@@ -25,9 +25,12 @@ namespace Rangeman
     public partial class MapPage : ContentPage, IMapPageView
     {
         private const string LinesLayerName = "LinesBetweenPins";
+        private readonly ILogger<MapPage> logger;
 
-        public MapPage()
+        public MapPage(ILogger<MapPage> logger)
         {
+            this.logger = logger;
+
             InitializeComponent();
 
             InitializeMap();
@@ -158,10 +161,10 @@ namespace Rangeman
 
             pin.Callout.CalloutClicked += (s, e) =>
             {
-                Debug.WriteLine($"Map page: entering callout clicked");
+                logger.LogDebug($"Map page: entering callout clicked");
                 if (e.Callout.Title == "unset")
                 {
-                    Debug.WriteLine($"Map page: callout clicked. Number of taps: {e.NumOfTaps}");
+                    logger.LogDebug($"Map page: callout clicked. Number of taps: {e.NumOfTaps}");
                     pin.Callout.Title = pinTitle;
                     e.Handled = true;
                     e.Callout.Type = Mapsui.Rendering.Skia.CalloutType.Single;
@@ -170,7 +173,7 @@ namespace Rangeman
                 {
                     if (BindingContext is MapPageViewModel mapPageViewModel)
                     {
-                        Debug.WriteLine("Map: Callout click - other");
+                        logger.LogDebug("Map: Callout click - other");
                         e.Handled = true;
                         var pinTitle = e.Callout.Title;
                         mapPageViewModel.NodesViewModel.SelectNodeForDeletion(pinTitle, e.Point.Longitude, e.Point.Latitude);

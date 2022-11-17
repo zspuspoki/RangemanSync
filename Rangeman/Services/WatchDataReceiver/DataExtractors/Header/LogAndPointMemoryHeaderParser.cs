@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Diagnostics;
 
 namespace Rangeman
@@ -10,9 +11,11 @@ namespace Rangeman
         private const int FIRST_POINT_MEMORY_DATA_ADDRESS = 2428928;
 
         private byte[] headerData;
+        private ILogger<LogAndPointMemoryHeaderParser> logger;
 
-        public LogAndPointMemoryHeaderParser()
+        public LogAndPointMemoryHeaderParser(ILoggerFactory loggerFactory)
         {
+            this.logger = loggerFactory.CreateLogger<LogAndPointMemoryHeaderParser>();
         }
 
         public void SetData(byte[] headerData)
@@ -32,7 +35,7 @@ namespace Rangeman
 
         public LogHeaderDataInfo GetLogHeaderDataInfo(int i)
         {
-            Debug.WriteLine("Inside GetLogHeaderDataInfo v9.");
+            logger.LogDebug("Inside GetLogHeaderDataInfo v9.");
 
             if(headerData.Length == 0)
             {
@@ -42,21 +45,21 @@ namespace Rangeman
             int i2 = (i * 64) + 0;
             var currentDataArray = headerData;
 
-            Debug.WriteLine($"Endianness: IsLittleEndian: {BitConverter.IsLittleEndian}");
+            logger.LogDebug($"Endianness: IsLittleEndian: {BitConverter.IsLittleEndian}");
 
             int i3 = i2 + 12;
-            Debug.WriteLine("1");
+            logger.LogDebug("1");
             int i4 = (currentDataArray[i2] & 255) | ((currentDataArray[i2 + 1] & 255) << 8);
-            Debug.WriteLine("2");
+            logger.LogDebug("2");
             int i5 = (currentDataArray[i2 + 4] & 255) | ((currentDataArray[i2 + 5] & 255) << 8);
-            Debug.WriteLine("3");
+            logger.LogDebug("3");
             int i6 = (currentDataArray[i2 + 6] & 255) | ((currentDataArray[i2 + 7] & 255) << 8);
-            Debug.WriteLine("4");
+            logger.LogDebug("4");
             int i7 = currentDataArray[i2 + 11] & 255;
-            Debug.WriteLine("5");
+            logger.LogDebug("5");
             int i8 = currentDataArray[i3] & 255;
 
-            Debug.WriteLine($"i3={i3} , i4={i4}, i5={i5}, i6={i6}, i7={i7}, i8={i8}  ");
+            logger.LogDebug($"i3={i3} , i4={i4}, i5={i5}, i6={i6}, i7={i7}, i8={i8}  ");
 
             var year = i6;
             var month = (currentDataArray[i2 + 8] & 255);
@@ -65,7 +68,7 @@ namespace Rangeman
             var minute = (sbyte)i7;
             var second = (sbyte)i8;
 
-            Debug.WriteLine($"year = {year}, month= {month}, day={day}, hour={hour}, minute={minute}, second={second}");
+            logger.LogDebug($"year = {year}, month= {month}, day={day}, hour={hour}, minute={minute}, second={second}");
 
             if (year > 0 && month > 0 && day > 0)
             {

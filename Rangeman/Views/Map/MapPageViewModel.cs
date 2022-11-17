@@ -5,6 +5,7 @@ using Rangeman.Services.BluetoothConnector;
 using Rangeman.WatchDataSender;
 using System.Diagnostics;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
 
 namespace Rangeman
 {
@@ -21,7 +22,9 @@ namespace Rangeman
         private readonly IMapPageView mapPageView;
         private readonly AppShellViewModel appShellViewModel;
         private readonly BluetoothConnectorService bluetoothConnectorService;
+        private readonly ILoggerFactory loggerFactory;
         private RowDefinitionCollection gridViewRows;
+        private ILogger<MapPageViewModel> logger;
         private bool watchCommandButtonsAreVisible = true;
         private bool disconnectButtonIsVisible = false;
 
@@ -39,7 +42,8 @@ namespace Rangeman
 
         public MapPageViewModel(Context context, NodesViewModel nodesViewModel, 
             AddressPanelViewModel addressPanelViewModel, IMapPageView mapPageView, 
-            AppShellViewModel appShellViewModel, BluetoothConnectorService bluetoothConnectorService)
+            AppShellViewModel appShellViewModel, BluetoothConnectorService bluetoothConnectorService,
+            ILoggerFactory loggerFactory)
         {
             Context = context;
             this.nodesViewModel = nodesViewModel;
@@ -47,6 +51,9 @@ namespace Rangeman
             this.mapPageView = mapPageView;
             this.appShellViewModel = appShellViewModel;
             this.bluetoothConnectorService = bluetoothConnectorService;
+            this.loggerFactory = loggerFactory;
+            this.logger = loggerFactory.CreateLogger<MapPageViewModel>();
+
             gridViewRows = new RowDefinitionCollection
             {
                 new RowDefinition { Height = new GridLength(2, GridUnitType.Star) },
@@ -89,7 +96,7 @@ namespace Rangeman
         #region Button click handlers
         private async void SendButton_Clicked()
         {
-            Debug.WriteLine("--- MapPage - start SendButton_Clicked");
+            logger.LogInformation("--- MapPage - start SendButton_Clicked");
 
             if (!NodesViewModel.HasRoute())
             {
@@ -104,18 +111,18 @@ namespace Rangeman
             await bluetoothConnectorService.FindAndConnectToWatch((message) => ProgressMessage = message,
                 async (connection) =>
                 {
-                    Debug.WriteLine("Map tab - Device Connection was successful");
+                    logger.LogDebug("Map tab - Device Connection was successful");
                     ProgressMessage = "Connected to GPR-B1000 watch.";
 
-                    MapPageDataConverter mapPageDataConverter = new MapPageDataConverter(NodesViewModel);
+                    MapPageDataConverter mapPageDataConverter = new MapPageDataConverter(NodesViewModel, loggerFactory);
 
                     var watchDataSenderService = new WatchDataSenderService(connection, mapPageDataConverter.GetDataByteArray(),
-                        mapPageDataConverter.GetHeaderByteArray());
+                        mapPageDataConverter.GetHeaderByteArray(), loggerFactory);
 
                     watchDataSenderService.ProgressChanged += WatchDataSenderService_ProgressChanged;
                     await watchDataSenderService.SendRoute();
 
-                    Debug.WriteLine("Map tab - after awaiting SendRoute()");
+                    logger.LogDebug("Map tab - after awaiting SendRoute()");
                     DisconnectButtonIsVisible = false;
                     ProgressBarIsVisible = false;
 
@@ -179,7 +186,7 @@ namespace Rangeman
             ProgressBarPercentageMessage = e.PercentageText;
             ProgressBarPercentageNumber = e.PercentageNumber;
 
-            Debug.WriteLine($"Current progress bar percentage number: {ProgressBarPercentageNumber}");
+            logger.LogDebug($"Current progress bar percentage number: {ProgressBarPercentageNumber}");
         }
 
         private void EnableOtherTabs()

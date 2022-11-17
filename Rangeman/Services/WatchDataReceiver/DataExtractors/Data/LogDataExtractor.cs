@@ -1,4 +1,5 @@
 ﻿using Java.Nio;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,11 +11,13 @@ namespace Rangeman.DataExtractors.Data
         private byte[] data;
         private readonly int headerDataSize;
         private readonly int headerDataCount;
+        private ILogger<LogDataExtractor> logger;
 
-        public LogDataExtractor(int headerDataSize, int headerDataCount)
+        public LogDataExtractor(int headerDataSize, int headerDataCount, ILoggerFactory loggerFactory)
         {
             this.headerDataSize = headerDataSize;
             this.headerDataCount = headerDataCount;
+            this.logger = loggerFactory.CreateLogger<LogDataExtractor>();
         }
 
         public void SetData(byte[] data)
@@ -33,7 +36,7 @@ namespace Rangeman.DataExtractors.Data
             var latitude = BitConverter.ToDouble(data, i2 + 8);
             var longitude = BitConverter.ToDouble(data, i2 + 16);            
 
-            Debug.WriteLine($"- LogDataExtractor latitude = {latitude}, longitude = {longitude}");
+            logger.LogDebug($"- LogDataExtractor latitude = {latitude}, longitude = {longitude}");
 
             var year = i3;
             var month = (data[i2 + 3] & 255);
@@ -42,7 +45,7 @@ namespace Rangeman.DataExtractors.Data
             var minute = data[i2 + 6] & 255;
             var second = i4;
 
-            Debug.WriteLine($"- LogDataExtractor Before setting date: year= {year}, month= {month}, day={day}, hour={hour}, minute={minute}, second={second}");
+            logger.LogDebug($"- LogDataExtractor Before setting date: year= {year}, month= {month}, day={day}, hour={hour}, minute={minute}, second={second}");
 
             var date = new DateTime(year, month, day, hour, minute, second);
 
@@ -50,14 +53,14 @@ namespace Rangeman.DataExtractors.Data
             if ((sbyte)data[i6] != -1 || (sbyte)data[i2 + 29] != 127)
             {
                 pressure = BitConverter.ToUInt16(data, i6) & 65535;
-                Debug.WriteLine($"- LogDataExtractor Pressure: {pressure}");
+                logger.LogDebug($"- LogDataExtractor Pressure: {pressure}");
             }
 
             var temperature = 0;
             if ((sbyte)data[i7] != -1 || (sbyte)data[i2 + 31] != 127)
             {
                 temperature = BitConverter.ToUInt16(data, i7);
-                Debug.WriteLine($"- LogDataExtractor Temperaure: {temperature}");
+                logger.LogDebug($"- LogDataExtractor Temperaure: {temperature}");
             }
 
             return new LogData { Latitude = latitude, Longitude = longitude, Date = date, Pressure = pressure, Temperature = temperature };

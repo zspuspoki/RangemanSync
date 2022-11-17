@@ -5,6 +5,7 @@ using System.Diagnostics;
 using Rangeman.WatchDataReceiver;
 using Rangeman.Common;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Rangeman
 {
@@ -26,21 +27,24 @@ namespace Rangeman
         private IDataExtractor dataExtractor;
         private readonly RemoteWatchController remoteWatchController;
         private TaskCompletionSource<IDataExtractor> taskCompletionSource;
+        private ILogger<CasioConvoyAndCasioDataRequestObserver> logger;
 
         public event EventHandler<DataRequestObserverProgressChangedEventArgs> ProgressChanged;
 
         public CasioConvoyAndCasioDataRequestObserver(IDataExtractor dataExtractor, 
             RemoteWatchController remoteWatchController, 
-            TaskCompletionSource<IDataExtractor> taskCompletionSource)
+            TaskCompletionSource<IDataExtractor> taskCompletionSource,
+            ILoggerFactory loggerFactory)
         {
             this.dataExtractor = dataExtractor;
             this.remoteWatchController = remoteWatchController;
             this.taskCompletionSource = taskCompletionSource;
+            this.logger = loggerFactory.CreateLogger<CasioConvoyAndCasioDataRequestObserver>();
         }
 
         public void OnCompleted()
         {
-            Debug.WriteLine("-- Finished with CasioConvoyAndCasioDataRequestObserver");
+            logger.LogDebug("-- Finished with CasioConvoyAndCasioDataRequestObserver");
 
             if (!successFullyEndedTransmission)
             {
@@ -60,11 +64,11 @@ namespace Rangeman
             {
                 if(!dataReceivingIsAllowed)
                 {
-                    Debug.WriteLine("OnNext - CasioConvoyAndCasioDataRequestObserver - data receiving is not allowed. Returning.");
+                    logger.LogDebug("OnNext - CasioConvoyAndCasioDataRequestObserver - data receiving is not allowed. Returning.");
                     return;
                 }
 
-                Debug.WriteLine($"OnNext - CasioConvoyAndCasioDataRequestObserver  Guid = {value.Item1}  value = {Utils.GetPrintableBytesArray(value.Item2)}");
+                logger.LogDebug($"OnNext - CasioConvoyAndCasioDataRequestObserver  Guid = {value.Item1}  value = {Utils.GetPrintableBytesArray(value.Item2)}");
 
                 if (value.Item1 == Guid.Parse(BLEConstants.CasioConvoyCharacteristic))
                 {
@@ -90,7 +94,7 @@ namespace Rangeman
                             bytesArrayToAdd[i] = (byte)(~bytesArrayToAdd[i]);
                         }
 
-                        //Debug.WriteLine($"OnNext - CasioConvoyAndCasioDataRequestObserver data length = {data.Count}");
+                        //logger.LogDebug($"OnNext - CasioConvoyAndCasioDataRequestObserver data length = {data.Count}");
                         byte[] currentSectorBytes = data[currentSectorIndex];
 
                         //if (currentDataIndexOnCurrentSector + bytesArrayToAdd.Length > currentSectorBytes.Length - 1)
@@ -107,11 +111,11 @@ namespace Rangeman
                         var sectorOffsetFromStart = currentSectorIndex * SectorSize;
 
                         FireProgressChanged($"Reading data from the watch. Sector offset from start: {sectorOffsetFromStart}");
-                        Debug.WriteLine($"OnNext - CasioConvoyAndCasioDataRequestObserver - Current sector offset : {sectorOffsetFromStart} Data index of sector: {currentDataIndexOnCurrentSector}");
+                        logger.LogDebug($"OnNext - CasioConvoyAndCasioDataRequestObserver - Current sector offset : {sectorOffsetFromStart} Data index of sector: {currentDataIndexOnCurrentSector}");
 
                         if(headerSize == sectorOffsetFromStart + currentDataIndexOnCurrentSector)
                         {
-                            Debug.WriteLine("OnNext - CasioConvoyAndCasioDataRequestObserver - all the header data was received successfully.");
+                            logger.LogDebug("OnNext - CasioConvoyAndCasioDataRequestObserver - all the header data was received successfully.");
 
                             EndCurrentTransmission();
                         }
@@ -122,13 +126,13 @@ namespace Rangeman
                     var receivedBytes = value.Item2;
                     if (value.Item2.Length >= 9)
                     {
-                        Debug.WriteLine("OnNext - CasioConvoyAndCasioDataRequestObserver - CasioDataRequestSPCharacteristic : Received an array where the length >= 9");
+                        logger.LogDebug("OnNext - CasioConvoyAndCasioDataRequestObserver - CasioDataRequestSPCharacteristic : Received an array where the length >= 9");
                         headerSize = ((receivedBytes[9] & 255) << 24) | (receivedBytes[6] & 255) | ((receivedBytes[7] & 255) << 8) | ((receivedBytes[8] & 255) << 16);
-                        Debug.WriteLine($"OnNext - CasioConvoyAndCasioDataRequestObserver - CasioDataRequestSPCharacteristic: Header size: {headerSize}");
+                        logger.LogDebug($"OnNext - CasioConvoyAndCasioDataRequestObserver - CasioDataRequestSPCharacteristic: Header size: {headerSize}");
 
                         var numberofSectorToBeAdded = headerSize / SectorSize + 1;
 
-                        Debug.WriteLine($"OnNext - CasioConvoyAndCasioDataRequestObserver - CasioDataRequestSPCharacteristic - No of sectors : {numberofSectorToBeAdded}");
+                        logger.LogDebug($"OnNext - CasioConvoyAndCasioDataRequestObserver - CasioDataRequestSPCharacteristic - No of sectors : {numberofSectorToBeAdded}");
 
                         for (var i = 0; i < numberofSectorToBeAdded; i++)
                         {
@@ -142,7 +146,7 @@ namespace Rangeman
                         {
                             if (receivedBytes[0] == 7)
                             {
-                                Debug.WriteLine("-- The watch needs confirmation to continue sending the data, so let's send it back.");
+                                logger.LogDebug("-- The watch needs confirmation to continue sending the data, so let's send it back.");
                                 remoteWatchController.SendConfirmationToContinueTransmission();
                             }
                             else if ( receivedBytes.Length >=2 && receivedBytes[0] == 0x09 && receivedBytes[1] == 0x10)

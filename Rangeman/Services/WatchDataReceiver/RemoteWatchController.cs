@@ -1,10 +1,9 @@
-﻿using Android.Accessibilityservice.AccessibilityService;
+﻿using Microsoft.Extensions.Logging;
 using nexus.protocols.ble;
 using Rangeman.Common;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Debug = System.Diagnostics.Debug;
 
 namespace Rangeman.WatchDataReceiver
 {
@@ -12,10 +11,14 @@ namespace Rangeman.WatchDataReceiver
     {
         private const int CommandDelay = 20;
         private readonly IBleGattServerConnection gattServer;
+        private readonly ILoggerFactory loggerFactory;
+        private ILogger<RemoteWatchController> logger;
 
-        public RemoteWatchController(IBleGattServerConnection gattServer)
+        public RemoteWatchController(IBleGattServerConnection gattServer, ILoggerFactory loggerFactory)
         {
             this.gattServer = gattServer;
+            this.loggerFactory = loggerFactory;
+            this.logger = loggerFactory.CreateLogger<RemoteWatchController>();
         }
 
         public void SendConfirmationToContinueTransmission()
@@ -46,15 +49,15 @@ namespace Rangeman.WatchDataReceiver
 
         public void SendHeaderClosingCommandsToWatch()
         {
-            Debug.WriteLine("-- Before  WriteCharacteristicValue 1");
+            logger.LogDebug("-- Before  WriteCharacteristicValue 1");
             //TODO : Move it to else if (value.Item1 == Guid.Parse(BLEConstants.CasioDataRequestSPCharacteristic)) ?
             gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
                 Guid.Parse(BLEConstants.CasioDataRequestSPCharacteristic), new byte[] { 0x09, 0x0F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
-            Debug.WriteLine("-- After  WriteCharacteristicValue 1");
+            logger.LogDebug("-- After  WriteCharacteristicValue 1");
 
             gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
                 Guid.Parse(BLEConstants.CasioDataRequestSPCharacteristic), new byte[] { 0x04, 0x0F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
-            Debug.WriteLine("-- After  WriteCharacteristicValue 2");
+            logger.LogDebug("-- After  WriteCharacteristicValue 2");
         }
 
         public void SubscribeToCharacteristicChanges(CasioConvoyAndCasioDataRequestObserver casioConvoyAndCasioDataRequestObserver)
@@ -99,7 +102,7 @@ namespace Rangeman.WatchDataReceiver
 
         public async Task SendInitializationCommandsToWatch()
         {
-            gattServer.NotifyCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid), Guid.Parse(BLEConstants.CasioAllFeaturesCharacteristic), new CharChangedObserver());
+            gattServer.NotifyCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid), Guid.Parse(BLEConstants.CasioAllFeaturesCharacteristic), new CharChangedObserver(loggerFactory));
 
             await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid), Guid.Parse(BLEConstants.CasioReadRequestForAllFeaturesCharacteristic), new byte[] { 0x11 });
 
@@ -128,7 +131,7 @@ namespace Rangeman.WatchDataReceiver
 
         public async Task StartCloseSequence()
         {
-            Debug.WriteLine("StartCloseSequence() -- Start");
+            logger.LogDebug("StartCloseSequence() -- Start");
 
             await Task.Delay(CommandDelay);
 
@@ -140,14 +143,14 @@ namespace Rangeman.WatchDataReceiver
 
             await Task.Delay(CommandDelay);
 
-            Debug.WriteLine("StartCloseSequence() -- Before writing 0x04, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00");
+            logger.LogDebug("StartCloseSequence() -- Before writing 0x04, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00");
 
             await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
                 Guid.Parse(BLEConstants.CasioDataRequestSPCharacteristic), new byte[] { 0x04, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
 
             await Task.Delay(CommandDelay);
 
-            Debug.WriteLine("StartCloseSequence() -- Before writing 0x04, 0x0E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00");
+            logger.LogDebug("StartCloseSequence() -- Before writing 0x04, 0x0E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00");
 
             await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
                 Guid.Parse(BLEConstants.CasioDataRequestSPCharacteristic), new byte[] { 0x04, 0x0E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
@@ -175,7 +178,7 @@ namespace Rangeman.WatchDataReceiver
             gattServer.NotifyCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid), Guid.Parse(BLEConstants.CasioConvoyCharacteristic),
                 (data) =>
                 {
-                    Debug.WriteLine($"--- StartCloseSequence_Sub1 - NotifyCharacteristicValue. Received data bytes : {Utils.GetPrintableBytesArray(data)}");
+                    logger.LogDebug($"--- StartCloseSequence_Sub1 - NotifyCharacteristicValue. Received data bytes : {Utils.GetPrintableBytesArray(data)}");
                    
                     if(data.SequenceEqual(new byte[] { 0x04, 0x00, 0x18, 0x00, 0x18, 0x00, 0x00, 0x00, 0x58, 0x02 }))
                     {
@@ -185,7 +188,7 @@ namespace Rangeman.WatchDataReceiver
 
             await Task.Delay(CommandDelay);
 
-            Debug.WriteLine("StartCloseSequence_Sub1() -- Before writing 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00");
+            logger.LogDebug("StartCloseSequence_Sub1() -- Before writing 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00");
 
             await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
                 Guid.Parse(BLEConstants.CasioConvoyCharacteristic), new byte[] { 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
@@ -200,7 +203,7 @@ namespace Rangeman.WatchDataReceiver
             gattServer.NotifyCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid), Guid.Parse(BLEConstants.CasioConvoyCharacteristic),
                 (data) =>
                 {
-                    Debug.WriteLine($"--- StartCloseSequence_Sub2 - NotifyCharacteristicValue. Received data bytes : {Utils.GetPrintableBytesArray(data)}");
+                    logger.LogDebug($"--- StartCloseSequence_Sub2 - NotifyCharacteristicValue. Received data bytes : {Utils.GetPrintableBytesArray(data)}");
 
                     if (data.SequenceEqual(new byte[] { 0x04, 0x00, 0x18, 0x00, 0x18, 0x00, 0x00, 0x00, 0x58, 0x02 }))
                     {
@@ -210,7 +213,7 @@ namespace Rangeman.WatchDataReceiver
 
             await Task.Delay(CommandDelay);
 
-            Debug.WriteLine("StartCloseSequence_Sub2() -- Before writing 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00");
+            logger.LogDebug("StartCloseSequence_Sub2() -- Before writing 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00");
 
             await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
                 Guid.Parse(BLEConstants.CasioConvoyCharacteristic), new byte[] { 0x04, 0x01, 0x48, 0x00, 0x50, 0x00, 0x04, 0x00, 0x58, 0x02 });

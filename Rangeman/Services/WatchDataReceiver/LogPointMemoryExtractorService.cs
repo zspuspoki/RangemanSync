@@ -3,11 +3,10 @@ using Rangeman;
 using Rangeman.DataExtractors.Data;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Diagnostics;
 using RemoteWatchController = Rangeman.WatchDataReceiver.RemoteWatchController;
-using Rangeman.WatchDataSender;
 using System;
 using Rangeman.WatchDataReceiver;
+using Microsoft.Extensions.Logging;
 
 namespace employeeID
 {
@@ -15,12 +14,15 @@ namespace employeeID
     {
         public event EventHandler<DataReceiverProgressEventArgs> ProgressChanged;
         private RemoteWatchController remoteWatchController;
+        private ILogger<LogPointMemoryExtractorService> logger;
+        private readonly ILoggerFactory loggerFactory;
 
-        public LogPointMemoryExtractorService(BlePeripheralConnectionRequest connection)
+        public LogPointMemoryExtractorService(BlePeripheralConnectionRequest connection, ILoggerFactory loggerFactory)
         {
             var gattServer = connection.GattServer;
-            remoteWatchController = new RemoteWatchController(gattServer);
-
+            remoteWatchController = new RemoteWatchController(gattServer, loggerFactory);
+            this.logger = loggerFactory.CreateLogger<LogPointMemoryExtractorService>();
+            this.loggerFactory = loggerFactory;
         }
 
         public async Task<List<LogHeaderDataInfo>> GetHeaderDataAsync()
@@ -30,10 +32,10 @@ namespace employeeID
             //REceive StartReadyToTransDataSequence
 
             var allDataReceived = new TaskCompletionSource<IDataExtractor>();
-            var logAndPointMemoryHeaderParser = new LogAndPointMemoryHeaderParser();
+            var logAndPointMemoryHeaderParser = new LogAndPointMemoryHeaderParser(loggerFactory);
 
             var casioConvoyAndCasioDataRequestObserver = new CasioConvoyAndCasioDataRequestObserver(logAndPointMemoryHeaderParser, 
-                remoteWatchController, allDataReceived);
+                remoteWatchController, allDataReceived, loggerFactory);
             casioConvoyAndCasioDataRequestObserver.ProgressChanged += CasioConvoyAndCasioDataRequestObserver_ProgressChanged;
 
             remoteWatchController.SubscribeToCharacteristicChanges(casioConvoyAndCasioDataRequestObserver);
@@ -73,33 +75,33 @@ namespace employeeID
 
         public async Task<List<LogData>> GetLogDataAsync(int logEntryOrdinal, int headerDataSize, int headerDataCount, int logAddress, int logTotalLength)
         {
-            Debug.WriteLine("GetLogDataAsync -- Before SendInitializationCommandsToWatch");
+            logger.LogDebug("GetLogDataAsync -- Before SendInitializationCommandsToWatch");
 
             await remoteWatchController.SendInitializationCommandsToWatch();
 
-            Debug.WriteLine("GetLogDataAsync -- After SendInitializationCommandsToWatch");
+            logger.LogDebug("GetLogDataAsync -- After SendInitializationCommandsToWatch");
 
             //REceive StartReadyToTransDataSequence
 
             var allDataReceived = new TaskCompletionSource<IDataExtractor>();
 
-            Debug.WriteLine("GetLogDataAsync -- Before creating observer");
-            var casioConvoyAndCasioDataRequestObserver = new CasioConvoyAndCasioDataRequestObserver(new LogDataExtractor(headerDataSize, headerDataCount),
-                remoteWatchController, allDataReceived);
+            logger.LogDebug("GetLogDataAsync -- Before creating observer");
+            var casioConvoyAndCasioDataRequestObserver = new CasioConvoyAndCasioDataRequestObserver(new LogDataExtractor(headerDataSize, headerDataCount, loggerFactory),
+                remoteWatchController, allDataReceived, loggerFactory);
             casioConvoyAndCasioDataRequestObserver.ProgressChanged += CasioConvoyAndCasioDataRequestObserver_ProgressChanged;
-            Debug.WriteLine("GetLogDataAsync -- After creating observer");
+            logger.LogDebug("GetLogDataAsync -- After creating observer");
 
             remoteWatchController.SubscribeToCharacteristicChanges(casioConvoyAndCasioDataRequestObserver);
 
-            Debug.WriteLine("GetLogDataAsync -- Before SendDownloadLogCommandsToWatch");
+            logger.LogDebug("GetLogDataAsync -- Before SendDownloadLogCommandsToWatch");
             FireProgressChangedEvent("Sending download commands to watch.");
             await remoteWatchController.SendDownloadLogCommandsToWatch();
-            Debug.WriteLine("GetLogDataAsync -- After SendDownloadLogCommandsToWatch");
+            logger.LogDebug("GetLogDataAsync -- After SendDownloadLogCommandsToWatch");
 
-            Debug.WriteLine("GetLogDataAsync -- Before SendPointMemoryOrLogDownload");
+            logger.LogDebug("GetLogDataAsync -- Before SendPointMemoryOrLogDownload");
             FireProgressChangedEvent("Sending point memory or log download command.");
             await remoteWatchController.SendPointMemoryOrLogDownload(logAddress, logTotalLength);
-            Debug.WriteLine("GetLogDataAsync -- After SendPointMemoryOrLogDownload");
+            logger.LogDebug("GetLogDataAsync -- After SendPointMemoryOrLogDownload");
 
             var logDataResultFromWatch = await allDataReceived.Task;
             casioConvoyAndCasioDataRequestObserver.ProgressChanged -= CasioConvoyAndCasioDataRequestObserver_ProgressChanged;

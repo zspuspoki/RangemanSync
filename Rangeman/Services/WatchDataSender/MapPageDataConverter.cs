@@ -1,5 +1,6 @@
 ﻿using Android.Gms.Maps.Model;
 using Mapsui.Projection;
+using Microsoft.Extensions.Logging;
 using Rangeman.Common;
 using Rangeman.Views.Map;
 using System;
@@ -14,11 +15,13 @@ namespace Rangeman.WatchDataSender
     {
         private readonly NodesViewModel nodesViewModel;
         private List<byte[]> transitPointsWithInterimPoints;
+        private ILogger<MapPageDataConverter> logger;
 
-        public MapPageDataConverter(NodesViewModel nodesViewModel)
+        public MapPageDataConverter(NodesViewModel nodesViewModel, ILoggerFactory loggerFactory)
         {
             this.nodesViewModel = nodesViewModel;
             transitPointsWithInterimPoints = GetTransitPointsWithInterimPoints();
+            logger = loggerFactory.CreateLogger<MapPageDataConverter>();
         }
 
         public byte[] GetHeaderByteArray()
@@ -30,7 +33,7 @@ namespace Rangeman.WatchDataSender
             //2nd byte : TransitPointCount
             //6th byte: NodeCount
 
-            Debug.WriteLine($"--- GetHeaderByteArray: transitPointsWithInterimPoints.Count = {transitPointsWithInterimPoints.Count}");
+            logger.LogDebug($"--- GetHeaderByteArray: transitPointsWithInterimPoints.Count = {transitPointsWithInterimPoints.Count}");
 
             var nodeCount = (byte)(transitPointsWithInterimPoints.Count >> 1);
             var transitPointCount = (byte)nodesViewModel.GetTransitPointCoordinates().Count();
@@ -60,7 +63,7 @@ namespace Rangeman.WatchDataSender
 
             var result = Utils.GetAllDataArray(resultList);
 
-            Debug.WriteLine($"--- Header byte array from converter : {Utils.GetPrintableBytesArray(result)}");
+            logger.LogDebug($"--- Header byte array from converter : {Utils.GetPrintableBytesArray(result)}");
 
             return result;
         }
@@ -108,7 +111,7 @@ namespace Rangeman.WatchDataSender
 
             var result = Utils.GetAllDataArray(resultList);
 
-            Debug.WriteLine($"--- Data byte array from converter : {Utils.GetPrintableBytesArray(result)}");
+            logger.LogDebug($"--- Data byte array from converter : {Utils.GetPrintableBytesArray(result)}");
 
             return result;
         }
@@ -188,7 +191,7 @@ namespace Rangeman.WatchDataSender
 
         private List<byte[]> GetInterimGpsCoordinates(GpsCoordinatesViewModel startCoordinate, GpsCoordinatesViewModel endCoordinate)
         {
-            Debug.WriteLine($"-- MapPageDataConverter: Calculating interim points. Coor1: ({startCoordinate.Latitude}, {startCoordinate.Longitude}) Coor2: ({endCoordinate.Latitude}, {endCoordinate.Longitude})");
+            logger.LogDebug($"-- MapPageDataConverter: Calculating interim points. Coor1: ({startCoordinate.Latitude}, {startCoordinate.Longitude}) Coor2: ({endCoordinate.Latitude}, {endCoordinate.Longitude})");
 
             var result = new List<byte[]>();
             var latLngBoundsBuilder =
@@ -201,14 +204,14 @@ namespace Rangeman.WatchDataSender
             result.Add(BitConverter.GetBytes(centerCoodinates.Latitude));
             result.Add(BitConverter.GetBytes(centerCoodinates.Longitude));
 
-            Debug.WriteLine($"-- MapPageDataConverter:Calculted interim point: ({centerCoodinates.Latitude}, {centerCoodinates.Longitude})");
+            logger.LogDebug($"-- MapPageDataConverter:Calculted interim point: ({centerCoodinates.Latitude}, {centerCoodinates.Longitude})");
 
             return result;
         }
 
         private List<byte[]> GetInterimGpsCoordinates(GpsCoordinatesViewModel startCoordinate, GpsCoordinatesViewModel endCoordinate, int pointCount)
         {
-            Debug.WriteLine($"-- MapPageDataConverter: GetInterimGpsCoordinates (multipoint) Calculating interim points. Coor1: ({startCoordinate.Latitude}, {startCoordinate.Longitude}) Coor2: ({endCoordinate.Latitude}, {endCoordinate.Longitude})");
+            logger.LogDebug($"-- MapPageDataConverter: GetInterimGpsCoordinates (multipoint) Calculating interim points. Coor1: ({startCoordinate.Latitude}, {startCoordinate.Longitude}) Coor2: ({endCoordinate.Latitude}, {endCoordinate.Longitude})");
 
             if (pointCount < 0)
             {
@@ -229,7 +232,7 @@ namespace Rangeman.WatchDataSender
                 var latitude = (1 - t) * startCoordinate.Latitude + t * endCoordinate.Latitude;
                 var longitude = (1 - t) * startCoordinate.Longitude + t * endCoordinate.Longitude;
 
-                Debug.WriteLine($"-- MapPageDataConverter:Calculted interim point (multipoint): ({latitude}, {longitude})");
+                logger.LogDebug($"-- MapPageDataConverter:Calculted interim point (multipoint): ({latitude}, {longitude})");
 
                 result.Add(BitConverter.GetBytes(latitude));
                 result.Add(BitConverter.GetBytes(longitude));

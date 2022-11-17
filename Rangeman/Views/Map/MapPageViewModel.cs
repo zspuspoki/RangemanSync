@@ -31,6 +31,12 @@ namespace Rangeman
         private bool addressButtonCanbePressed = true;
         private bool disconnectButtonCanbePressed = true;
 
+        private ICommand sendCommand;
+        private ICommand deleteCommand;
+        private ICommand selectCommand;
+        private ICommand addressCommand;
+        private ICommand disconnectCommand;
+
         public MapPageViewModel(Context context, NodesViewModel nodesViewModel, 
             AddressPanelViewModel addressPanelViewModel, IMapPageView mapPageView, 
             AppShellViewModel appShellViewModel, BluetoothConnectorService bluetoothConnectorService)
@@ -128,31 +134,40 @@ namespace Rangeman
 
         private void DeleteNodeButton_Clicked()
         {
+            deleteButtonCanbePressed = false;
             NodesViewModel.DeleteSelectedNode();
             mapPageView.RemoveSelectedPin();
             mapPageView.AddLinesBetweenPinsAsLayer();
             ProgressMessage = "Successfully deleted node.";
+            deleteButtonCanbePressed = true;
         }
 
         private void SelectNodeButton_Clicked()
         {
+            selectButtonCanbePressed = false;
             NodesViewModel.ClickOnSelectNode();
+            selectButtonCanbePressed = true;
         }
 
         private async void AddressButton_Clicked()
         {
+            addressButtonCanbePressed = false;
             var addressPanelIsVisible = ToggleAddressPanelVisibility();
 
             if (addressPanelIsVisible)
             {
                 await AddressPanelViewModel.UpdateUserPositionAsync();
             }
+
+            addressButtonCanbePressed = true;
         }
 
         private async void DisconnectButton_Clicked()
         {
+            disconnectButtonCanbePressed = false;
             await bluetoothConnectorService.DisconnectFromWatch((m) => ProgressMessage = m);
             DisconnectButtonIsVisible = false;
+            disconnectButtonCanbePressed = true;
         }
         #endregion
 
@@ -209,12 +224,12 @@ namespace Rangeman
         {
             get
             {
-                if (applyCommand == null)
+                if (sendCommand == null)
                 {
-                    applyCommand = new Command((o) => ApplySettings(), (o) => CanApplySettings());
+                    sendCommand = new Command((o) => SendButton_Clicked(), (o) => sendButtonCanbePressed);
                 }
 
-                return applyCommand;
+                return sendCommand;
             }
         }
 
@@ -222,12 +237,12 @@ namespace Rangeman
         {
             get
             {
-                if (applyCommand == null)
+                if (deleteCommand == null)
                 {
-                    applyCommand = new Command((o) => ApplySettings(), (o) => CanApplySettings());
+                    deleteCommand = new Command((o) => DeleteNodeButton_Clicked(), (o) => deleteButtonCanbePressed);
                 }
 
-                return applyCommand;
+                return deleteCommand;
             }
         }
 
@@ -235,12 +250,12 @@ namespace Rangeman
         {
             get
             {
-                if (applyCommand == null)
+                if (selectCommand == null)
                 {
-                    applyCommand = new Command((o) => ApplySettings(), (o) => CanApplySettings());
+                    selectCommand = new Command((o) => SelectNodeButton_Clicked(), (o) => selectButtonCanbePressed);
                 }
 
-                return applyCommand;
+                return selectCommand;
             }
         }
 
@@ -248,12 +263,12 @@ namespace Rangeman
         {
             get
             {
-                if (applyCommand == null)
+                if (addressCommand == null)
                 {
-                    applyCommand = new Command((o) => ApplySettings(), (o) => CanApplySettings());
+                    addressCommand = new Command((o) => AddressButton_Clicked(), (o) => addressButtonCanbePressed);
                 }
 
-                return applyCommand;
+                return addressCommand;
             }
         }
 
@@ -261,12 +276,12 @@ namespace Rangeman
         {
             get
             {
-                if (applyCommand == null)
+                if (disconnectCommand == null)
                 {
-                    applyCommand = new Command((o) => ApplySettings(), (o) => CanApplySettings());
+                    disconnectCommand = new Command((o) => DisconnectButton_Clicked(), (o) => disconnectButtonCanbePressed);
                 }
 
-                return applyCommand;
+                return disconnectCommand;
             }
         }
 

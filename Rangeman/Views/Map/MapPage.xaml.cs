@@ -7,10 +7,7 @@ using Mapsui.Providers;
 using Mapsui.Styles;
 using Mapsui.UI.Forms;
 using Mapsui.Utilities;
-using nexus.protocols.ble;
-using Rangeman.Services.BluetoothConnector;
 using Rangeman.Views.Map;
-using Rangeman.WatchDataSender;
 using SQLite;
 using System;
 using System.Collections.Generic;
@@ -78,6 +75,7 @@ namespace Rangeman
             mapView.MyLocationLayer.UpdateMyLocation(new Position(location.Latitude, location.Longitude), true);
         }
 
+        #region Pin related methods
         private void mapView_MapClicked(object sender, MapClickedEventArgs e)
         {
             var pinTitle = GetPinTitle(e.Point.Longitude, e.Point.Latitude);
@@ -198,6 +196,14 @@ namespace Rangeman
             ShowPinOnMap(pinTitle, p, true);
         }
 
+        public void RemoveSelectedPin()
+        {
+            mapView.Pins.Remove(mapView.SelectedPin);
+        }
+        #endregion
+
+        #region MBTiles related methods
+
         public void UpdateMapToUseMbTilesFile()
         {
             var map = new Mapsui.Map();
@@ -217,11 +223,7 @@ namespace Rangeman
             var mbTilesLayer = new TileLayer(mbTilesTileSource) { Name = name };
             return mbTilesLayer;
         }
-
-        public void RemoveSelectedPin()
-        {
-            mapView.Pins.Remove(mapView.SelectedPin);
-        }
+        #endregion
 
         Task IMapPageView.DisplayAlert(string title, string message, string button)
         {
@@ -236,6 +238,5 @@ namespace Rangeman
                 return vm;
             }
         }
-
     }
 }

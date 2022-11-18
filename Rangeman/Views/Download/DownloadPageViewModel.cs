@@ -3,6 +3,7 @@ using employeeID;
 using Microsoft.Extensions.Logging;
 using Rangeman.DataExtractors.Data;
 using Rangeman.Services.BluetoothConnector;
+using Rangeman.Services.SharedPreferences;
 using Rangeman.Views.Download;
 using SharpGPX;
 using System.Collections.Generic;
@@ -24,6 +25,8 @@ namespace Rangeman
         private readonly AppShellViewModel appShellViewModel;
         private readonly IDownloadPageView downloadPageView;
         private readonly ILoggerFactory loggerFactory;
+        private readonly ISharedPreferencesService sharedPreferencesService;
+        private readonly ISaveGPXFileService saveGPXFileService;
         private bool disconnectButtonCanBePressed = true;
         private bool downloadHeadersButtonCanBePressed = true;
         private bool saveGPXButtonCanBePressed = true;
@@ -34,12 +37,15 @@ namespace Rangeman
 
         public DownloadPageViewModel(Context context, BluetoothConnectorService bluetoothConnectorService, 
             AppShellViewModel appShellViewModel, IDownloadPageView downloadPageView,
-            ILoggerFactory loggerFactory)
+            ILoggerFactory loggerFactory, ISharedPreferencesService sharedPreferencesService,
+            ISaveGPXFileService saveGPXFileService)
         {
             this.bluetoothConnectorService = bluetoothConnectorService;
             this.appShellViewModel = appShellViewModel;
             this.downloadPageView = downloadPageView;
             this.loggerFactory = loggerFactory;
+            this.sharedPreferencesService = sharedPreferencesService;
+            this.saveGPXFileService = saveGPXFileService;
             this.logger = loggerFactory.CreateLogger<DownloadPageViewModel>();
         }
 
@@ -66,6 +72,7 @@ namespace Rangeman
                 logPointMemoryService.ProgressChanged += LogPointMemoryService_ProgressChanged;
                 var headersTask = logPointMemoryService.GetHeaderDataAsync();
                 var headers = await headersTask;
+
                 LogHeaderList.Clear();
                 headers.ForEach(h => LogHeaderList.Add(h.ToViewModel()));
 
@@ -178,24 +185,10 @@ namespace Rangeman
 
             var headerTime = SelectedLogHeader.HeaderTime;
             var fileName = $"GPR-B1000-Route-{headerTime.Year}-{headerTime.Month}-{headerTime.Day}-2.gpx";
-            var path = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryDocuments).AbsolutePath;
-            string filePath = Path.Combine(path, fileName);
 
-            if (File.Exists(filePath))
-            {
-                var action = await downloadPageView.DisplayAlert("Overwrite?", "File already exists. Would you like to overwrite it ?", "Yes", "No");
-                if (action)
-                {
-                    File.Delete(filePath);
-                }
-                else
-                {
-                    return;
-                }
-            }
-
-            gpx.ToFile(filePath);
-            await downloadPageView.DisplayAlert("Alert", $"File saved here: {filePath}", "OK");
+            var gpxString = gpx.ToXml();
+            sharedPreferencesService.SetValue(Constants.PrefKeyGPX, gpxString);
+            saveGPXFileService.SaveGPXFile(fileName);
         }
 
         private void SetProgressMessage(string message)

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Windows.Input;
 using Xamarin.Essentials;
 using Xamarin.Forms;
@@ -77,7 +78,7 @@ namespace Rangeman
                 Body = "Dear Support, Something is wrong with my app, please help. I've attached the logs.",
             };
 
-            var path = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryDocuments).AbsolutePath;
+            var path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             var logDir = Path.Combine(path, Constants.LogSubFolder);
             var files = Directory.GetFiles(logDir);
 

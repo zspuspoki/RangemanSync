@@ -7,7 +7,6 @@ using Rangeman;
 using nexus.protocols.ble;
 using Android.Content;
 using Rangeman.Services.SharedPreferences;
-using Android.Media;
 
 namespace employeeID.Droid
 {
@@ -42,20 +41,23 @@ namespace employeeID.Droid
         {
             base.OnActivityResult(requestCode, resultCode, data);
 
-            using (System.IO.Stream stream = this.ContentResolver.OpenOutputStream(data.Data, "w"))
+            if (requestCode == ActivityRequestCode.SaveGPXFile)
             {
-                using (var javaStream = new Java.IO.BufferedOutputStream(stream))
+                using (System.IO.Stream stream = this.ContentResolver.OpenOutputStream(data.Data, "w"))
                 {
-                    string gpx = preferencesService.GetValue(Constants.PrefKeyGPX, "");
-
-                    if (!string.IsNullOrEmpty(gpx))
+                    using (var javaStream = new Java.IO.BufferedOutputStream(stream))
                     {
-                        var gpxBytes = System.Text.Encoding.Unicode.GetBytes(gpx);
-                        javaStream.Write(gpxBytes, 0, gpxBytes.Length);
-                    }
+                        string gpx = preferencesService.GetValue(Constants.PrefKeyGPX, "");
 
-                    javaStream.Flush();
-                    javaStream.Close();
+                        if (!string.IsNullOrEmpty(gpx))
+                        {
+                            var gpxBytes = System.Text.Encoding.Unicode.GetBytes(gpx);
+                            javaStream.Write(gpxBytes, 0, gpxBytes.Length);
+                        }
+
+                        javaStream.Flush();
+                        javaStream.Close();
+                    }
                 }
             }
         }

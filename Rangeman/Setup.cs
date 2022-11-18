@@ -45,8 +45,8 @@ namespace Rangeman
         {
             return serviceCollection.AddLogging(builder =>
             {
-                var path = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryDocuments).AbsolutePath; ;
-                
+                var path = Android.App.Application.Context.GetExternalFilesDir("").AbsolutePath;
+
                 var loggerConfiguration = new LoggerConfiguration()
                     .ReadFrom.Configuration(configurationRoot.GetSection("Logging"))
                     .WriteTo.File(Path.Combine(path, Constants.LogSubFolder, "Log.log"), 

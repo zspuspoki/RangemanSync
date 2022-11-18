@@ -212,7 +212,7 @@ namespace Rangeman
         {
             var map = new Mapsui.Map();
             var fileName = "map.mbtiles";
-            var path = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryDocuments).AbsolutePath;
+            var path = Android.App.Application.Context.GetExternalFilesDir("").AbsolutePath;
             string filePath = System.IO.Path.Combine(path, fileName);
 
             var mbTilesLayer = CreateMbTilesLayer(filePath, "regular");

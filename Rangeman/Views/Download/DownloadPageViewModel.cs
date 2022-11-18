@@ -36,7 +36,6 @@ namespace Rangeman
             AppShellViewModel appShellViewModel, IDownloadPageView downloadPageView,
             ILoggerFactory loggerFactory)
         {
-            Context = context;
             this.bluetoothConnectorService = bluetoothConnectorService;
             this.appShellViewModel = appShellViewModel;
             this.downloadPageView = downloadPageView;
@@ -207,7 +206,6 @@ namespace Rangeman
         #endregion
 
         #region Properties
-        public Context Context { get; }
         public ObservableCollection<LogHeaderViewModel> LogHeaderList { get; } = new ObservableCollection<LogHeaderViewModel>();
         public LogHeaderViewModel SelectedLogHeader { get; set; }
         public string ProgressMessage { get => progressMessage; set { progressMessage = value; OnPropertyChanged("ProgressMessage"); } }

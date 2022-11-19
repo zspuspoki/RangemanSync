@@ -66,7 +66,7 @@ namespace employeeID.Droid
             alert.SetMessage(message);
             alert.SetPositiveButton("OK", (s, a) =>
             {
-                FinishAndRemoveTask();
+                Process.KillProcess(Process.MyPid());
                 return;
             });
 

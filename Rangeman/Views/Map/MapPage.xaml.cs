@@ -12,7 +12,6 @@ using Rangeman.Views.Map;
 using SQLite;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Xamarin.Essentials;
 using Xamarin.Forms;
@@ -208,17 +207,54 @@ namespace Rangeman
 
         #region MBTiles related methods
 
-        public void UpdateMapToUseMbTilesFile()
+        public async void UpdateMapToUseMbTilesFile()
         {
-            var map = new Mapsui.Map();
-            var fileName = "map.mbtiles";
-            var path = Android.App.Application.Context.GetExternalFilesDir("").AbsolutePath;
-            string filePath = System.IO.Path.Combine(path, fileName);
+            logger.LogInformation("UpdateMapToUseMbTilesFile started");
 
-            var mbTilesLayer = CreateMbTilesLayer(filePath, "regular");
-            map.Layers.Add(mbTilesLayer);
+            var selectedFile = await SelectMBTilesFile();
 
-            mapView.Map = map;
+            if (selectedFile != null)
+            {
+                logger.LogDebug($"Selected file's full path {selectedFile.FullPath}");
+
+                var mbTilesLayer = CreateMbTilesLayer(selectedFile.FullPath, "regular");
+
+                var map = new Mapsui.Map();
+                map.Layers.Add(mbTilesLayer);
+
+                mapView.Map = map;
+
+                ViewModel.ProgressMessage = $"Mbtiles based map selection has been completed. {selectedFile.FileName}";
+            }
+            else
+            {
+                logger.LogDebug("selectedFile is null");
+                ViewModel.ProgressMessage = "Map setting was unsuccessful due to the problem with the file selection.";
+            }
+        }
+
+        private async Task<FileResult> SelectMBTilesFile()
+        {
+            try
+            {
+                var result = await FilePicker.PickAsync();
+
+                if (result.FileName.EndsWith("mbtiles", StringComparison.OrdinalIgnoreCase))
+                {
+                    return result;
+                }
+                else
+                {
+                    await DisplayAlert("Error", "Please choose .mbtiles file", "cancel");
+                    return null;
+                }
+            }
+            catch(Exception ex)
+            {
+                logger.LogError(ex, "SelectMBTilesFile error");
+            }
+
+            return null;
         }
 
         private static TileLayer CreateMbTilesLayer(string path, string name)

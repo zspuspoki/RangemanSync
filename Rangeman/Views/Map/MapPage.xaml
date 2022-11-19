@@ -36,7 +36,8 @@
                 </Grid>
 
                 <Label AbsoluteLayout.LayoutBounds="0, 0, AutoSize, AutoSize"
-                      AbsoluteLayout.LayoutFlags="PositionProportional" TextColor="Red" BackgroundColor="White" Text="{Binding ProgressMessage}"/>
+                      AbsoluteLayout.LayoutFlags="PositionProportional" TextColor="Red" 
+                       BackgroundColor="White" Text="{Binding ProgressMessage}" x:Name="lblProgress"/>
 
                 <Button AbsoluteLayout.LayoutBounds="0, 1, AutoSize, AutoSize"
                       AbsoluteLayout.LayoutFlags="PositionProportional"

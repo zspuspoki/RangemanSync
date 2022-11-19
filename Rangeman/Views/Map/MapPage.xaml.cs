@@ -33,6 +33,20 @@ namespace Rangeman
             InitializeComponent();
 
             InitializeMap();
+
+            InitProgressLabel();
+        }
+
+        private void InitProgressLabel()
+        {
+            lblProgress.GestureRecognizers.Add(new TapGestureRecognizer
+            {
+                //TODO: Move this command to the viewmodel
+                Command = new Command(()=> 
+                {
+                    ViewModel.ProgressMessage = "";
+                })
+            });
         }
 
         private async void InitializeMap()

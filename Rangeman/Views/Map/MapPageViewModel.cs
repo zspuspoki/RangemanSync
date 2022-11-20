@@ -6,11 +6,14 @@ using Rangeman.WatchDataSender;
 using System.Diagnostics;
 using System.Windows.Input;
 using Microsoft.Extensions.Logging;
+using Xamarin.Essentials;
+using System;
 
 namespace Rangeman
 {
     public class MapPageViewModel : ViewModelBase
     {
+        private bool showCalculatedDistance = false;
         private bool addressPanelIsVisible = false;
         private bool progressBarIsVisible;
         private string progressBarPercentageMessage;
@@ -60,7 +63,30 @@ namespace Rangeman
             };
         }
 
-       
+        public async void ShowDistanceFromCurrentPosition(double longitude, double latitude)
+        {
+            if(!ShowCalculatedDistances)
+            {
+                return;
+            }
+
+            try
+            {
+                var location = await Geolocation.GetLastKnownLocationAsync();
+                if (location != null)
+                {
+                    var distance = Location.CalculateDistance(location.Latitude, location.Longitude, 
+                        latitude, longitude, DistanceUnits.Kilometers);
+
+                    ProgressMessage = $"Distance from the current position: {distance.ToString("N3")} km";
+                }
+            }
+            catch(Exception ex)
+            {
+                logger.LogError(ex, ex.Message);
+                ProgressMessage = "An unexpexcted error occured during calculating the distance. ( current point - selected point)";
+            }
+        }
 
         public void UpdateMapToUseMbTilesFile()
         {
@@ -291,6 +317,18 @@ namespace Rangeman
         }
 
         #endregion
+
+        public bool ShowCalculatedDistances
+        {
+            get
+            {
+                return showCalculatedDistance;
+            }
+            set
+            {
+                showCalculatedDistance = value;
+            }
+        }
         #endregion
     }
 }

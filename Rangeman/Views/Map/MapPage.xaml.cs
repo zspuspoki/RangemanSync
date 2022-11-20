@@ -95,7 +95,7 @@ namespace Rangeman
         #region Pin related methods
         private void mapView_MapClicked(object sender, MapClickedEventArgs e)
         {
-            var pinTitle = GetPinTitle(e.Point.Longitude, e.Point.Latitude);
+            var pinTitle = AddNodeToViewModelAndGetPinTitle(e.Point.Longitude, e.Point.Latitude);
 
             if (pinTitle == null)
             {
@@ -150,8 +150,9 @@ namespace Rangeman
             mapView.Map.Layers.Add(linesLayer);
         }
 
-        private string GetPinTitle(double longitude, double latitude)
+        private string AddNodeToViewModelAndGetPinTitle(double longitude, double latitude)
         {
+            ViewModel.ShowDistanceFromCurrentPosition(longitude, latitude);
             var pinTitle = ViewModel.NodesViewModel.AddNodeToMap(longitude, latitude);
             return pinTitle;
         }
@@ -203,7 +204,7 @@ namespace Rangeman
 
         public void PlaceOnMapClicked(Position p)
         {
-            var pinTitle = GetPinTitle(p.Longitude, p.Latitude);
+            var pinTitle = AddNodeToViewModelAndGetPinTitle(p.Longitude, p.Latitude);
 
             if (pinTitle == null)
             {

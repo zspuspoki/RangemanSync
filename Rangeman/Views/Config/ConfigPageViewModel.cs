@@ -10,6 +10,7 @@ namespace Rangeman
     {
         private bool useMbTilesChecked;
         private bool sendLogFilesChecked;
+        private bool showCalculatedDistanceFromYourPosition;
 
         private ICommand applyCommand;
         private readonly MapPageViewModel mapPageViewModel;
@@ -18,14 +19,23 @@ namespace Rangeman
         {
             this.mapPageViewModel = mapPageViewModel;
         }
+        public bool UseMbTilesChecked
+        {
+            get => useMbTilesChecked;
+            set
+            {
+                useMbTilesChecked = value;
+                OnPropertyChanged("UseMbTilesChecked");
+            }
+        }
 
-        public bool UseMbTilesChecked 
+        public bool ShowCalculatedDistanceFromYourPosition
         { 
-            get => useMbTilesChecked; 
+            get => showCalculatedDistanceFromYourPosition; 
             set 
-            { 
-                useMbTilesChecked = value; 
-                OnPropertyChanged("UseMbTilesChecked"); 
+            {
+                showCalculatedDistanceFromYourPosition = value; 
+                OnPropertyChanged("ShowCalculatedDistanceFromYourPosition"); 
             } 
         }
 
@@ -68,6 +78,8 @@ namespace Rangeman
             {
                 SendEmailToDevSupport();
             }
+
+            mapPageViewModel.ShowCalculatedDistances = ShowCalculatedDistanceFromYourPosition;
         }
 
         private async void SendEmailToDevSupport()

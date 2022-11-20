@@ -30,7 +30,7 @@ namespace Rangeman
 
         public static IServiceCollection AddViews(this IServiceCollection serviceCollection)
         {
-            serviceCollection.AddViewTransient<ConfigPage, ConfigPageViewModel>();
+            serviceCollection.AddViewSingleton<ConfigPage, ConfigPageViewModel>();
 
             serviceCollection.AddSingleton<IDownloadPageView, DownloadPage>();
             serviceCollection.AddViewSingleton<IDownloadPageView, DownloadPage, DownloadPageViewModel>();
@@ -71,7 +71,7 @@ namespace Rangeman
             serviceCollection.AddSingleton<MapPageViewModel>();
             serviceCollection.AddViewModels<NodesViewModel>();
             serviceCollection.AddViewModels<AddressPanelViewModel>();
-            serviceCollection.AddViewModels<ConfigPageViewModel>();
+            serviceCollection.AddSingleton<ConfigPageViewModel>();
 
             serviceCollection.AddSingleton<BluetoothConnectorService>((ctx) => 
             {
@@ -104,9 +104,9 @@ namespace Rangeman
             return serviceCollection;
         }
 
-        private static IServiceCollection AddViewTransient<TView, TViewModel>(this IServiceCollection serviceCollection) where TView : Page
+        private static IServiceCollection AddViewSingleton<TView, TViewModel>(this IServiceCollection serviceCollection) where TView : Page
         {
-            return serviceCollection.AddTransient<TView>(serviceProvider =>
+            return serviceCollection.AddSingleton<TView>(serviceProvider =>
             {
                 TView view = ActivatorUtilities.CreateInstance<TView>(serviceProvider);
 

@@ -1,15 +1,13 @@
 ﻿using Android.Content;
-using employeeID;
 using Microsoft.Extensions.Logging;
 using Rangeman.DataExtractors.Data;
 using Rangeman.Services.BluetoothConnector;
 using Rangeman.Services.SharedPreferences;
+using Rangeman.Services.WatchDataReceiver;
 using Rangeman.Views.Download;
 using SharpGPX;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
 using System.Windows.Input;
 using Xamarin.Forms;
 

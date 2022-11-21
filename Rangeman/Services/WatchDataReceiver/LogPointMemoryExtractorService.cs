@@ -8,7 +8,7 @@ using System;
 using Rangeman.WatchDataReceiver;
 using Microsoft.Extensions.Logging;
 
-namespace employeeID
+namespace Rangeman.Services.WatchDataReceiver
 {
     internal class LogPointMemoryExtractorService
     {
@@ -21,7 +21,7 @@ namespace employeeID
         {
             var gattServer = connection.GattServer;
             remoteWatchController = new RemoteWatchController(gattServer, loggerFactory);
-            this.logger = loggerFactory.CreateLogger<LogPointMemoryExtractorService>();
+            logger = loggerFactory.CreateLogger<LogPointMemoryExtractorService>();
             this.loggerFactory = loggerFactory;
         }
 
@@ -34,7 +34,7 @@ namespace employeeID
             var allDataReceived = new TaskCompletionSource<IDataExtractor>();
             var logAndPointMemoryHeaderParser = new LogAndPointMemoryHeaderParser(loggerFactory);
 
-            var casioConvoyAndCasioDataRequestObserver = new CasioConvoyAndCasioDataRequestObserver(logAndPointMemoryHeaderParser, 
+            var casioConvoyAndCasioDataRequestObserver = new CasioConvoyAndCasioDataRequestObserver(logAndPointMemoryHeaderParser,
                 remoteWatchController, allDataReceived, loggerFactory);
             casioConvoyAndCasioDataRequestObserver.ProgressChanged += CasioConvoyAndCasioDataRequestObserver_ProgressChanged;
 
@@ -116,7 +116,7 @@ namespace employeeID
 
         private void FireProgressChangedEvent(string message)
         {
-            if(ProgressChanged != null)
+            if (ProgressChanged != null)
             {
                 ProgressChanged(this, new DataReceiverProgressEventArgs { Text = message });
             }

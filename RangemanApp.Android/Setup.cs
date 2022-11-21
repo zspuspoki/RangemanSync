@@ -7,7 +7,7 @@ using Rangeman.Services.SharedPreferences;
 using System;
 using Xamarin.Forms.Platform.Android;
 
-namespace employeeID.Droid
+namespace RangemanSync.Android
 {
     public class Setup
     {

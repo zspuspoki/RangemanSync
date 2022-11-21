@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace employeeID.Droid
+namespace RangemanSync.Android
 {
     public class BluetoothPermissions : Xamarin.Essentials.Permissions.BasePlatformPermission
     {

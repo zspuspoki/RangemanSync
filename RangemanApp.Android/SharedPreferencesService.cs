@@ -1,7 +1,7 @@
 ﻿using Rangeman.Services.SharedPreferences;
 using Xamarin.Essentials;
 
-namespace employeeID.Droid
+namespace RangemanSync.Android
 {
     public class SharedPreferencesService : ISharedPreferencesService
     {

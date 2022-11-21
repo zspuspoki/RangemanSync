@@ -2,7 +2,7 @@
 using Rangeman;
 using Xamarin.Forms.Platform.Android;
 
-namespace employeeID.Droid
+namespace RangemanSync.Android
 {
     public class SaveGPXFileService : ISaveGPXFileService
     {

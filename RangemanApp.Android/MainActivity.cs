@@ -11,8 +11,9 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using static Xamarin.Essentials.Permissions;
 using Xamarin.Forms.Internals;
+using AndroidContent = Android.Content;
 
-namespace employeeID.Droid
+namespace RangemanSync.Android
 {
     [Activity(Label = "RangemanSync", Icon = "@mipmap/icon", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize )]
     public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity
@@ -85,10 +86,10 @@ namespace employeeID.Droid
 
             status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
 
-            return status;
+            return status; 
         }
 
-        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
+        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] AndroidContent.PM.Permission[] grantResults)
         {
             for (int i=0;i<permissions.Length;i++)
             {

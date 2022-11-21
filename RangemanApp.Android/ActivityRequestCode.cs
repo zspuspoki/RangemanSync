@@ -1,4 +1,4 @@
-﻿namespace employeeID.Droid
+﻿namespace RangemanSync.Android
 {
     public class ActivityRequestCode
     {

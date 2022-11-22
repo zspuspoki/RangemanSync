@@ -188,7 +188,15 @@ namespace Rangeman
 
             if (addressPanelIsVisible)
             {
-                await AddressPanelViewModel.UpdateUserPositionAsync();
+                try
+                {
+                    await AddressPanelViewModel.UpdateUserPositionAsync();
+                }
+                catch(Exception ex)
+                {
+                    logger.LogError(ex, "Error occured during setting GPS position");
+                    ProgressMessage = "An error occured during getting your current GPS position. Are you sure you have internet connection ?";
+                }
             }
 
             addressButtonCanbePressed = true;

@@ -11,5 +11,6 @@ namespace Rangeman.Views.Map
         void RemoveSelectedPin();
         Task DisplayAlert(string title, string message, string button);
         void ShowOnMap(Position p);
+        void DisplayProgressMessage(string message);
     }
 }

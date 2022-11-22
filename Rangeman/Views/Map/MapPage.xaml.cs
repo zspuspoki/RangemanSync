@@ -291,6 +291,11 @@ namespace Rangeman
             mapView.Navigator.NavigateTo(smc, mapView.Map.Resolutions[17]);
         }
 
+        public void DisplayProgressMessage(string message)
+        {
+            ViewModel.ProgressMessage = message;
+        }
+
         public MapPageViewModel ViewModel
         {
             get

@@ -1,4 +1,5 @@
 ﻿using Mapsui.UI.Forms;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -28,14 +29,28 @@ namespace Rangeman.Views.Map
 
         public void PlaceOnMap()
         {
-            SetPosition();
-            mapPageView.PlaceOnMapClicked(position);
+            try
+            {
+                SetPosition();
+                mapPageView.PlaceOnMapClicked(position);
+            }
+            catch(Exception ex)
+            {
+                mapPageView.DisplayProgressMessage("An unexpected error occured during setting the address. Do you have internet connection?");
+            }
         }
 
         public void ShowOnMap()
         {
-            SetPosition();
-            mapPageView.ShowOnMap(position);
+            try
+            {
+                SetPosition();
+                mapPageView.ShowOnMap(position);
+            }
+            catch(Exception ex)
+            {
+                mapPageView.DisplayProgressMessage("An unexpected error occured during setting the address. Do you have internet connection?");
+            }
         }
 
         public async Task UpdateUserPositionAsync()

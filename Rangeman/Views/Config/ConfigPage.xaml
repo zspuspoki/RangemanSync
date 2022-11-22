@@ -53,6 +53,7 @@
                 </StackLayout>
             </Frame>
             <Button Text="Apply changes" x:Name="ApplyButton" Command="{Binding Path=ApplyCommand}" />
+            <Label Text="{Binding ProgressMessage}" TextColor="Red" x:Name="lblProgress" />
         </StackLayout>
         
     </ContentPage.Content>

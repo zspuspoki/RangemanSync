@@ -8,6 +8,7 @@ namespace Rangeman
 {
     internal class ConfigPageViewModel : ViewModelBase
     {
+        private string progressMessage = "";
         private bool useMbTilesChecked;
         private bool sendLogFilesChecked;
         private bool showCalculatedDistanceFromYourPosition;
@@ -26,6 +27,7 @@ namespace Rangeman
             {
                 useMbTilesChecked = value;
                 OnPropertyChanged("UseMbTilesChecked");
+                SetPressApplyButtonProgressMessage();
             }
         }
 
@@ -35,7 +37,8 @@ namespace Rangeman
             set 
             {
                 showCalculatedDistanceFromYourPosition = value; 
-                OnPropertyChanged("ShowCalculatedDistanceFromYourPosition"); 
+                OnPropertyChanged("ShowCalculatedDistanceFromYourPosition");
+                SetPressApplyButtonProgressMessage();
             } 
         }
 
@@ -46,6 +49,7 @@ namespace Rangeman
             {
                 sendLogFilesChecked = value;
                 OnPropertyChanged("SendLogFilesChecked");
+                SetPressApplyButtonProgressMessage();
             }
         }
 
@@ -60,6 +64,18 @@ namespace Rangeman
 
                 return applyCommand;
             }
+        }
+
+        public string ProgressMessage { get => progressMessage; set { progressMessage = value; OnPropertyChanged("ProgressMessage"); } }
+
+        private void SetPressApplyButtonProgressMessage()
+        {
+            ProgressMessage = "Changes haven't been applied yet. Please press the apply button to do this now.";
+        }
+
+        private void SetApplyFinishedProgressMessage()
+        {
+            ProgressMessage = $"All changes have been applied. Time: {DateTime.Now}";
         }
 
         private bool CanApplySettings()
@@ -80,6 +96,7 @@ namespace Rangeman
             }
 
             mapPageViewModel.ShowCalculatedDistances = ShowCalculatedDistanceFromYourPosition;
+            SetApplyFinishedProgressMessage();
         }
 
         private async void SendEmailToDevSupport()

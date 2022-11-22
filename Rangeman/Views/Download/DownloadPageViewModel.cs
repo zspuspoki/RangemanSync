@@ -15,7 +15,7 @@ namespace Rangeman
 {
     public class DownloadPageViewModel : ViewModelBase
     {
-        private string progressMessage;
+        private string progressMessage = "Press the download headers button to start downloading the previously recorded routes from the watch. This message can be closed any time by tapping on it";
         private bool watchCommandButtonsAreVisible = true;
         private bool disconnectButtonIsVisible = false;
         private ILogger<DownloadPageViewModel> logger;
@@ -94,6 +94,13 @@ namespace Rangeman
         private async void DownloadSaveGPXButton_Clicked()
         {
             logger.LogInformation("--- MainPage - start DownloadSaveGPXButton_Clicked");
+            if(SelectedLogHeader == null)
+            {
+                logger.LogDebug("DownloadSaveGPXButton_Clicked : One log header entry should be selected");
+                SetProgressMessage("Please select a log header from the list or start downloading the list by using the download headers button if you haven't done it yet.");
+                return;
+            }
+
             SetProgressMessage("Looking for Casio GPR-B1000 device. Please connect your watch.");
 
             saveGPXButtonCanBePressed = false;
@@ -101,32 +108,24 @@ namespace Rangeman
 
             await bluetoothConnectorService.FindAndConnectToWatch(SetProgressMessage, async (connection) =>
             {
-                if (SelectedLogHeader != null)
-                {
-                    logger.LogDebug("DownloadSaveGPXButton_Clicked : Before GetLogDataAsync");
-                    logger.LogDebug($"Selected ordinal number: {SelectedLogHeader.OrdinalNumber}");
-                    var logPointMemoryService = new LogPointMemoryExtractorService(connection, loggerFactory);
-                    logPointMemoryService.ProgressChanged += LogPointMemoryService_ProgressChanged;
-                    var selectedHeader = SelectedLogHeader;
-                    var logDataEntries = await logPointMemoryService.GetLogDataAsync(selectedHeader.OrdinalNumber,
-                        selectedHeader.DataSize,
-                        selectedHeader.DataCount,
-                        selectedHeader.LogAddress,
-                        selectedHeader.LogTotalLength);
+                logger.LogDebug("DownloadSaveGPXButton_Clicked : Before GetLogDataAsync");
+                logger.LogDebug($"Selected ordinal number: {SelectedLogHeader.OrdinalNumber}");
+                var logPointMemoryService = new LogPointMemoryExtractorService(connection, loggerFactory);
+                logPointMemoryService.ProgressChanged += LogPointMemoryService_ProgressChanged;
+                var selectedHeader = SelectedLogHeader;
+                var logDataEntries = await logPointMemoryService.GetLogDataAsync(selectedHeader.OrdinalNumber,
+                    selectedHeader.DataSize,
+                    selectedHeader.DataCount,
+                    selectedHeader.LogAddress,
+                    selectedHeader.LogTotalLength);
 
-                    logPointMemoryService.ProgressChanged -= LogPointMemoryService_ProgressChanged;
+                logPointMemoryService.ProgressChanged -= LogPointMemoryService_ProgressChanged;
 
-                    SaveGPXFile(logDataEntries);
+                SaveGPXFile(logDataEntries);
 
-                    DisconnectButtonIsVisible = false;
+                DisconnectButtonIsVisible = false;
 
-                    return true;
-                }
-                else
-                {
-                    logger.LogDebug("DownloadSaveGPXButton_Clicked : One log header entry should be selected");
-                    return false;
-                }
+                return true;
             },
             async () =>
             {

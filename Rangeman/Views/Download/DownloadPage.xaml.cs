@@ -13,8 +13,23 @@ namespace Rangeman
         public DownloadPage(ILogger<DownloadPage> logger)
         {
             InitializeComponent();
+
             this.logger = logger;
             logger.LogInformation("MainPage instatiated");
+
+            InitProgressLabel();
+        }
+
+        private void InitProgressLabel()
+        {
+            lblProgress.GestureRecognizers.Add(new TapGestureRecognizer
+            {
+                //TODO: Move this command to the viewmodel
+                Command = new Command(() =>
+                {
+                    ViewModel.ProgressMessage = "";
+                })
+            });
         }
 
         private void LogHeadersList_ItemSelected(object sender, SelectedItemChangedEventArgs e)

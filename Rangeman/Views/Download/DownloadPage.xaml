@@ -4,7 +4,7 @@
              x:Class="Rangeman.DownloadPage">
     <ContentPage.Content>
         <StackLayout>
-            <Label Text="{Binding ProgressMessage}" TextColor="Red" />
+            <Label Text="{Binding ProgressMessage}" TextColor="Red" x:Name="lblProgress" />
             <ListView x:Name="LogHeadersList" ItemsSource="{Binding LogHeaderList}"
                       CachingStrategy="RecycleElement"
                       ItemSelected="LogHeadersList_ItemSelected">

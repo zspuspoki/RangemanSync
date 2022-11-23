@@ -49,7 +49,7 @@ namespace Rangeman
             });
         }
 
-        private async void InitializeMap()
+        private async Task InitializeMap()
         {
             var map = new Mapsui.Map
             {
@@ -245,6 +245,19 @@ namespace Rangeman
             {
                 logger.LogDebug("selectedFile is null");
                 ViewModel.ProgressMessage = "Map setting was unsuccessful due to the problem with the file selection.";
+            }
+        }
+
+        public async void UpdateMapToUseWebBasedMbTiles()
+        {
+            try
+            {
+                await InitializeMap();
+                ViewModel.ProgressMessage = $"Web based mbtiles file selection has been completed.";
+            }
+            catch(Exception ex)
+            {
+                logger.LogDebug(ex, "Error using UpdateMapToUseWebBasedMbTiles");
             }
         }
 

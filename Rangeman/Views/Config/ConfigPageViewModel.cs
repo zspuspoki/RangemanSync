@@ -89,6 +89,10 @@ namespace Rangeman
             {
                 mapPageViewModel.UpdateMapToUseMbTilesFile();
             }
+            else
+            {
+                mapPageViewModel.UpdateMapToUseWebBasedMbTiles();
+            }
 
             if(sendLogFilesChecked)
             {

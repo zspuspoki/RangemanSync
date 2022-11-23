@@ -93,6 +93,11 @@ namespace Rangeman
             mapPageView.UpdateMapToUseMbTilesFile();            
         }
 
+        public void UpdateMapToUseWebBasedMbTiles()
+        {
+            mapPageView.UpdateMapToUseWebBasedMbTiles();
+        }
+
         public bool ToggleAddressPanelVisibility()
         {
             if (!addressPanelIsVisible)

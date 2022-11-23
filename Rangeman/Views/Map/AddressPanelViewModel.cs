@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.Essentials;
 using Xamarin.Forms;
+using Location = Xamarin.Essentials.Location;
 
 namespace Rangeman.Views.Map
 {
@@ -27,11 +28,11 @@ namespace Rangeman.Views.Map
             this.mapPageView = mapPageView;
         }
 
-        public void PlaceOnMap()
+        public async void PlaceOnMap()
         {
             try
             {
-                SetPosition();
+                await SetPosition();
                 mapPageView.PlaceOnMapClicked(position);
             }
             catch(Exception ex)
@@ -40,11 +41,11 @@ namespace Rangeman.Views.Map
             }
         }
 
-        public void ShowOnMap()
+        public async void ShowOnMap()
         {
             try
             {
-                SetPosition();
+                await SetPosition();
                 mapPageView.ShowOnMap(position);
             }
             catch(Exception ex)
@@ -64,7 +65,7 @@ namespace Rangeman.Views.Map
             await SetAddressAsync(position);
         }
 
-        private async void SetPosition()
+        private async Task SetPosition()
         {
             double latitude = this.latitude;
             double longitude = this.longitude;

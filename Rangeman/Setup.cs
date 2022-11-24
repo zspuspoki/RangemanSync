@@ -49,11 +49,15 @@ namespace Rangeman
                 var path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 
                 var loggerConfiguration = new LoggerConfiguration()
-                    .ReadFrom.Configuration(configurationRoot.GetSection("Logging"))
+                    .ReadFrom.Configuration(configurationRoot)
                     .Enrich.WithExceptionDetails()
+#if DEBUG
                     .WriteTo.Debug()
+#endif
                     .WriteTo.File(Path.Combine(path, Constants.LogSubFolder, "Log.log"), 
                         rollingInterval: RollingInterval.Day,
+                        fileSizeLimitBytes: 5242880,
+                        rollOnFileSizeLimit : true,
                         retainedFileCountLimit: 3,
                         outputTemplate: "{Timestamp:HH:mm:ss} [{Level:u3}] {Message:lj} ({SourceContext}) {Exception}{NewLine}");
 

@@ -6,6 +6,7 @@ using Rangeman.Services.SharedPreferences;
 using Rangeman.Services.WatchDataReceiver;
 using Rangeman.Views.Download;
 using SharpGPX;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
@@ -28,6 +29,7 @@ namespace Rangeman
         private bool disconnectButtonCanBePressed = true;
         private bool downloadHeadersButtonCanBePressed = true;
         private bool saveGPXButtonCanBePressed = true;
+        private DateTime lastHeaderDownloadTime;
 
         private ICommand disconnectCommand;
         private ICommand downloadHeadersCommand;
@@ -77,7 +79,7 @@ namespace Rangeman
                 logPointMemoryService.ProgressChanged -= LogPointMemoryService_ProgressChanged;
 
                 DisconnectButtonIsVisible = false;
-
+                lastHeaderDownloadTime = DateTime.Now;
                 return true;
             },
             async () =>
@@ -98,6 +100,15 @@ namespace Rangeman
             {
                 logger.LogDebug("DownloadSaveGPXButton_Clicked : One log header entry should be selected");
                 SetProgressMessage("Please select a log header from the list or start downloading the list by using the download headers button if you haven't done it yet.");
+                return;
+            }
+
+            var timeElapsedSinceLastHeaderDownloadTime = DateTime.Now - lastHeaderDownloadTime;
+
+            if(timeElapsedSinceLastHeaderDownloadTime.TotalMinutes > 30)
+            {
+                logger.LogDebug($"--- Old header data detected. Elapsed minutes = {timeElapsedSinceLastHeaderDownloadTime}");
+                SetProgressMessage("The header data is more than 30 minutes old. Please download the headers again by pressing the Download headers button.");
                 return;
             }
 

@@ -6,6 +6,7 @@ using Rangeman.Services.BluetoothConnector;
 using Rangeman.Views.Download;
 using Rangeman.Views.Map;
 using Serilog;
+using Serilog.Exceptions;
 using System;
 using System.IO;
 using Xamarin.Forms;
@@ -49,8 +50,10 @@ namespace Rangeman
 
                 var loggerConfiguration = new LoggerConfiguration()
                     .ReadFrom.Configuration(configurationRoot.GetSection("Logging"))
+                    .Enrich.WithExceptionDetails()
                     .WriteTo.File(Path.Combine(path, Constants.LogSubFolder, "Log.log"), 
                         rollingInterval: RollingInterval.Day,
+                        retainedFileCountLimit: 3,
                         outputTemplate: "{Timestamp:HH:mm:ss} [{Level:u3}] {Message:lj} ({SourceContext}) {Exception}{NewLine}");
 
                 builder.AddSerilog(loggerConfiguration.CreateLogger());

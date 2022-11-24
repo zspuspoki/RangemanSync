@@ -12,6 +12,9 @@ using System.Collections.Generic;
 using static Xamarin.Essentials.Permissions;
 using Xamarin.Forms.Internals;
 using AndroidContent = Android.Content;
+using System;
+using Environment = System.Environment;
+using System.IO;
 
 namespace RangemanSync.Android
 {
@@ -25,6 +28,9 @@ namespace RangemanSync.Android
         {
             base.OnCreate(savedInstanceState);
 
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
+            TaskScheduler.UnobservedTaskException += TaskSchedulerOnUnobservedTaskException;
+
             BluetoothLowEnergyAdapter.Init(this);
             Platform.Init(this, savedInstanceState);
             global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
@@ -37,6 +43,42 @@ namespace RangemanSync.Android
             LoadApplication(new App(setup.Configuration, setup.DependencyInjection));
 
         }
+
+        #region Error handling
+        private void TaskSchedulerOnUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
+        {
+            var newExc = new Exception("TaskSchedulerOnUnobservedTaskException", e.Exception);
+            LogUnhandledException(newExc);
+        }
+
+        private void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            var newExc = new Exception("CurrentDomainOnUnhandledException", e.ExceptionObject as Exception);
+            LogUnhandledException(newExc);
+        }
+
+        internal static void LogUnhandledException(Exception exception)
+        {
+            try
+            {
+                const string errorFileName = "Fatal.log";
+                var docsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                var logsPath = Path.Combine(docsPath, Constants.LogSubFolder);
+
+                var errorFilePath = Path.Combine(logsPath, errorFileName);
+                var errorMessage = String.Format("Time: {0}\r\nError: Unhandled Exception\r\n{1}",
+                DateTime.Now, exception.ToString());
+                File.WriteAllText(errorFilePath, errorMessage);
+
+            }
+            catch
+            {
+                // just suppress any error logging exceptions
+            }
+        }
+        #endregion
+
+        #region Permission checking
 
         private async Task CheckPermissions()
         {
@@ -104,6 +146,7 @@ namespace RangemanSync.Android
 
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
         }
+        #endregion
 
         protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
         {

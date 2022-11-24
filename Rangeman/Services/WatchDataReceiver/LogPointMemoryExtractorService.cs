@@ -19,10 +19,10 @@ namespace Rangeman.Services.WatchDataReceiver
 
         public LogPointMemoryExtractorService(BlePeripheralConnectionRequest connection, ILoggerFactory loggerFactory)
         {
-            var gattServer = connection.GattServer;
-            remoteWatchController = new RemoteWatchController(gattServer, loggerFactory);
             logger = loggerFactory.CreateLogger<LogPointMemoryExtractorService>();
             this.loggerFactory = loggerFactory;
+            var gattServer = connection.GattServer;
+            remoteWatchController = new RemoteWatchController(gattServer, loggerFactory);
         }
 
         public async Task<List<LogHeaderDataInfo>> GetHeaderDataAsync()

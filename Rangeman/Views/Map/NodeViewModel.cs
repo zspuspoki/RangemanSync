@@ -15,6 +15,15 @@ namespace Rangeman.Views.Map
         public bool Visible { get; set; }
         public NodeCategory Category { get; set; }
 
+        public bool HasValidCoordinates
+        {
+            get
+            {
+                return Latitude >= -90 && Latitude <= 90 &&
+                    Longitude >= -180 && Longitude <= 180;
+            }
+        }
+
         public bool Equals(NodeViewModel other)
         {
             if(other.Title == Title)

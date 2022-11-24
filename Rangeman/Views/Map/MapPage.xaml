@@ -104,8 +104,8 @@
                            Keyboard="Numeric">
                         <Entry.Behaviors>
                             <xct:NumericValidationBehavior InvalidStyle="{StaticResource InvalidEntryStyle}"
-                                                           MinimumValue="0"
-                                                           MaximumValue="100.0"
+                                                           MinimumValue="-90"
+                                                           MaximumValue="90"
                                                            MaximumDecimalPlaces="7"
                                                            x:Name="LatitudeValidationRule" 
                                                            Flags="ValidateOnAttaching, ValidateOnValueChanging" 
@@ -120,8 +120,8 @@
                            Keyboard="Numeric">
                         <Entry.Behaviors>
                             <xct:NumericValidationBehavior InvalidStyle="{StaticResource InvalidEntryStyle}"
-                                                           MinimumValue="0"
-                                                           MaximumValue="100.0"
+                                                           MinimumValue="-180"
+                                                           MaximumValue="180"
                                                            MaximumDecimalPlaces="7"
                                                            x:Name="LongitudeValidationRule" 
                                                            Flags="ValidateOnAttaching, ValidateOnValueChanging" 

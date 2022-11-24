@@ -6,7 +6,7 @@ using Xamarin.Forms;
 
 namespace Rangeman
 {
-    internal class ConfigPageViewModel : ViewModelBase
+    public class ConfigPageViewModel : ViewModelBase
     {
         private string progressMessage = "";
         private bool useMbTilesChecked;

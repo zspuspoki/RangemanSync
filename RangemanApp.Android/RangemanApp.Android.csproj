@@ -52,6 +52,10 @@
     <WarningLevel>4</WarningLevel>
     <AndroidManagedSymbols>true</AndroidManagedSymbols>
     <AndroidUseSharedRuntime>false</AndroidUseSharedRuntime>
+    <AotAssemblies>false</AotAssemblies>
+    <EnableLLVM>false</EnableLLVM>
+    <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
+    <BundleAssemblies>false</BundleAssemblies>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Android" />
@@ -152,4 +156,7 @@
     <AndroidResource Include="Resources\mipmap-anydpi-v26\icon.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>"d:\Program Files (x86)\ConfuserEx\confuser.cli.exe" "d:\!RangemanApp_git\RangemanApp.Android\RangemanApp.Android.crproj"</PostBuildEvent>
+  </PropertyGroup>
 </Project>

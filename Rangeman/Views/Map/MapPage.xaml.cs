@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xamarin.Essentials;
 using Xamarin.Forms;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Xaml;
 using Point = Mapsui.Geometries.Point;
 
@@ -32,8 +33,6 @@ namespace Rangeman
 
             InitializeComponent();
 
-            InitializeMap();
-
             InitProgressLabel();
         }
 
@@ -49,8 +48,20 @@ namespace Rangeman
             });
         }
 
-        private async Task InitializeMap()
+        private async Task<bool> InitializeMap(bool forceMapUpdate = false)
         {
+            bool hasTileLayer = false;
+
+            if (mapView.Map != null)
+            {
+                mapView.Map.Layers.ForEach(l => { if (l is TileLayer) hasTileLayer = true; });
+            }
+
+            if(!forceMapUpdate && hasTileLayer)
+            {
+                return false;
+            }
+
             var map = new Mapsui.Map
             {
                 CRS = "EPSG:3857",
@@ -74,6 +85,9 @@ namespace Rangeman
             map.Home = n => n.NavigateTo(smc, map.Resolutions[17]);
 
             mapView.Map = map;
+            mapView.MyLocationLayer.UpdateMyLocation(new Position(location.Latitude, location.Longitude), true);
+
+            return true;
         }
 
 
@@ -82,14 +96,19 @@ namespace Rangeman
         {
             base.OnAppearing();
 
-            var location = await Geolocation.GetLastKnownLocationAsync();
+            var mapInitialized = await InitializeMap();
 
-            if (location != null)
+            if (!mapInitialized)
             {
-                Console.WriteLine($"Latitude: {location.Latitude}, Longitude: {location.Longitude}, Altitude: {location.Altitude}");
-            }
+                var location = await Geolocation.GetLastKnownLocationAsync();
 
-            mapView.MyLocationLayer.UpdateMyLocation(new Position(location.Latitude, location.Longitude), true);
+                if (location != null)
+                {
+                    Console.WriteLine($"Latitude: {location.Latitude}, Longitude: {location.Longitude}, Altitude: {location.Altitude}");
+                }
+
+                mapView.MyLocationLayer.UpdateMyLocation(new Position(location.Latitude, location.Longitude), true);
+            }
         }
 
         #region Pin related methods
@@ -252,7 +271,7 @@ namespace Rangeman
         {
             try
             {
-                await InitializeMap();
+                await InitializeMap(true);
                 ViewModel.ProgressMessage = $"Web based mbtiles file selection has been completed.";
             }
             catch(Exception ex)

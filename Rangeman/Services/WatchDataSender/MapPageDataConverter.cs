@@ -19,9 +19,9 @@ namespace Rangeman.WatchDataSender
 
         public MapPageDataConverter(NodesViewModel nodesViewModel, ILoggerFactory loggerFactory)
         {
+            logger = loggerFactory.CreateLogger<MapPageDataConverter>();
             this.nodesViewModel = nodesViewModel;
             transitPointsWithInterimPoints = GetTransitPointsWithInterimPoints();
-            logger = loggerFactory.CreateLogger<MapPageDataConverter>();
         }
 
         public byte[] GetHeaderByteArray()

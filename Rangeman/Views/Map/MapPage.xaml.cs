@@ -137,7 +137,7 @@ namespace Rangeman
             var points = new List<Point>();
             foreach (var wp in ViewModel.NodesViewModel.GetLineConnectableCoordinatesFromStartToGoal())
             {
-                if (wp.Longitude != 0 && wp.Latitude != 0)
+                if (wp.HasValidCoordinates)
                 {
                     points.Add(SphericalMercator.FromLonLat(wp.Longitude, wp.Latitude));
                 }

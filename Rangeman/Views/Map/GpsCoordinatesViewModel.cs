@@ -2,8 +2,9 @@
 {
     public class GpsCoordinatesViewModel
     {
-        public double Longitude { get; set; }
-        public double Latitude { get; set; }
+        private const double INVALIDLONGLAT = -1500;
+        public double Longitude { get; set; } = INVALIDLONGLAT;
+        public double Latitude { get; set; } = INVALIDLONGLAT;
 
         public bool HasValidCoordinates
         {

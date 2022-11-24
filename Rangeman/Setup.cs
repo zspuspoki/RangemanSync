@@ -51,6 +51,7 @@ namespace Rangeman
                 var loggerConfiguration = new LoggerConfiguration()
                     .ReadFrom.Configuration(configurationRoot.GetSection("Logging"))
                     .Enrich.WithExceptionDetails()
+                    .WriteTo.Debug()
                     .WriteTo.File(Path.Combine(path, Constants.LogSubFolder, "Log.log"), 
                         rollingInterval: RollingInterval.Day,
                         retainedFileCountLimit: 3,

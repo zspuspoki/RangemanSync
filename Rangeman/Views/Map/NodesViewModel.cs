@@ -74,8 +74,7 @@ namespace Rangeman.Views.Map
         public void DeleteSelectedNode()
         {
             var linkedListNodeToDelete = nodes.Find(userSelectedPinNodeForDeletion);
-            linkedListNodeToDelete.Value.Longitude = 0;
-            linkedListNodeToDelete.Value.Latitude = 0;
+            linkedListNodeToDelete.Value.InvalidateLongLatValues();
             linkedListNodeToDelete.Value.Visible = true;
 
             currentSelectedLinkedListNode = linkedListNodeToDelete;  // let's select it again, so it can be placed again on the map
@@ -87,8 +86,6 @@ namespace Rangeman.Views.Map
         /// </summary>
         public void ClickOnSelectNode()
         {
-            var nodeTitle = currentSelectedLinkedListNode.Value.Title;
-
             do
             {
                 var oldNode = currentSelectedLinkedListNode;
@@ -98,8 +95,7 @@ namespace Rangeman.Views.Map
                     currentSelectedLinkedListNode = oldNode;
                     break;
                 }
-            } while ((currentSelectedLinkedListNode.Value.Longitude > 0 &&
-                    currentSelectedLinkedListNode.Value.Longitude > 0) || 
+            } while (currentSelectedLinkedListNode.Value.HasValidCoordinates || 
                     currentSelectedLinkedListNode.Value.Visible == false);
             CurrentSelectedNode = currentSelectedLinkedListNode.Value;
         }
@@ -152,7 +148,7 @@ namespace Rangeman.Views.Map
 
             for(int i=1;i<transitpointCoordinates.Count;i++)
             {
-                if (transitpointCoordinates[i].Longitude == 0 && transitpointCoordinates[i].Latitude == 0)
+                if (!transitpointCoordinates[i].HasValidCoordinates)
                 {
                     trimIndex = i;
                 }
@@ -181,10 +177,42 @@ namespace Rangeman.Views.Map
         {
             var startNode = nodes.Find(new NodeViewModel { Title = "S" });
             var goalNode = nodes.Find(new NodeViewModel { Title = "G" });
-            var startNodeHasCoordinates = startNode.Value.Longitude > 0 && startNode.Value.Latitude > 0;
-            var goalNodeHasCoordinates = goalNode.Value.Longitude > 0 && goalNode.Value.Latitude > 0;
+            var startNodeHasCoordinates = startNode.Value.HasValidCoordinates;
+            var goalNodeHasCoordinates = goalNode.Value.HasValidCoordinates;
 
-            return startNodeHasCoordinates && goalNodeHasCoordinates;
+            if(!(startNodeHasCoordinates && goalNodeHasCoordinates))
+            {
+                return false;
+            }
+            else
+            {
+                return CanEveryTransitNodeBeConnected();
+            }
+        }
+
+        private bool CanEveryTransitNodeBeConnected()
+        {
+            var transitpointCoordinates = GetTransitPointCoordinates(false);
+            var trimIndex = -1;
+            bool enableTrimming = false;
+
+            for (int i = 1; i < transitpointCoordinates.Count; i++)
+            {
+                if (!transitpointCoordinates[i].HasValidCoordinates)
+                {
+                    trimIndex = i;
+                }
+                else
+                {
+                    if (trimIndex != -1)
+                    {
+                        enableTrimming = true;
+                        break;
+                    }
+                }
+            }
+
+            return !enableTrimming;
         }
 
         private List<GpsCoordinatesViewModel> GetCoordinatesByCategory(NodeViewModel firstNodeToLookFor, NodeCategory category, bool removeEmptyEntries)
@@ -193,14 +221,14 @@ namespace Rangeman.Views.Map
             var currentLinkedListNode = nodes.Find(firstNodeToLookFor);
             while (currentLinkedListNode.Value.Category == category)
             {
-                var latitude = currentLinkedListNode.Value.Latitude;
-                var longitude = currentLinkedListNode.Value.Longitude;
-
-                if(removeEmptyEntries && longitude == 0 && latitude == 0)
+                if(removeEmptyEntries && !currentLinkedListNode.Value.HasValidCoordinates)
                 {
                     currentLinkedListNode = currentLinkedListNode.Next();
                     continue;
                 }
+
+                var latitude = currentLinkedListNode.Value.Latitude;
+                var longitude = currentLinkedListNode.Value.Longitude;
 
                 var gpsCoordinatesViewModel = new GpsCoordinatesViewModel
                 {
@@ -217,8 +245,7 @@ namespace Rangeman.Views.Map
 
         private void SetCurrentNodeThatCanBePlacedOnMap(string nodeTitle, Action actionWhenOneCircleEndedWithoutResult = null)
         {
-            while (currentSelectedLinkedListNode.Value.Longitude > 0 &&
-                    currentSelectedLinkedListNode.Value.Longitude > 0)
+            while (currentSelectedLinkedListNode.Value.HasValidCoordinates)
             {
                 currentSelectedLinkedListNode = currentSelectedLinkedListNode.Next();
                 if (currentSelectedLinkedListNode.Value.Title == nodeTitle)

@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Rangeman.DataExtractors.Data;
 using Rangeman.Services.BluetoothConnector;
+using Rangeman.Services.LicenseDistributor;
 using Rangeman.Services.SharedPreferences;
 using Rangeman.Services.WatchDataReceiver;
 using Rangeman.Views.Download;
@@ -30,6 +31,7 @@ namespace Rangeman
         private bool downloadHeadersButtonCanBePressed = true;
         private bool saveGPXButtonCanBePressed = true;
         private DateTime lastHeaderDownloadTime;
+        private bool hasValidLicense = true;
 
         private ICommand disconnectCommand;
         private ICommand downloadHeadersCommand;
@@ -47,6 +49,12 @@ namespace Rangeman
             this.sharedPreferencesService = sharedPreferencesService;
             this.saveGPXFileService = saveGPXFileService;
             this.logger = loggerFactory.CreateLogger<DownloadPageViewModel>();
+
+            MessagingCenter.Subscribe<ILicenseDistributor>(this, DistributorMessages.LicenseResultReceived.ToString(),
+                HandleLicenseResponse);
+
+            MessagingCenter.Subscribe<ILicenseDistributor>(this, DistributorMessages.AppErrorReceived.ToString(),
+                HandleLicenseErrorResponse);
         }
 
         #region Button handlers
@@ -61,6 +69,13 @@ namespace Rangeman
         private async void DownloadHeaders_Clicked()
         {
             logger.LogInformation("--- MainPage - start DownloadHeaders_Clicked");
+
+            if (!hasValidLicense)
+            {
+                ProgressMessage = "Invalid license detected : downloading is not allowed.";
+                return;
+            }
+
             SetProgressMessage("Looking for Casio GPR-B1000 device. Please connect your watch.");
 
             downloadHeadersButtonCanBePressed = false;
@@ -96,7 +111,14 @@ namespace Rangeman
         private async void DownloadSaveGPXButton_Clicked()
         {
             logger.LogInformation("--- MainPage - start DownloadSaveGPXButton_Clicked");
-            if(SelectedLogHeader == null)
+
+            if (!hasValidLicense)
+            {
+                ProgressMessage = "Invalid license detected : downloading is not allowed.";
+                return;
+            }
+
+            if (SelectedLogHeader == null)
             {
                 logger.LogDebug("DownloadSaveGPXButton_Clicked : One log header entry should be selected");
                 SetProgressMessage("Please select a log header from the list or start downloading the list by using the download headers button if you haven't done it yet.");
@@ -205,6 +227,26 @@ namespace Rangeman
         }
 
         #endregion
+
+        #region Licensing callbacks
+        private void HandleLicenseResponse(ILicenseDistributor licenseDistributor)
+        {
+            if (licenseDistributor.Validity == LicenseValidity.Invalid)
+            {
+                hasValidLicense = false;
+            }
+            else
+            {
+                hasValidLicense = true;
+            }
+        }
+
+        private void HandleLicenseErrorResponse(ILicenseDistributor licenseDistributor)
+        {
+            ProgressMessage = $"Error occured during getting the license. Error code: {licenseDistributor.ErrorCode}";
+        }
+        #endregion
+
 
         #region Properties
         public ObservableCollection<LogHeaderViewModel> LogHeaderList { get; } = new ObservableCollection<LogHeaderViewModel>();

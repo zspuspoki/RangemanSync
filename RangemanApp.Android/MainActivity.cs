@@ -15,14 +15,37 @@ using AndroidContent = Android.Content;
 using System;
 using Environment = System.Environment;
 using System.IO;
+using Google.Android.Vending.Licensing;
+using Rangeman.Services.LicenseDistributor;
+using RangemanSync.Android.Services;
 
 namespace RangemanSync.Android
 {
     [Activity(Label = "RangemanSync", Icon = "@mipmap/icon", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize )]
-    public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity
+    public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity, ILicenseCheckerCallback
     {
         private ISharedPreferencesService preferencesService;
+        private readonly LicenseInfoDistributorService licenseDistributor = new LicenseInfoDistributorService();
         private List<string> appPermissions = new List<string>();
+
+        #region License checking related fields
+        /// <summary>
+        /// Your Base 64 public key
+        /// </summary>
+        private const string Base64PublicKey =
+            "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA96TCUr/Rhx/fcIVcCrWTz0FKvI+hZ" +
+            "ICb/yXaxNPhSWeo7TROB+Op5wKhdmjsaSvbi/v75RgyikS/HrSKvQCqwix6b3IgjIu8iGYYZz" +
+            "2ieoFMVt39WFP20fSfjNoBr0KJOsoIAso6zF845ZtIE+3vJFg4z/tTe/jPgi73AYJS6RnUO2p" +
+            "C2tzeGVe+TQemhPUfFWAczunpAoT8ioBCYzK1FzTc1uyAFMh8riijrKDXbQd42nByJq3SSjJi" +
+            "yx/5pcMMj2kWvuJjD5ugk0X10jEfwptVQytXOAvMPhbyvJ2yNN6Ha9ZUHIawXC+JyCr9bvMAo" +
+            "KIFTqzqLYfpX10feYTDsQIDAQAB";
+
+        // Generate your own 20 random bytes, and put them here.
+        private static readonly byte[] Salt = new byte[]
+            { 46, 65, 30, 128, 103, 57, 74, 64, 51, 88, 95, 45, 77, 117, 36, 113, 11, 32, 64, 89 };
+
+        private LicenseChecker checker;
+        #endregion
 
         protected override async void OnCreate(Bundle savedInstanceState)
         {
@@ -42,7 +65,44 @@ namespace RangemanSync.Android
             var setup = new Setup(ApplicationContext, this, preferencesService);
             LoadApplication(new App(setup.Configuration, setup.DependencyInjection));
 
+            ConfigureLicenseChecking();
         }
+
+        #region License checking related methods
+        private void ConfigureLicenseChecking()
+        {
+            // Try to use more data here. ANDROID_ID is a single point of attack.
+            string deviceId = global::Android.Provider.Settings.Secure.GetString(ContentResolver, global::Android.Provider.Settings.Secure.AndroidId);
+
+            // Construct the LicenseChecker with a policy.
+            var obfuscator = new AESObfuscator(Salt, PackageName, deviceId);
+            var policy = new ServerManagedPolicy(this, obfuscator);
+            checker = new LicenseChecker(this, policy, Base64PublicKey);
+
+            DoCheckLicense();
+        }
+
+        private void DoCheckLicense()
+        {
+            checker.CheckAccess(this);
+        }
+
+        public void Allow([GeneratedEnum] PolicyResponse reason)
+        {
+            licenseDistributor.SetValidity(LicenseValidity.Valid);
+        }
+
+        public void ApplicationError([GeneratedEnum] LicenseCheckerErrorCode errorCode)
+        {
+            licenseDistributor.setErrorCode(errorCode.ToString());
+        }
+
+        public void DontAllow([GeneratedEnum] PolicyResponse reason)
+        {
+            licenseDistributor.SetValidity(LicenseValidity.Invalid);
+        }
+
+        #endregion
 
         #region Error handling
         private void TaskSchedulerOnUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
@@ -174,6 +234,12 @@ namespace RangemanSync.Android
                     }
                 }
             }
+        }
+
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            checker.OnDestroy();
         }
     }
 }

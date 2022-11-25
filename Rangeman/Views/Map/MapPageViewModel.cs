@@ -50,7 +50,7 @@ namespace Rangeman
         public MapPageViewModel(Context context, NodesViewModel nodesViewModel, 
             AddressPanelViewModel addressPanelViewModel, IMapPageView mapPageView, 
             AppShellViewModel appShellViewModel, BluetoothConnectorService bluetoothConnectorService,
-            ILoggerFactory loggerFactory, ILocationService locationService)
+            ILoggerFactory loggerFactory, ILocationService locationService, ILicenseDistributor licenseDistributor)
         {
             this.logger = loggerFactory.CreateLogger<MapPageViewModel>();
             
@@ -69,6 +69,9 @@ namespace Rangeman
                 new RowDefinition { Height = new GridLength(2, GridUnitType.Star) },
                 new RowDefinition { Height = 0 }
             };
+
+            HandleLicenseResponse(licenseDistributor);
+            HandleLicenseErrorResponse(licenseDistributor);
 
             MessagingCenter.Subscribe<ILicenseDistributor>(this, DistributorMessages.LicenseResultReceived.ToString(),
                 HandleLicenseResponse);
@@ -155,8 +158,11 @@ namespace Rangeman
 
         private void HandleLicenseErrorResponse(ILicenseDistributor licenseDistributor)
         {
-            logger.LogDebug($"Handling license checking error on Maps. Error code: {licenseDistributor.ErrorCode}");
-            ProgressMessage = $"Error occured during getting the license. Error code: {licenseDistributor.ErrorCode}";
+            if (!string.IsNullOrEmpty(licenseDistributor.ErrorCode))
+            {
+                logger.LogDebug($"Handling license checking error on Maps. Error code: {licenseDistributor.ErrorCode}");
+                ProgressMessage = $"Error occured during getting the license. Error code: {licenseDistributor.ErrorCode}";
+            }
         }
         #endregion
 

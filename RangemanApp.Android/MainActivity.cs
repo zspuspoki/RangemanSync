@@ -62,7 +62,7 @@ namespace RangemanSync.Android
 
             preferencesService = new SharedPreferencesService();
 
-            var setup = new Setup(ApplicationContext, this, preferencesService);
+            var setup = new Setup(ApplicationContext, this, preferencesService, licenseDistributor);
             LoadApplication(new App(setup.Configuration, setup.DependencyInjection));
 
             ConfigureLicenseChecking();

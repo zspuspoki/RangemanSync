@@ -20,6 +20,11 @@ namespace RangemanSync.Android.Services
         {
             Validity = licenseValidity;
 
+            if(Validity == LicenseValidity.Valid)
+            {
+                ErrorCode = null;
+            }
+
             MessagingCenter.Send<ILicenseDistributor>(this, DistributorMessages.LicenseResultReceived.ToString());
         }
     }

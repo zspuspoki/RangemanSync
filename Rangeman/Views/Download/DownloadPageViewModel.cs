@@ -40,7 +40,7 @@ namespace Rangeman
         public DownloadPageViewModel(Context context, BluetoothConnectorService bluetoothConnectorService, 
             AppShellViewModel appShellViewModel, IDownloadPageView downloadPageView,
             ILoggerFactory loggerFactory, ISharedPreferencesService sharedPreferencesService,
-            ISaveGPXFileService saveGPXFileService)
+            ISaveGPXFileService saveGPXFileService, ILicenseDistributor licenseDistributor)
         {
             this.logger = loggerFactory.CreateLogger<DownloadPageViewModel>();
 
@@ -52,6 +52,9 @@ namespace Rangeman
             this.loggerFactory = loggerFactory;
             this.sharedPreferencesService = sharedPreferencesService;
             this.saveGPXFileService = saveGPXFileService;
+
+            HandleLicenseResponse(licenseDistributor);
+            HandleLicenseErrorResponse(licenseDistributor);
 
             MessagingCenter.Subscribe<ILicenseDistributor>(this, DistributorMessages.LicenseResultReceived.ToString(),
                 HandleLicenseResponse);
@@ -246,8 +249,11 @@ namespace Rangeman
 
         private void HandleLicenseErrorResponse(ILicenseDistributor licenseDistributor)
         {
-            logger.LogDebug($"Handling license checking error on Download. Error code: {licenseDistributor.ErrorCode}");
-            ProgressMessage = $"Error occured during getting the license. Error code: {licenseDistributor.ErrorCode}";
+            if (!string.IsNullOrEmpty(licenseDistributor.ErrorCode))
+            {
+                logger.LogDebug($"Handling license checking error on Download. Error code: {licenseDistributor.ErrorCode}");
+                ProgressMessage = $"Error occured during getting the license. Error code: {licenseDistributor.ErrorCode}";
+            }
         }
         #endregion
 

@@ -17,6 +17,7 @@ namespace RangemanSync.Android.Services
 
         public void setErrorCode(string errorCode)
         {
+            this.errorCode = errorCode;
             MessagingCenter.Send<ILicenseDistributorErrorHandler>(this, errorCode);
         }
 

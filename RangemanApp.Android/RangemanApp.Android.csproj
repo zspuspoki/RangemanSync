@@ -87,10 +87,10 @@
     <Compile Include="MainActivity.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SaveGPXFileService.cs" />
+    <Compile Include="Services\SaveGPXFileService.cs" />
     <Compile Include="Services\LicenseInfoDistributorService.cs" />
     <Compile Include="Setup.cs" />
-    <Compile Include="SharedPreferencesService.cs" />
+    <Compile Include="Services\SharedPreferencesService.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="appsettings.json" />

@@ -64,6 +64,8 @@
     <Compile Include="Services\BluetoothConnector\BluetoothConnectorService.cs" />
     <Compile Include="Services\Common\BLEConstants.cs" />
     <Compile Include="Services\Common\BleGattServerConnectionExtensions.cs" />
+    <Compile Include="Services\PhoneLocation\ILocationService.cs" />
+    <Compile Include="Services\PhoneLocation\LocationService.cs" />
     <Compile Include="Services\SaveGPX\ISaveGPXFileService.cs" />
     <Compile Include="Services\SharedPreferences\ISharedPreferencesService.cs" />
     <Compile Include="Setup.cs" />

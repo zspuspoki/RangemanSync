@@ -8,6 +8,7 @@ using Mapsui.Styles;
 using Mapsui.UI.Forms;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
+using Rangeman.Services.PhoneLocation;
 using Rangeman.Views.Map;
 using SQLite;
 using System;
@@ -26,11 +27,13 @@ namespace Rangeman
     {
         private const string LinesLayerName = "LinesBetweenPins";
         private readonly ILogger<MapPage> logger;
+        private readonly ILocationService locationService;
 
-        public MapPage(ILogger<MapPage> logger)
+        public MapPage(ILogger<MapPage> logger,ILocationService locationService)
         {
             this.logger = logger;
-
+            this.locationService = locationService;
+            locationService.GetPhoneLocation();
             InitializeComponent();
 
             InitProgressLabel();
@@ -78,15 +81,19 @@ namespace Rangeman
                 VerticalAlignment = Mapsui.Widgets.VerticalAlignment.Bottom
             });
 
-            var location = await Geolocation.GetLocationAsync();
-            var smc = SphericalMercator.FromLonLat(location.Longitude, location.Latitude);
+            var location = locationService.Location;
 
-            var mapResolutions = map.Resolutions;
-            map.Home = n => n.NavigateTo(smc, map.Resolutions[17]);
+            if (location != null)
+            {
+                var smc = SphericalMercator.FromLonLat(location.Longitude, location.Latitude);
+
+                var mapResolutions = map.Resolutions;
+                map.Home = n => n.NavigateTo(smc, map.Resolutions[17]);
+
+                mapView.MyLocationLayer.UpdateMyLocation(new Position(location.Latitude, location.Longitude), true);
+            }
 
             mapView.Map = map;
-            mapView.MyLocationLayer.UpdateMyLocation(new Position(location.Latitude, location.Longitude), true);
-
             return true;
         }
 
@@ -100,7 +107,7 @@ namespace Rangeman
 
             if (!mapInitialized)
             {
-                var location = await Geolocation.GetLastKnownLocationAsync();
+                var location = locationService.Location;
 
                 if (location != null)
                 {

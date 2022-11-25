@@ -8,6 +8,7 @@ using System.Windows.Input;
 using Microsoft.Extensions.Logging;
 using Xamarin.Essentials;
 using System;
+using Rangeman.Services.PhoneLocation;
 
 namespace Rangeman
 {
@@ -26,6 +27,7 @@ namespace Rangeman
         private readonly AppShellViewModel appShellViewModel;
         private readonly BluetoothConnectorService bluetoothConnectorService;
         private readonly ILoggerFactory loggerFactory;
+        private readonly ILocationService locationService;
         private RowDefinitionCollection gridViewRows;
         private ILogger<MapPageViewModel> logger;
         private bool watchCommandButtonsAreVisible = true;
@@ -46,7 +48,7 @@ namespace Rangeman
         public MapPageViewModel(Context context, NodesViewModel nodesViewModel, 
             AddressPanelViewModel addressPanelViewModel, IMapPageView mapPageView, 
             AppShellViewModel appShellViewModel, BluetoothConnectorService bluetoothConnectorService,
-            ILoggerFactory loggerFactory)
+            ILoggerFactory loggerFactory, ILocationService locationService)
         {
             this.nodesViewModel = nodesViewModel;
             this.addressPanelViewModel = addressPanelViewModel;
@@ -54,6 +56,7 @@ namespace Rangeman
             this.appShellViewModel = appShellViewModel;
             this.bluetoothConnectorService = bluetoothConnectorService;
             this.loggerFactory = loggerFactory;
+            this.locationService = locationService;
             this.logger = loggerFactory.CreateLogger<MapPageViewModel>();
 
             gridViewRows = new RowDefinitionCollection
@@ -63,7 +66,7 @@ namespace Rangeman
             };
         }
 
-        public async void ShowDistanceFromCurrentPosition(double longitude, double latitude)
+        public void ShowDistanceFromCurrentPosition(double longitude, double latitude)
         {
             if(!ShowCalculatedDistances)
             {
@@ -72,13 +75,17 @@ namespace Rangeman
 
             try
             {
-                var location = await Geolocation.GetLastKnownLocationAsync();
+                var location = locationService.Location;
                 if (location != null)
                 {
                     var distance = Location.CalculateDistance(location.Latitude, location.Longitude, 
                         latitude, longitude, DistanceUnits.Kilometers);
 
                     ProgressMessage = $"Distance from the current position: {distance.ToString("N3")} km";
+                }
+                else
+                {
+                    ProgressMessage = "The phone's current position cannot be determined. Do you have a working location service ?";
                 }
             }
             catch(Exception ex)

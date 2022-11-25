@@ -1,4 +1,5 @@
 ﻿using Mapsui.UI.Forms;
+using Rangeman.Services.PhoneLocation;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,10 +23,12 @@ namespace Rangeman.Views.Map
         private double longitude;
         private double latitude;
         private readonly IMapPageView mapPageView;
+        private readonly ILocationService locationService;
 
-        public AddressPanelViewModel(IMapPageView mapPageView)
+        public AddressPanelViewModel(IMapPageView mapPageView, ILocationService locationService)
         {
             this.mapPageView = mapPageView;
+            this.locationService = locationService;
         }
 
         public async void PlaceOnMap()
@@ -56,13 +59,21 @@ namespace Rangeman.Views.Map
 
         public async Task UpdateUserPositionAsync()
         {
-            var location = await Geolocation.GetLastKnownLocationAsync();
-            position = new Position(location.Latitude, location.Longitude);
-            
-            Longitude = position.Longitude;
-            Latitude = position.Latitude;
-            
-            await SetAddressAsync(position);
+            var location = locationService.Location;
+
+            if (location != null)
+            {
+                position = new Position(location.Latitude, location.Longitude);
+
+                Longitude = position.Longitude;
+                Latitude = position.Latitude;
+
+                await SetAddressAsync(position);
+            }
+            else
+            {
+                mapPageView.DisplayProgressMessage("An unexpected error occured during setting the address. Do you have internet connection?");
+            }
         }
 
         private async Task SetPosition()

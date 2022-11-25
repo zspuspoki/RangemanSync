@@ -42,13 +42,16 @@ namespace Rangeman
             ILoggerFactory loggerFactory, ISharedPreferencesService sharedPreferencesService,
             ISaveGPXFileService saveGPXFileService)
         {
+            this.logger = loggerFactory.CreateLogger<DownloadPageViewModel>();
+
+            logger.LogInformation("Inside Download page VM ctor");
+
             this.bluetoothConnectorService = bluetoothConnectorService;
             this.appShellViewModel = appShellViewModel;
             this.downloadPageView = downloadPageView;
             this.loggerFactory = loggerFactory;
             this.sharedPreferencesService = sharedPreferencesService;
             this.saveGPXFileService = saveGPXFileService;
-            this.logger = loggerFactory.CreateLogger<DownloadPageViewModel>();
 
             MessagingCenter.Subscribe<ILicenseDistributor>(this, DistributorMessages.LicenseResultReceived.ToString(),
                 HandleLicenseResponse);
@@ -243,6 +246,7 @@ namespace Rangeman
 
         private void HandleLicenseErrorResponse(ILicenseDistributor licenseDistributor)
         {
+            logger.LogDebug($"Handling license checking error on Download. Error code: {licenseDistributor.ErrorCode}");
             ProgressMessage = $"Error occured during getting the license. Error code: {licenseDistributor.ErrorCode}";
         }
         #endregion

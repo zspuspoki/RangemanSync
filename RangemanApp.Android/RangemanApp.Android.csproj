@@ -161,6 +161,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>"d:\Program Files (x86)\ConfuserEx\confuser.cli.exe" "d:\!RangemanApp_git\RangemanApp.Android\RangemanApp.Android.crproj"</PostBuildEvent>
+    <PostBuildEvent>if $(ConfigurationName) == Release "d:\Program Files (x86)\ConfuserEx\confuser.cli.exe" "d:\!RangemanApp_git\RangemanApp.Android\RangemanApp.Android.crproj"</PostBuildEvent>
   </PropertyGroup>
 </Project>

@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Xamarin.Essentials;
 using System;
 using Rangeman.Services.PhoneLocation;
+using Rangeman.Services.LicenseDistributor;
 
 namespace Rangeman
 {
@@ -38,6 +39,7 @@ namespace Rangeman
         private bool selectButtonCanbePressed = true;
         private bool addressButtonCanbePressed = true;
         private bool disconnectButtonCanbePressed = true;
+        private bool hasValidLicense = true;
 
         private ICommand sendCommand;
         private ICommand deleteCommand;
@@ -64,6 +66,12 @@ namespace Rangeman
                 new RowDefinition { Height = new GridLength(2, GridUnitType.Star) },
                 new RowDefinition { Height = 0 }
             };
+
+            MessagingCenter.Subscribe<ILicenseDistributor>(this, DistributorMessages.LicenseResultReceived.ToString(),
+                HandleLicenseResponse);
+
+            MessagingCenter.Subscribe<ILicenseDistributor>(this, DistributorMessages.AppErrorReceived.ToString(),
+                HandleLicenseErrorResponse);
         }
 
         public void ShowDistanceFromCurrentPosition(double longitude, double latitude)
@@ -129,11 +137,36 @@ namespace Rangeman
             return addressPanelIsVisible;
         }
 
+        #region Licensing callbacks
+        private void HandleLicenseResponse(ILicenseDistributor licenseDistributor)
+        {
+            if(licenseDistributor.Validity == LicenseValidity.Invalid)
+            {
+                hasValidLicense = false;
+            }
+            else
+            {
+                hasValidLicense = true;
+            }
+        }
+
+        private void HandleLicenseErrorResponse(ILicenseDistributor licenseDistributor)
+        {
+            ProgressMessage = $"Error occured during getting the license. Error code: {licenseDistributor.ErrorCode}";
+        }
+        #endregion
+
         #region Button commands
         #region Button click handlers
         private async void SendButton_Clicked()
         {
             logger.LogInformation("--- MapPage - start SendButton_Clicked");
+
+            if (!hasValidLicense)
+            {
+                ProgressMessage = "Invalid license detected : the sending is not allowed.";
+                return;
+            }
 
             if (!NodesViewModel.HasRoute())
             {

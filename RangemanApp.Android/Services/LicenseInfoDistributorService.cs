@@ -5,27 +5,22 @@ using Xamarin.Forms;
 namespace RangemanSync.Android.Services
 {   
 
-    public class LicenseInfoDistributorService : ILicenseDistributor, ILicenseDistributorErrorHandler
+    public class LicenseInfoDistributorService : ILicenseDistributor
     {
-        private LicenseValidity validity = LicenseValidity.Invalid;
-        private string errorCode = "";
-
-        public LicenseValidity GetValidity()
-        {
-            return validity;
-        }
+        public LicenseValidity Validity { get; set; } = LicenseValidity.Valid;
+        public string ErrorCode { get; set; } = "";
 
         public void setErrorCode(string errorCode)
         {
-            this.errorCode = errorCode;
-            MessagingCenter.Send<ILicenseDistributorErrorHandler>(this, errorCode);
+            ErrorCode = errorCode;
+            MessagingCenter.Send<ILicenseDistributor>(this, DistributorMessages.AppErrorReceived.ToString());
         }
 
         public void SetValidity(LicenseValidity licenseValidity)
         {
-            validity = licenseValidity;
+            Validity = licenseValidity;
 
-            MessagingCenter.Send<ILicenseDistributor>(this, validity.ToString());
+            MessagingCenter.Send<ILicenseDistributor>(this, DistributorMessages.LicenseResultReceived.ToString());
         }
     }
 }

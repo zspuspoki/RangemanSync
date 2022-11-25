@@ -25,7 +25,7 @@ namespace RangemanSync.Android
     public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity, ILicenseCheckerCallback
     {
         private ISharedPreferencesService preferencesService;
-        private readonly LicenseInfoDistributorService licenseDistributor = new LicenseInfoDistributorService();
+        private readonly ILicenseDistributor licenseDistributor = new LicenseInfoDistributorService();
         private List<string> appPermissions = new List<string>();
 
         #region License checking related fields

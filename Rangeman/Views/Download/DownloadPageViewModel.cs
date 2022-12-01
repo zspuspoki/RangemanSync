@@ -76,12 +76,6 @@ namespace Rangeman
         {
             logger.LogInformation("--- MainPage - start DownloadHeaders_Clicked");
 
-            if (!hasValidLicense)
-            {
-                ProgressMessage = "Invalid license detected : downloading is not allowed.";
-                return;
-            }
-
             SetProgressMessage("Looking for Casio GPR-B1000 device. Please connect your watch.");
 
             downloadHeadersButtonCanBePressed = false;

@@ -18,33 +18,25 @@ using System.IO;
 using Google.Android.Vending.Licensing;
 using Rangeman.Services.LicenseDistributor;
 using RangemanSync.Android.Services;
+using NetLicensingClient.Entities;
+using NetLicensingClient;
+using Constants = Rangeman.Constants;
 
 namespace RangemanSync.Android
 {
     [Activity(Label = "RangemanSync", Icon = "@mipmap/icon", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize )]
-    public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity, ILicenseCheckerCallback
+    public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity
     {
         private ISharedPreferencesService preferencesService;
         private readonly ILicenseDistributor licenseDistributor = new LicenseInfoDistributorService();
         private List<string> appPermissions = new List<string>();
 
         #region License checking related fields
-        /// <summary>
-        /// Your Base 64 public key
-        /// </summary>
-        private const string Base64PublicKey =
-            "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA96TCUr/Rhx/fcIVcCrWTz0FKvI+hZ" +
-            "ICb/yXaxNPhSWeo7TROB+Op5wKhdmjsaSvbi/v75RgyikS/HrSKvQCqwix6b3IgjIu8iGYYZz" +
-            "2ieoFMVt39WFP20fSfjNoBr0KJOsoIAso6zF845ZtIE+3vJFg4z/tTe/jPgi73AYJS6RnUO2p" +
-            "C2tzeGVe+TQemhPUfFWAczunpAoT8ioBCYzK1FzTc1uyAFMh8riijrKDXbQd42nByJq3SSjJi" +
-            "yx/5pcMMj2kWvuJjD5ugk0X10jEfwptVQytXOAvMPhbyvJ2yNN6Ha9ZUHIawXC+JyCr9bvMAo" +
-            "KIFTqzqLYfpX10feYTDsQIDAQAB";
-
-        // Generate your own 20 random bytes, and put them here.
-        private static readonly byte[] Salt = new byte[]
-            { 46, 65, 30, 128, 103, 57, 74, 64, 51, 88, 95, 45, 77, 117, 36, 113, 11, 32, 64, 89 };
-
-        private LicenseChecker checker;
+        private const string LICENSING_APIKEY = "7b9b238f-85bf-4c7c-8702-f4699f795091";
+        private const string LICENSING_PRODUCT_NUMBER = "PU6XMYAZC";
+        private const string LICENSING_PRODUCT_MODULE_NUMBER = "MR6YEGKQF";
+        private const string SECURE_STORAGE_LICENSE_CHECK_DATE = "LicenseCheckDate";
+        private const string SECURE_STORAGE_LICENSE_EXPIRATION_DATE = "LicenseExpirationDate";
         #endregion
 
         protected override async void OnCreate(Bundle savedInstanceState)
@@ -65,41 +57,141 @@ namespace RangemanSync.Android
             var setup = new Setup(ApplicationContext, this, preferencesService, licenseDistributor);
             LoadApplication(new App(setup.Configuration, setup.DependencyInjection));
 
-            ConfigureLicenseChecking();
+            var licenseCheckingTask = Task.Run(() => StartLicenseChecking());
         }
 
         #region License checking related methods
-        private void ConfigureLicenseChecking()
+        private async void StartLicenseChecking()
         {
-            // Try to use more data here. ANDROID_ID is a single point of attack.
-            string deviceId = global::Android.Provider.Settings.Secure.GetString(ContentResolver, global::Android.Provider.Settings.Secure.AndroidId);
+            try
+            {
+                NetLicensingClient.Context context;
+                string deviceId, licenseIsValid, licenseExpires;
+                var licenseIsValidInSecureStorage = await CheckLicenseValidityInSecureStorage();
 
-            // Construct the LicenseChecker with a policy.
-            var obfuscator = new AESObfuscator(Salt, PackageName, deviceId);
-            var policy = new ServerManagedPolicy(this, obfuscator);
-            checker = new LicenseChecker(this, policy, Base64PublicKey);
+                if(licenseIsValidInSecureStorage)
+                {
+                    licenseDistributor.SetValidity(LicenseValidity.Valid);
+                    return;
+                }
 
-            DoCheckLicense();
+                CheckLicenseValidityOnServer(out context, out deviceId, out licenseIsValid, out licenseExpires);
+
+                if (licenseIsValid == "false")
+                {
+                    licenseDistributor.SetValidity(LicenseValidity.Invalid);
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        DisplayYesNoDialog("You don't have a valid license. Would you like to acquire it in the license shop ?",
+                            async () =>
+                            {
+                                await OpenBrowserWithLicenseShop(context, deviceId);
+                                Process.KillProcess(Process.MyPid());
+                            }, null);
+                    });
+                }
+                else
+                {
+                    SetLicenseValidityInSecureStorage(licenseExpires);
+                    licenseDistributor.SetValidity(LicenseValidity.Valid);
+                }
+            }
+            catch (Exception ex)
+            {
+                licenseDistributor.setErrorCode($"An unexpected error occured during checking the license: {ex.Message}");
+            }
         }
 
-        private void DoCheckLicense()
+        private static async Task OpenBrowserWithLicenseShop(NetLicensingClient.Context context, string deviceId)
         {
-            checker.CheckAccess(this);
+            Token newToken = new Token();
+            newToken.tokenType = NetLicensingClient.Entities.Constants.Token.TYPE_SHOP;
+            newToken.tokenProperties.Add(NetLicensingClient.Entities.Constants.Licensee.LICENSEE_NUMBER, deviceId);
+            Token shopToken = TokenService.create(context, newToken);
+            var shopURL = shopToken.tokenProperties["shopURL"];
+            var uri = new Uri(shopURL);
+            try
+            {
+                await Browser.OpenAsync(uri, BrowserLaunchMode.SystemPreferred);
+                Process.KillProcess(Process.MyPid());
+            }
+            catch (Exception ex)
+            {
+                LogUnhandledException(ex);
+            }
         }
 
-        public void Allow([GeneratedEnum] PolicyResponse reason)
+        private async Task<bool> CheckLicenseValidityInSecureStorage()
         {
-            licenseDistributor.SetValidity(LicenseValidity.Valid);
+            var licenseIsValid = true;
+            string licenseExpirationString = "";
+            string licenseLastCheckedString = "";
+            try
+            {
+                licenseLastCheckedString = await SecureStorage.GetAsync(SECURE_STORAGE_LICENSE_CHECK_DATE);
+                licenseExpirationString = await SecureStorage.GetAsync(SECURE_STORAGE_LICENSE_EXPIRATION_DATE);
+            }
+            catch
+            {
+                licenseIsValid = false;
+            }
+
+            if(DateTime.TryParse(licenseExpirationString, out var licenseExpiration) &&
+               DateTime.TryParse(licenseLastCheckedString, out var licenseLastChecked))
+            {
+                if(DateTime.Now> licenseExpiration)
+                {
+                    return false;
+                }
+
+                var timeElapsedSinceLastLicenseChecking = licenseLastChecked - DateTime.Now;
+                if(timeElapsedSinceLastLicenseChecking.TotalDays >= 20)
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+
+            return licenseIsValid;
         }
 
-        public void ApplicationError([GeneratedEnum] LicenseCheckerErrorCode errorCode)
+        private void CheckLicenseValidityOnServer(out NetLicensingClient.Context context, out string deviceId, 
+            out string licenseIsValid, out string licenseExpires)
         {
-            licenseDistributor.setErrorCode(errorCode.ToString());
+            ValidationParameters validationParameters = new ValidationParameters();
+            validationParameters.setProductNumber(LICENSING_PRODUCT_NUMBER);
+
+            context = new NetLicensingClient.Context();
+            context.securityMode = NetLicensingClient.SecurityMode.APIKEY_IDENTIFICATION;
+            context.apiKey = LICENSING_APIKEY;
+            deviceId = global::Android.Provider.Settings.Secure.GetString(ContentResolver, global::Android.Provider.Settings.Secure.AndroidId);
+            ValidationResult validationResult = LicenseeService.validate(context, deviceId, validationParameters);
+            var validations = validationResult.getValidations();
+            var licenseValidityForProductModule = validations[LICENSING_PRODUCT_MODULE_NUMBER];
+            //TODO: expires
+            licenseIsValid = licenseValidityForProductModule.properties["valid"].value;
+            licenseExpires = "";
+
+            if(licenseIsValid == "true")
+            {
+                licenseExpires = licenseValidityForProductModule.properties["expires"].value;
+            }
         }
 
-        public void DontAllow([GeneratedEnum] PolicyResponse reason)
+        private async void SetLicenseValidityInSecureStorage(string expirationDate)
         {
-            licenseDistributor.SetValidity(LicenseValidity.Invalid);
+            try
+            {
+                await SecureStorage.SetAsync(SECURE_STORAGE_LICENSE_CHECK_DATE, DateTime.Now.ToString());
+                await SecureStorage.SetAsync(SECURE_STORAGE_LICENSE_EXPIRATION_DATE, expirationDate);
+            }
+            catch (Exception ex)
+            {
+                LogUnhandledException(ex);
+            }
         }
 
         #endregion
@@ -161,6 +253,32 @@ namespace RangemanSync.Android
                 DisplayErrorDialog("This app needs location permisson to work. Please enable it.");
             }
         }
+
+        private void DisplayYesNoDialog(string message, Action yesButtonMethod, Action noButtonMethod)
+        {
+            var alert = new AlertDialog.Builder(this);
+            alert.SetTitle("Warning");
+            alert.SetMessage(message);
+            alert.SetPositiveButton("Yes", (s, a) =>
+            {
+                if(yesButtonMethod != null)
+                {
+                    yesButtonMethod();
+                }
+            });
+
+            alert.SetNegativeButton("No", (s, a) =>
+            {
+                if (noButtonMethod != null)
+                {
+                    noButtonMethod();
+                }
+            });
+
+            Dialog dialog = alert.Create();
+            dialog.Show();
+        }
+
 
         private void DisplayErrorDialog(string message)
         {
@@ -239,7 +357,6 @@ namespace RangemanSync.Android
         protected override void OnDestroy()
         {
             base.OnDestroy();
-            checker.OnDestroy();
         }
     }
 }

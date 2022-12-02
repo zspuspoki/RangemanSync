@@ -39,6 +39,12 @@ namespace RangemanSync.Android
         private const string SECURE_STORAGE_LICENSE_EXPIRATION_DATE = "LicenseExpirationDate";
         #endregion
 
+        #region EULA checking related fields
+        private const string EULA_HAS_BEEN_READ = nameof(EULA_HAS_BEEN_READ);
+        private const string EULA_HAS_BEEN_ACCEPTED = nameof(EULA_HAS_BEEN_ACCEPTED);
+        private const string EULA_URL = "https://github.com/szilamer007/RangemanSync/blob/main/EULA.md";
+        #endregion
+
         protected override async void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -53,12 +59,59 @@ namespace RangemanSync.Android
             await CheckPermissions();
 
             preferencesService = new SharedPreferencesService();
+            CheckIfUserHasAcceptedEULA();
 
             var setup = new Setup(ApplicationContext, this, preferencesService, licenseDistributor);
             LoadApplication(new App(setup.Configuration, setup.DependencyInjection));
 
             var licenseCheckingTask = Task.Run(() => StartLicenseChecking());
         }
+
+        #region EULA checking
+        private void CheckIfUserHasAcceptedEULA()
+        {
+            if (preferencesService.GetValue(EULA_HAS_BEEN_READ, false.ToString()) == false.ToString())
+            {
+                DisplayYesNoDialog($"The EULA has to be read to start using this application. Would you like to read it now on {EULA_URL}",
+                    async () =>
+                    {
+                        preferencesService.SetValue(EULA_HAS_BEEN_READ, true.ToString());
+                        await OpenEULAUrl();
+                        Process.KillProcess(Process.MyPid());
+                    },
+                    () =>
+                    {
+                        Process.KillProcess(Process.MyPid());
+                    });
+            }
+            else
+            {
+                if (preferencesService.GetValue(EULA_HAS_BEEN_ACCEPTED, false.ToString()) == false.ToString())
+                {
+                    DisplayYesNoDialog($"The EULA has to be accepted. Do you accept the EULA on {EULA_URL} ?",
+                        () =>
+                        {
+                            preferencesService.SetValue(EULA_HAS_BEEN_ACCEPTED, true.ToString());
+                        }, null);
+                }
+            }
+        }
+
+        private async Task OpenEULAUrl()
+        {
+            try
+            {
+                Uri uri = new Uri(EULA_URL);
+                await Browser.OpenAsync(uri, BrowserLaunchMode.SystemPreferred);
+                Process.KillProcess(Process.MyPid());
+            }
+            catch (Exception ex)
+            {
+                LogUnhandledException(ex);
+            }
+
+        }
+        #endregion
 
         #region License checking related methods
         private async void StartLicenseChecking()
@@ -259,6 +312,7 @@ namespace RangemanSync.Android
             var alert = new AlertDialog.Builder(this);
             alert.SetTitle("Warning");
             alert.SetMessage(message);
+            alert.SetCancelable(false);
             alert.SetPositiveButton("Yes", (s, a) =>
             {
                 if(yesButtonMethod != null)

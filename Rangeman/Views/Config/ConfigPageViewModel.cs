@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using System;
 using System.IO;
 using System.Windows.Input;
 using Xamarin.Essentials;
@@ -15,10 +16,12 @@ namespace Rangeman
 
         private ICommand applyCommand;
         private readonly MapPageViewModel mapPageViewModel;
+        private readonly IConfiguration config;
 
-        public ConfigPageViewModel(MapPageViewModel mapPageViewModel)
+        public ConfigPageViewModel(MapPageViewModel mapPageViewModel, IConfiguration config)
         {
             this.mapPageViewModel = mapPageViewModel;
+            this.config = config;
         }
         public bool UseMbTilesChecked
         {
@@ -107,6 +110,8 @@ namespace Rangeman
         {
             var message = new EmailMessage
             {
+                To = new System.Collections.Generic.List<string>(
+                    new string[] { config.GetValue<string>("SupportMailAddress") }),
                 Subject = "Error report",
                 Body = "Dear Support, Something is wrong with my app, please help. I've attached the logs.",
             };

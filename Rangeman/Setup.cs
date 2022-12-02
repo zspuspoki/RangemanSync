@@ -76,6 +76,7 @@ namespace Rangeman
         public static IServiceCollection ConfigureRangemanProject(this IServiceCollection serviceCollection,
             IConfigurationRoot configurationRoot)
         {
+            serviceCollection.AddScoped<IConfiguration>(_ => configurationRoot);
             serviceCollection.AddSingleton<ILocationService, LocationService>();
             serviceCollection.AddViewModels<DownloadPageViewModel>();
             serviceCollection.AddSingleton<MapPageViewModel>();

@@ -263,6 +263,7 @@ namespace Rangeman
             await bluetoothConnectorService.DisconnectFromWatch((m) => ProgressMessage = m);
             DisconnectButtonIsVisible = false;
             disconnectButtonCanbePressed = true;
+            ProgressBarIsVisible = false;
         }
         #endregion
 

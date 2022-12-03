@@ -59,16 +59,20 @@ namespace RangemanSync.Android
             await CheckPermissions();
 
             preferencesService = new SharedPreferencesService();
-            CheckIfUserHasAcceptedEULA();
 
             var setup = new Setup(ApplicationContext, this, preferencesService, licenseDistributor);
             LoadApplication(new App(setup.Configuration, setup.DependencyInjection));
 
-            var licenseCheckingTask = Task.Run(() => StartLicenseChecking());
+            var eulaHasBeenAccepted = await UserHasAcceptedEULA();
+
+            if (eulaHasBeenAccepted)
+            {
+                var licenseCheckingTask = Task.Run(() => StartLicenseChecking());
+            }
         }
 
         #region EULA checking
-        private void CheckIfUserHasAcceptedEULA()
+        private Task<bool> UserHasAcceptedEULA()
         {            
             if (!Xamarin.Forms.Application.Current.Properties.ContainsKey(EULA_HAS_BEEN_READ))
             {
@@ -90,14 +94,24 @@ namespace RangemanSync.Android
             {
                 if (!Xamarin.Forms.Application.Current.Properties.ContainsKey(EULA_HAS_BEEN_ACCEPTED))
                 {
+                    TaskCompletionSource<bool> taskCompletionSource = new TaskCompletionSource<bool>();
                     DisplayYesNoDialog($"The EULA has to be accepted. Do you accept the EULA on {EULA_URL} ?",
                         async () =>
                         {
                             Xamarin.Forms.Application.Current.Properties[EULA_HAS_BEEN_ACCEPTED] = "true";
                             await Xamarin.Forms.Application.Current.SavePropertiesAsync();
+                            taskCompletionSource.SetResult(true);
                         }, null);
+
+                    return taskCompletionSource.Task;
+                }
+                else
+                {
+                    return Task.FromResult(true);
                 }
             }
+
+            return Task.FromResult(false);
         }
 
         private async Task OpenEULAUrl()
@@ -106,7 +120,6 @@ namespace RangemanSync.Android
             {
                 Uri uri = new Uri(EULA_URL);
                 await Browser.OpenAsync(uri, BrowserLaunchMode.SystemPreferred);
-                Process.KillProcess(Process.MyPid());
             }
             catch (Exception ex)
             {

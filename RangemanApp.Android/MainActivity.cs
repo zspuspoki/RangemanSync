@@ -69,14 +69,16 @@ namespace RangemanSync.Android
 
         #region EULA checking
         private void CheckIfUserHasAcceptedEULA()
-        {
-            if (preferencesService.GetValue(EULA_HAS_BEEN_READ, false.ToString()) == false.ToString())
+        {            
+            if (!Xamarin.Forms.Application.Current.Properties.ContainsKey(EULA_HAS_BEEN_READ))
             {
                 DisplayYesNoDialog($"The EULA has to be read to start using this application. Would you like to read it now on {EULA_URL}",
                     async () =>
-                    {
-                        preferencesService.SetValue(EULA_HAS_BEEN_READ, true.ToString());
+                    {                        
                         await OpenEULAUrl();
+                        preferencesService.SetValue(EULA_HAS_BEEN_READ, true.ToString());
+                        Xamarin.Forms.Application.Current.Properties[EULA_HAS_BEEN_READ] = "true";
+                        await Xamarin.Forms.Application.Current.SavePropertiesAsync();
                         Process.KillProcess(Process.MyPid());
                     },
                     () =>
@@ -86,12 +88,13 @@ namespace RangemanSync.Android
             }
             else
             {
-                if (preferencesService.GetValue(EULA_HAS_BEEN_ACCEPTED, false.ToString()) == false.ToString())
+                if (!Xamarin.Forms.Application.Current.Properties.ContainsKey(EULA_HAS_BEEN_ACCEPTED))
                 {
                     DisplayYesNoDialog($"The EULA has to be accepted. Do you accept the EULA on {EULA_URL} ?",
-                        () =>
+                        async () =>
                         {
-                            preferencesService.SetValue(EULA_HAS_BEEN_ACCEPTED, true.ToString());
+                            Xamarin.Forms.Application.Current.Properties[EULA_HAS_BEEN_ACCEPTED] = "true";
+                            await Xamarin.Forms.Application.Current.SavePropertiesAsync();
                         }, null);
                 }
             }

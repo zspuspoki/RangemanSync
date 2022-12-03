@@ -64,6 +64,7 @@
     <Compile Include="Services\BluetoothConnector\BluetoothConnectorService.cs" />
     <Compile Include="Services\Common\BLEConstants.cs" />
     <Compile Include="Services\Common\BleGattServerConnectionExtensions.cs" />
+    <Compile Include="Services\DeviceId\IDeviceIdService.cs" />
     <Compile Include="Services\LicenseDistributor\ILicenseDistributor.cs" />
     <Compile Include="Services\PhoneLocation\ILocationService.cs" />
     <Compile Include="Services\PhoneLocation\LocationService.cs" />

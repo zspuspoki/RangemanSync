@@ -59,8 +59,10 @@ namespace RangemanSync.Android
             await CheckPermissions();
 
             preferencesService = new SharedPreferencesService();
+            var deviceIdService = new DeviceIdService(ContentResolver);
 
-            var setup = new Setup(ApplicationContext, this, preferencesService, licenseDistributor);
+            var setup = new Setup(ApplicationContext, this, preferencesService, 
+                licenseDistributor, deviceIdService);
             LoadApplication(new App(setup.Configuration, setup.DependencyInjection));
 
             var eulaHasBeenAccepted = await UserHasAcceptedEULA();

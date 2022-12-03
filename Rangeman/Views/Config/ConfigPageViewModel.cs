@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Android.Content;
+using Microsoft.Extensions.Configuration;
+using Rangeman.Services.DeviceId;
 using System;
 using System.IO;
 using System.Windows.Input;
@@ -13,15 +15,18 @@ namespace Rangeman
         private bool useMbTilesChecked;
         private bool sendLogFilesChecked;
         private bool showCalculatedDistanceFromYourPosition;
+        private bool showDeviceIdChecked;
 
         private ICommand applyCommand;
         private readonly MapPageViewModel mapPageViewModel;
         private readonly IConfiguration config;
+        private readonly IDeviceIdService deviceIdService;
 
-        public ConfigPageViewModel(MapPageViewModel mapPageViewModel, IConfiguration config)
+        public ConfigPageViewModel(MapPageViewModel mapPageViewModel, IConfiguration config, IDeviceIdService deviceIdService)
         {
             this.mapPageViewModel = mapPageViewModel;
             this.config = config;
+            this.deviceIdService = deviceIdService;
         }
         public bool UseMbTilesChecked
         {
@@ -52,6 +57,18 @@ namespace Rangeman
             {
                 sendLogFilesChecked = value;
                 OnPropertyChanged("SendLogFilesChecked");
+                SetPressApplyButtonProgressMessage();
+            }
+        }
+
+        public bool ShowDeviceIdChecked
+        {
+            get => showDeviceIdChecked;
+            set
+            {
+                showDeviceIdChecked = value;
+                SendLogFilesChecked = false;
+                OnPropertyChanged("ShowDeviceIdChecked");
                 SetPressApplyButtonProgressMessage();
             }
         }
@@ -104,6 +121,11 @@ namespace Rangeman
 
             mapPageViewModel.ShowCalculatedDistances = ShowCalculatedDistanceFromYourPosition;
             SetApplyFinishedProgressMessage();
+
+            if (showDeviceIdChecked)
+            {                
+                ProgressMessage += $" Device Id = {deviceIdService.GetDeviceId()}";
+            }
         }
 
         private async void SendEmailToDevSupport()

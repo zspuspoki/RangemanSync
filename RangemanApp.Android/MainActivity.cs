@@ -80,7 +80,6 @@ namespace RangemanSync.Android
                     async () =>
                     {                        
                         await OpenEULAUrl();
-                        preferencesService.SetValue(EULA_HAS_BEEN_READ, true.ToString());
                         Xamarin.Forms.Application.Current.Properties[EULA_HAS_BEEN_READ] = "true";
                         await Xamarin.Forms.Application.Current.SavePropertiesAsync();
                         Process.KillProcess(Process.MyPid());
@@ -101,7 +100,11 @@ namespace RangemanSync.Android
                             Xamarin.Forms.Application.Current.Properties[EULA_HAS_BEEN_ACCEPTED] = "true";
                             await Xamarin.Forms.Application.Current.SavePropertiesAsync();
                             taskCompletionSource.SetResult(true);
-                        }, null);
+                        },
+                        () => 
+                        {
+                            Process.KillProcess(Process.MyPid());
+                        });
 
                     return taskCompletionSource.Task;
                 }

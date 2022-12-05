@@ -9,27 +9,28 @@ using Android.Content;
 using Rangeman.Services.SharedPreferences;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using static Xamarin.Essentials.Permissions;
-using Xamarin.Forms.Internals;
 using AndroidContent = Android.Content;
 using System;
 using Environment = System.Environment;
 using System.IO;
-using Google.Android.Vending.Licensing;
 using Rangeman.Services.LicenseDistributor;
 using RangemanSync.Android.Services;
 using NetLicensingClient.Entities;
 using NetLicensingClient;
 using Constants = Rangeman.Constants;
+using Android;
+using AndroidX.Core.Content;
+using AndroidX.Core.App;
 
 namespace RangemanSync.Android
 {
     [Activity(Label = "RangemanSync", Icon = "@mipmap/icon", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize )]
-    public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity
+    public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity, ActivityCompat.IOnRequestPermissionsResultCallback
     {
         private ISharedPreferencesService preferencesService;
         private readonly ILicenseDistributor licenseDistributor = new LicenseInfoDistributorService();
-        private List<string> appPermissions = new List<string>();
+        private const int BLUETOOTH_PERMISSION_REQUEST = 1;
+        private const int LOCATION_PERMISSION_REQUEST = 2;
 
         #region License checking related fields
         private const string LICENSING_APIKEY = "7b9b238f-85bf-4c7c-8702-f4699f795091";
@@ -56,7 +57,7 @@ namespace RangemanSync.Android
             Platform.Init(this, savedInstanceState);
             global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
 
-            await CheckPermissions();
+            CheckPermissions_Compat();
 
             preferencesService = new SharedPreferencesService();
             var deviceIdService = new DeviceIdService(ContentResolver);
@@ -306,25 +307,21 @@ namespace RangemanSync.Android
 
         #region Permission checking
 
-        private async Task CheckPermissions()
+        private void CheckPermissions_Compat()
         {
-            BasePlatformPermission locatonWhenInUsePermission = new Permissions.LocationWhenInUse();
-            BasePlatformPermission bluetoothPermissons = new BluetoothPermissions();
+            var bluetoothPermissions = new string[] {  "android.permission.BLUETOOTH_SCAN", "android.permission.BLUETOOTH_CONNECT" };
+            var locationPermissions = new string[] { Manifest.Permission.AccessCoarseLocation, Manifest.Permission.AccessFineLocation };
 
-            locatonWhenInUsePermission.RequiredPermissions.ForEach(p => appPermissions.Add(p.androidPermission));
-            bluetoothPermissons.RequiredPermissions.ForEach(p => appPermissions.Add(p.androidPermission));
-
-            var locationPermissionStatus = await CheckAndRequestLocationPermission();
-            var bluetoothPermissionStatus = await Permissions.RequestAsync<BluetoothPermissions>();
-
-            if (locationPermissionStatus != PermissionStatus.Granted)
+            if (ContextCompat.CheckSelfPermission(this, bluetoothPermissions[0]) != (int)Permission.Granted ||
+                ContextCompat.CheckSelfPermission(this, bluetoothPermissions[1]) != (int)Permission.Granted)
             {
-                DisplayErrorDialog("This app needs location permisson to work. Please enable it.");
+                ActivityCompat.RequestPermissions(this, bluetoothPermissions, BLUETOOTH_PERMISSION_REQUEST);
             }
 
-            if (bluetoothPermissionStatus != PermissionStatus.Granted)
+            if (ContextCompat.CheckSelfPermission(this, locationPermissions[0]) != (int)Permission.Granted ||
+                ContextCompat.CheckSelfPermission(this, locationPermissions[1]) != (int)Permission.Granted)
             {
-                DisplayErrorDialog("This app needs location permisson to work. Please enable it.");
+                ActivityCompat.RequestPermissions(this, locationPermissions, LOCATION_PERMISSION_REQUEST);
             }
         }
 
@@ -360,6 +357,7 @@ namespace RangemanSync.Android
             var alert = new AlertDialog.Builder(this);
             alert.SetTitle("Warning");
             alert.SetMessage(message);
+            alert.SetCancelable(false);
             alert.SetPositiveButton("OK", (s, a) =>
             {
                 Process.KillProcess(Process.MyPid());
@@ -370,29 +368,21 @@ namespace RangemanSync.Android
             dialog.Show();
         }
 
-        public async Task<PermissionStatus> CheckAndRequestLocationPermission()
-        {
-            PermissionStatus status = PermissionStatus.Unknown;
-
-            status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
-
-            if (status == PermissionStatus.Granted)
-                return status;
-
-            status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
-
-            return status; 
-        }
-
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] AndroidContent.PM.Permission[] grantResults)
         {
-            for (int i=0;i<permissions.Length;i++)
+            switch(requestCode)
             {
-                if (appPermissions.Contains(permissions[i]) && grantResults[i] == Permission.Denied)
-                {
-                    DisplayErrorDialog("Please enable the required permissions!");
-                    return;
-                }
+                case LOCATION_PERMISSION_REQUEST:
+                case BLUETOOTH_PERMISSION_REQUEST:
+                    foreach(var grantResult in grantResults)
+                    {
+                        if (grantResult == Permission.Denied)
+                        {
+                            var permissionType = (requestCode == LOCATION_PERMISSION_REQUEST) ? "Location" : "Bluetooth";
+                            DisplayErrorDialog($"{permissionType} permissions should be granted to use this. Press OK to exit.");
+                        }
+                    }
+                    break;
             }
 
             Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);

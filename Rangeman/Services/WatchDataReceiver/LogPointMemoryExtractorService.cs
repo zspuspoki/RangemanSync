@@ -46,6 +46,9 @@ namespace Rangeman.Services.WatchDataReceiver
             FireProgressChangedEvent("Sending download log header commands to watch.");
             await remoteWatchController.SendDownloadHeaderCommandToWatch();
 
+            //PreviousDataTransmitReplayer previousDataTransmitReplayer = new PreviousDataTransmitReplayer(casioConvoyAndCasioDataRequestObserver);
+            //previousDataTransmitReplayer.Execute();
+
             var headerResultFromWatch = await allDataReceived.Task;
 
             casioConvoyAndCasioDataRequestObserver.ProgressChanged -= CasioConvoyAndCasioDataRequestObserver_ProgressChanged;

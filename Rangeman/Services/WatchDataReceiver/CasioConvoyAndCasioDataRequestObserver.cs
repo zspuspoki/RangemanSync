@@ -153,6 +153,13 @@ namespace Rangeman
                             {
                                 //TODO : end current transmission because we hve all the data that is needed
                                 EndCurrentTransmission();
+                            }                            
+                            else
+                            {
+                                if (receivedBytes.SequenceEqual(new byte[] { 0x09, 0x0F, 0x00, 0x00, 0x00, 0x00, 0x00 }))
+                                {
+                                    EndCurrentTransmission();
+                                }
                             }
                         }
                     }

@@ -89,7 +89,16 @@ namespace Rangeman
                 var headers = await headersTask;
 
                 LogHeaderList.Clear();
-                headers.ForEach(h => LogHeaderList.Add(h.ToViewModel()));
+
+                if (headers != null && headers.Count > 0)
+                {
+                    headers.ForEach(h => LogHeaderList.Add(h.ToViewModel()));
+                }
+                else
+                {
+                    logger.LogDebug("Headers downloading resulted 0 headers");
+                    SetProgressMessage("Headers downloading resulted 0 headers. Please make sure you have recorded routes on the watch. If yes, then please try again because the transmission has been terminated by the watch.");
+                }
 
                 logPointMemoryService.ProgressChanged -= LogPointMemoryService_ProgressChanged;
 

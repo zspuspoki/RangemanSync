@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Rangeman.WatchDataSender
+namespace Rangeman.Services.Common
 {
     public enum Crc16Mode : ushort { Standard = 0xA001, CcittKermit = 0x8408 }
 

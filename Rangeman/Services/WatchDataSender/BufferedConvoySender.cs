@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using nexus.protocols.ble;
 using Rangeman.Common;
+using Rangeman.Services.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

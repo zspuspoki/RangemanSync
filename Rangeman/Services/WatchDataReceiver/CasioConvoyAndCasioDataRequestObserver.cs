@@ -5,6 +5,7 @@ using Rangeman.WatchDataReceiver;
 using Rangeman.Common;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Rangeman.Services.Common;
 
 namespace Rangeman
 {
@@ -27,6 +28,7 @@ namespace Rangeman
         private readonly RemoteWatchController remoteWatchController;
         private TaskCompletionSource<IDataExtractor> taskCompletionSource;
         private ILogger<CasioConvoyAndCasioDataRequestObserver> logger;
+        private List<byte> last256Bytes = new List<byte>();
 
         public event EventHandler<DataRequestObserverProgressChangedEventArgs> ProgressChanged;
 
@@ -78,12 +80,36 @@ namespace Rangeman
 
                         digestedByteCount += bytesToAdd.Count;
 
+                        foreach(var dataByte in bytesToAdd)
+                        {
+                            last256Bytes.Add((byte)~dataByte);
+                        }
+
                         if(digestedByteCount >= 256)
                         {
                             digestedByteCount = 0;
 
+                            var crcByte1 = bytesToAdd[bytesToAdd.Count - 1];
+                            var crcByte2 = bytesToAdd[bytesToAdd.Count - 2];
+                            var receivedCrc = new byte[] { crcByte2, crcByte1 };
+
                             bytesToAdd.RemoveAt(bytesToAdd.Count - 1); // Remove two bytes CRC code from the end
                             bytesToAdd.RemoveAt(bytesToAdd.Count - 1); // Remove two bytes CRC code from the end
+
+                            last256Bytes.RemoveAt(last256Bytes.Count - 1);
+                            last256Bytes.RemoveAt(last256Bytes.Count - 1);
+
+                            Crc16 crc = new Crc16(Crc16Mode.CcittKermit);
+                            var checksumBytes = crc.ComputeChecksumBytes(last256Bytes.ToArray());
+
+                            //logger.LogDebug($"Last256byte length = {last256Bytes.Count} Last 256 bytes for CRC calc : {Utils.GetPrintableBytesArray(last256Bytes.ToArray())}");
+                            //logger.LogDebug($"Calculated CRC: {Utils.GetPrintableBytesArray(checksumBytes)}, CRC Byte 1: {crcByte1}, CRC Byte 2: {crcByte2}");
+                            if(!checksumBytes.SequenceEqual(receivedCrc))
+                            {
+                                logger.LogDebug("CRC error found !");
+                            }
+
+                            last256Bytes.Clear();
                         }
 
                         var bytesArrayToAdd = bytesToAdd.ToArray();

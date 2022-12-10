@@ -113,7 +113,7 @@
     <Compile Include="Services\WatchDataSender\CategoryToSend.cs" />
     <Compile Include="Services\WatchDataSender\ConnectionParameters.cs" />
     <Compile Include="Services\WatchDataSender\MapPageDataConverter.cs" />
-    <Compile Include="Services\WatchDataSender\Crc16.cs" />
+    <Compile Include="Services\Common\Crc16.cs" />
     <Compile Include="Services\WatchDataSender\DataSenderProgressEventArgs.cs" />
     <Compile Include="Services\WatchDataSender\RemoteWatchController.cs" />
     <Compile Include="Services\WatchDataSender\WatchDataSenderService.cs" />

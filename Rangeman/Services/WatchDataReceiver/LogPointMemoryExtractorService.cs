@@ -70,7 +70,12 @@ namespace Rangeman.Services.WatchDataReceiver
                     }
                 }
 
-                return result;
+                if (result.Count > 0)
+                {
+                    return result;
+                }
+
+                return null;
             }
 
             return null;

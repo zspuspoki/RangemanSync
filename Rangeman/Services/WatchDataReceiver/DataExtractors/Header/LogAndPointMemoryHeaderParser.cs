@@ -35,48 +35,56 @@ namespace Rangeman
 
         public LogHeaderDataInfo GetLogHeaderDataInfo(int i)
         {
-            logger.LogDebug("Inside GetLogHeaderDataInfo v9.");
-
-            if(headerData.Length == 0)
+            try
             {
+                logger.LogDebug("Inside GetLogHeaderDataInfo v9.");
+
+                if (headerData.Length == 0)
+                {
+                    return null;
+                }
+
+                int i2 = (i * 64) + 0;
+                var currentDataArray = headerData;
+
+                logger.LogDebug($"Endianness: IsLittleEndian: {BitConverter.IsLittleEndian}");
+
+                int i3 = i2 + 12;
+                logger.LogDebug("1");
+                int i4 = (currentDataArray[i2] & 255) | ((currentDataArray[i2 + 1] & 255) << 8);
+                logger.LogDebug("2");
+                int i5 = (currentDataArray[i2 + 4] & 255) | ((currentDataArray[i2 + 5] & 255) << 8);
+                logger.LogDebug("3");
+                int i6 = (currentDataArray[i2 + 6] & 255) | ((currentDataArray[i2 + 7] & 255) << 8);
+                logger.LogDebug("4");
+                int i7 = currentDataArray[i2 + 11] & 255;
+                logger.LogDebug("5");
+                int i8 = currentDataArray[i3] & 255;
+
+                logger.LogDebug($"i3={i3} , i4={i4}, i5={i5}, i6={i6}, i7={i7}, i8={i8}  ");
+
+                var year = i6;
+                var month = (currentDataArray[i2 + 8] & 255);
+                var day = currentDataArray[i2 + 9] & 255;
+                var hour = currentDataArray[i2 + 10] & 255;
+                var minute = (sbyte)i7;
+                var second = (sbyte)i8;
+
+                logger.LogDebug($"year = {year}, month= {month}, day={day}, hour={hour}, minute={minute}, second={second}");
+
+                if (year > 0 && month > 0 && day > 0)
+                {
+                    var date = new DateTime(year, month, day, hour, minute, second);
+                    return new LogHeaderDataInfo { DataCount = i4, DataSize = i5, Date = date };
+                }
+
                 return null;
             }
-
-            int i2 = (i * 64) + 0;
-            var currentDataArray = headerData;
-
-            logger.LogDebug($"Endianness: IsLittleEndian: {BitConverter.IsLittleEndian}");
-
-            int i3 = i2 + 12;
-            logger.LogDebug("1");
-            int i4 = (currentDataArray[i2] & 255) | ((currentDataArray[i2 + 1] & 255) << 8);
-            logger.LogDebug("2");
-            int i5 = (currentDataArray[i2 + 4] & 255) | ((currentDataArray[i2 + 5] & 255) << 8);
-            logger.LogDebug("3");
-            int i6 = (currentDataArray[i2 + 6] & 255) | ((currentDataArray[i2 + 7] & 255) << 8);
-            logger.LogDebug("4");
-            int i7 = currentDataArray[i2 + 11] & 255;
-            logger.LogDebug("5");
-            int i8 = currentDataArray[i3] & 255;
-
-            logger.LogDebug($"i3={i3} , i4={i4}, i5={i5}, i6={i6}, i7={i7}, i8={i8}  ");
-
-            var year = i6;
-            var month = (currentDataArray[i2 + 8] & 255);
-            var day = currentDataArray[i2 + 9] & 255;
-            var hour = currentDataArray[i2 + 10] & 255;
-            var minute = (sbyte)i7;
-            var second = (sbyte)i8;
-
-            logger.LogDebug($"year = {year}, month= {month}, day={day}, hour={hour}, minute={minute}, second={second}");
-
-            if (year > 0 && month > 0 && day > 0)
+            catch(Exception ex)
             {
-                var date = new DateTime(year, month, day, hour, minute, second);
-                return new LogHeaderDataInfo { DataCount = i4, DataSize = i5, Date = date };
+                logger.LogError(ex, "An unexpected error occured during getting the log header data info");
+                return null;
             }
-
-            return null;
         }
 
         public int GetLogTotalLength(int i)

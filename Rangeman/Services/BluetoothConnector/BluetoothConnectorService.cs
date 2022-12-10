@@ -78,6 +78,11 @@ namespace Rangeman.Services.BluetoothConnector
                 {
                     try
                     {
+                        using var state = ble.CurrentState.Subscribe((state) => 
+                            logger.LogDebug($"Bluetooth state changed! State: {state}"),
+                            ()=> logger.LogDebug("Bluetooth state checker ended!"),
+                            (exception) => logger.LogError(exception,"An unexpected error occured during checking the state."));
+
                         progressMessageMethod("Successfully connected to the watch.");
 
                         await successfullyConnectedMethod(currentConnection);

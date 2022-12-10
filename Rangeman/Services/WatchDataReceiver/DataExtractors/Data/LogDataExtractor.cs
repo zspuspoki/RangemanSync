@@ -38,6 +38,12 @@ namespace Rangeman.DataExtractors.Data
 
             logger.LogDebug($"- LogDataExtractor latitude = {latitude}, longitude = {longitude}");
 
+            if(double.IsNaN(latitude) || double.IsNaN(longitude))
+            {
+                logger.LogDebug("- LogDataExtractor : Longitude or Latitude is NaN. Exiting");
+                return null;
+            }
+
             var year = i3;
             var month = (data[i2 + 3] & 255);
             var day = data[i2 + 4] & 255;
@@ -46,6 +52,11 @@ namespace Rangeman.DataExtractors.Data
             var second = i4;
 
             logger.LogDebug($"- LogDataExtractor Before setting date: year= {year}, month= {month}, day={day}, hour={hour}, minute={minute}, second={second}");
+
+            if(year == 0 || month == 0 || day == 0)
+            {
+                return null;
+            }
 
             var date = new DateTime(year, month, day, hour, minute, second);
 
@@ -60,7 +71,7 @@ namespace Rangeman.DataExtractors.Data
             if ((sbyte)data[i7] != -1 || (sbyte)data[i2 + 31] != 127)
             {
                 temperature = BitConverter.ToUInt16(data, i7);
-                logger.LogDebug($"- LogDataExtractor Temperaure: {temperature}");
+                logger.LogDebug($"- LogDataExtractor Temperature: {temperature}");
             }
 
             return new LogData { Latitude = latitude, Longitude = longitude, Date = date, Pressure = pressure, Temperature = temperature };
@@ -68,11 +79,31 @@ namespace Rangeman.DataExtractors.Data
 
         public List<LogData> GetAllLogData()
         {
+            if(data.Length == 0)
+            {
+                logger.LogDebug("-  LogDataExtractor: the data length is 0, so most probably the data transmission ended without receiving all data. Returning null");
+                return null;
+            }
+
             List<LogData> result = new List<LogData>();
+
+            logger.LogDebug($"Before the for loop in GetAllLogData(). headerDataCount = {headerDataCount}");
 
             for(int i=0;i<headerDataCount;i++)
             {
-                result.Add(GetLogData(i));
+                try
+                {
+                    var logData = GetLogData(i);
+
+                    if (logData != null)
+                    {
+                        result.Add(logData);
+                    }
+                }
+                catch(Exception ex)
+                {
+                    logger.LogError(ex, "An unexpected error occured during adding LogData, skipping this entry.");
+                }
             }
 
             return result;

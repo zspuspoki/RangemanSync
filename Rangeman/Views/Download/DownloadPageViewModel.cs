@@ -146,7 +146,7 @@ namespace Rangeman
                 var logPointMemoryService = new LogPointMemoryExtractorService(connection, loggerFactory);
                 logPointMemoryService.ProgressChanged += LogPointMemoryService_ProgressChanged;
                 var selectedHeader = SelectedLogHeader;
-                var logDataEntries = await logPointMemoryService.GetLogDataAsync(selectedHeader.OrdinalNumber,
+                var logDataEntries = await logPointMemoryService.GetLogDataAsync(
                     selectedHeader.DataSize,
                     selectedHeader.DataCount,
                     selectedHeader.LogAddress,
@@ -154,7 +154,16 @@ namespace Rangeman
 
                 logPointMemoryService.ProgressChanged -= LogPointMemoryService_ProgressChanged;
 
-                SaveGPXFile(logDataEntries);
+                if (logDataEntries!= null)
+                {
+                    logger.LogDebug("-- Inside DownloadSaveAsGPXButton: logDataEntries is not null! Calling SaveGPXFile()");
+                    SaveGPXFile(logDataEntries);
+                }
+                else
+                {
+                    ProgressMessage = "The data downloading from the watch has been ended without receiving all of the data including the end transmission command. Please try again by pressing the download as GPX button again.";
+                    logger.LogDebug("-- Inside DownloadSaveAsGPXButton: logDataEntries is null");
+                }
 
                 DisconnectButtonIsVisible = false;
 

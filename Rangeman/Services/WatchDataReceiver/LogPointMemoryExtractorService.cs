@@ -76,7 +76,7 @@ namespace Rangeman.Services.WatchDataReceiver
             return null;
         }
 
-        public async Task<List<LogData>> GetLogDataAsync(int logEntryOrdinal, int headerDataSize, int headerDataCount, int logAddress, int logTotalLength)
+        public async Task<List<LogData>> GetLogDataAsync(int headerDataSize, int headerDataCount, int logAddress, int logTotalLength)
         {
             logger.LogDebug("GetLogDataAsync -- Before SendInitializationCommandsToWatch");
 

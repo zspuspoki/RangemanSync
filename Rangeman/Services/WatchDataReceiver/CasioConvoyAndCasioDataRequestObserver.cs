@@ -20,6 +20,7 @@ namespace Rangeman
 
         private int digestedByteCount = 0; // every 256 bytes - we have a CRC code
         private bool dataReceivingIsAllowed = true;
+        private bool casioConvoyDataReceivingIsAllowed = false;
 
         private bool successFullyEndedTransmission = false;
 
@@ -27,20 +28,31 @@ namespace Rangeman
         private IDataExtractor dataExtractor;
         private readonly RemoteWatchController remoteWatchController;
         private TaskCompletionSource<IDataExtractor> taskCompletionSource;
+        private readonly byte categoryId;
+        private readonly int watchSectorSize;
         private ILogger<CasioConvoyAndCasioDataRequestObserver> logger;
         private List<byte> last256Bytes = new List<byte>();
+
+        private bool hasCRCError = false;
+
+        public bool HasCrcError { get => hasCRCError; }
 
         public event EventHandler<DataRequestObserverProgressChangedEventArgs> ProgressChanged;
 
         public CasioConvoyAndCasioDataRequestObserver(IDataExtractor dataExtractor, 
             RemoteWatchController remoteWatchController, 
             TaskCompletionSource<IDataExtractor> taskCompletionSource,
-            ILoggerFactory loggerFactory)
+            ILoggerFactory loggerFactory,
+            byte categoryId, int watchSectorSize)
         {
             this.dataExtractor = dataExtractor;
             this.remoteWatchController = remoteWatchController;
             this.taskCompletionSource = taskCompletionSource;
+            this.categoryId = categoryId;
+            this.watchSectorSize = watchSectorSize;
             this.logger = loggerFactory.CreateLogger<CasioConvoyAndCasioDataRequestObserver>();
+
+            logger.LogDebug($"Inside constructor. CategoryId = {categoryId} watchSectorSize = {watchSectorSize}");
         }
 
         public void OnCompleted()
@@ -63,7 +75,7 @@ namespace Rangeman
         {
             lock (key)
             {
-                if(!dataReceivingIsAllowed)
+                if (!dataReceivingIsAllowed)
                 {
                     logger.LogDebug("OnNext - CasioConvoyAndCasioDataRequestObserver - data receiving is not allowed. Returning.");
                     return;
@@ -71,7 +83,7 @@ namespace Rangeman
 
                 logger.LogDebug($"OnNext - CasioConvoyAndCasioDataRequestObserver  Guid = {value.Item1}  value = {Utils.GetPrintableBytesArray(value.Item2)}");
 
-                if (value.Item1 == Guid.Parse(BLEConstants.CasioConvoyCharacteristic))
+                if (casioConvoyDataReceivingIsAllowed && value.Item1 == Guid.Parse(BLEConstants.CasioConvoyCharacteristic))
                 {
                     if (value.Item2[0] == 5)
                     {
@@ -106,7 +118,12 @@ namespace Rangeman
                             //logger.LogDebug($"Calculated CRC: {Utils.GetPrintableBytesArray(checksumBytes)}, CRC Byte 1: {crcByte1}, CRC Byte 2: {crcByte2}");
                             if(!checksumBytes.SequenceEqual(receivedCrc))
                             {
-                                logger.LogDebug("CRC error found !");
+                                hasCRCError = true;
+                                logger.LogDebug($"CRC error found ! HasCRCError was set. Used array to calculate: {Utils.GetPrintableBytesArray(last256Bytes.ToArray())}");
+                                logger.LogDebug("--------------- Restarting transmission -----------");
+                                remoteWatchController.AskWatchToEndTransmission(categoryId);
+                                EndCurrentTransmission();
+                                return;
                             }
 
                             last256Bytes.Clear();
@@ -149,7 +166,7 @@ namespace Rangeman
                 else if (value.Item1 == Guid.Parse(BLEConstants.CasioDataRequestSPCharacteristic))
                 {
                     var receivedBytes = value.Item2;
-                    if (value.Item2.Length >= 9)
+                    if (value.Item2.Length >= 9 && receivedBytes[0]==0x00 && receivedBytes[1] == categoryId)
                     {
                         logger.LogDebug("OnNext - CasioConvoyAndCasioDataRequestObserver - CasioDataRequestSPCharacteristic : Received an array where the length >= 9");
                         headerSize = ((receivedBytes[9] & 255) << 24) | (receivedBytes[6] & 255) | ((receivedBytes[7] & 255) << 8) | ((receivedBytes[8] & 255) << 16);
@@ -164,6 +181,8 @@ namespace Rangeman
                             byte[] emptySector = new byte[SectorSize];
                             data.Add(emptySector);
                         }
+
+                        casioConvoyDataReceivingIsAllowed = true;
                     }
                     else
                     {
@@ -195,6 +214,7 @@ namespace Rangeman
         private void EndCurrentTransmission()
         {
             dataReceivingIsAllowed = false;
+            casioConvoyDataReceivingIsAllowed = false;
 
             var allReceivedData = Utils.GetAllDataArray(data);
             dataExtractor.SetData(allReceivedData);
@@ -230,6 +250,8 @@ namespace Rangeman
             currentSectorIndex = 0;
             currentDataIndexOnCurrentSector = 0;
             digestedByteCount = 0;
+            last256Bytes.Clear();
+            hasCRCError = false;
         }
 
         private void FireProgressChanged(string message)

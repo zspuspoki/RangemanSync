@@ -21,9 +21,24 @@ namespace Rangeman.WatchDataReceiver
             this.logger = loggerFactory.CreateLogger<RemoteWatchController>();
         }
 
+        public void SendMessageToDRSP(byte[] data)
+        {
+            // 00, 0F, 00, 10, 00, 00, 00, 20, 00, 00,
+            var arrayToSend = new byte[] { 00, 0x0F, 00, 00, 00, 00, 00, 00, 00, 00 };
+            gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
+                Guid.Parse(BLEConstants.CasioDataRequestSPCharacteristic), data);
+        }
+
         public void SendConfirmationToContinueTransmission()
         {
             var arrayToSend = new byte[] { 0x07, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+            gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
+                Guid.Parse(BLEConstants.CasioDataRequestSPCharacteristic), arrayToSend);
+        }
+
+        public void AskWatchToEndTransmission(byte categoryId)
+        {
+            var arrayToSend = new byte[] { 0x03, categoryId, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
             gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
                 Guid.Parse(BLEConstants.CasioDataRequestSPCharacteristic), arrayToSend);
         }
@@ -94,6 +109,8 @@ namespace Rangeman.WatchDataReceiver
 
         public async Task SendDownloadHeaderCommandToWatch()
         {
+            //8192 - sector size 0x2000
+            //0x0F - category ID : header
             await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
                 Guid.Parse(BLEConstants.CasioDataRequestSPCharacteristic), new byte[] { 0x00, 0x0F, 0x00, 0x10, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00 });
 

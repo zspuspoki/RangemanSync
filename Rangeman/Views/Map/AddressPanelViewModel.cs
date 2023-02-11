@@ -38,7 +38,7 @@ namespace Rangeman.Views.Map
                 await SetPosition();
                 mapPageView.PlaceOnMapClicked(position);
             }
-            catch(Exception ex)
+            catch
             {
                 mapPageView.DisplayProgressMessage("An unexpected error occured during setting the address. Do you have internet connection?");
             }
@@ -51,7 +51,7 @@ namespace Rangeman.Views.Map
                 await SetPosition();
                 mapPageView.ShowOnMap(position);
             }
-            catch(Exception ex)
+            catch
             {
                 mapPageView.DisplayProgressMessage("An unexpected error occured during setting the address. Do you have internet connection?");
             }

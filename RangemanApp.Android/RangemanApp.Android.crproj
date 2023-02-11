@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<project outputDir="d:\!RangemanApp_git\RangemanApp.Android" baseDir="d:\!RangemanApp_git\RangemanApp.Android" xmlns="http://confuser.codeplex.com">
+<project outputDir="C:\Git\RangemanSyncXamarin\RangemanApp.Android" baseDir="C:\Git\RangemanSyncXamarin\RangemanApp.Android" xmlns="http://confuser.codeplex.com">
 	<rule preset="none" pattern="true">
 		<protection id="anti debug" />
 		<protection id="anti ildasm" />
@@ -11,7 +11,7 @@
     </protection>    
     
 	</rule>
-	<module path="d:\!RangemanApp_git\RangemanApp.Android\bin\Release\Rangeman.dll"/>
-	<module path="d:\!RangemanApp_git\RangemanApp.Android\bin\Release\RangemanSync.Android.dll"/>
-	<probePath>d:\!RangemanApp_git\RangemanApp.Android\obj\Release\120\android\assets</probePath>
+	<module path="C:\Git\RangemanSyncXamarin\RangemanApp.Android\bin\Release\Rangeman.dll"/>
+	<module path="C:\Git\RangemanSyncXamarin\RangemanApp.Android\bin\Release\RangemanSync.Android.dll"/>
+	<probePath>C:\Git\RangemanSyncXamarin\RangemanApp.Android\obj\Release\120\android\assets</probePath>
 </project>

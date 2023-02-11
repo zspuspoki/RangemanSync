@@ -73,12 +73,20 @@ namespace Rangeman.Views.Map
 
         public void DeleteSelectedNode()
         {
-            var linkedListNodeToDelete = nodes.Find(userSelectedPinNodeForDeletion);
-            linkedListNodeToDelete.Value.InvalidateLongLatValues();
-            linkedListNodeToDelete.Value.Visible = true;
+            if (userSelectedPinNodeForDeletion != null)
+            {
+                var linkedListNodeToDelete = nodes.Find(userSelectedPinNodeForDeletion);
+                linkedListNodeToDelete.Value.InvalidateLongLatValues();
+                linkedListNodeToDelete.Value.Visible = true;
 
-            currentSelectedLinkedListNode = linkedListNodeToDelete;  // let's select it again, so it can be placed again on the map
-            CurrentSelectedNode = currentSelectedLinkedListNode.Value;
+                currentSelectedLinkedListNode = linkedListNodeToDelete;  // let's select it again, so it can be placed again on the map
+                CurrentSelectedNode = currentSelectedLinkedListNode.Value;
+                userSelectedPinNodeForDeletion = null;
+            }
+            else
+            {
+                throw new InvalidOperationException("Please select a node (1-9 or S/G) to delete before pressing the delete node button.");
+            }
         }
 
         /// <summary>

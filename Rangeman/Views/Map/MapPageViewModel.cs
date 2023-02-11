@@ -221,12 +221,20 @@ namespace Rangeman
 
         private void DeleteNodeButton_Clicked()
         {
-            deleteButtonCanbePressed = false;
-            NodesViewModel.DeleteSelectedNode();
-            mapPageView.RemoveSelectedPin();
-            mapPageView.AddLinesBetweenPinsAsLayer();
-            ProgressMessage = "Successfully deleted node.";
-            deleteButtonCanbePressed = true;
+            try
+            {
+                deleteButtonCanbePressed = false;
+                NodesViewModel.DeleteSelectedNode();
+                mapPageView.RemoveSelectedPin();
+                mapPageView.AddLinesBetweenPinsAsLayer();
+                ProgressMessage = "Successfully deleted node.";
+                deleteButtonCanbePressed = true;
+            }
+            catch(InvalidOperationException ex)
+            {
+                logger.LogError(ex, "Error occured during deleting a node.");
+                ProgressMessage = ex.Message;
+            }
         }
 
         private void SelectNodeButton_Clicked()

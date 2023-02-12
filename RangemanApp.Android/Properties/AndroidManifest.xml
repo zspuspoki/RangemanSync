@@ -16,4 +16,9 @@
 			<data android:scheme="mailto" />
 		</intent>
 	</queries>
+  <supports-screens android:smallScreens="true"
+                      android:normalScreens="true"
+                      android:largeScreens="false"
+                      android:xlargeScreens="false"/>
+  <uses-feature android:name="android.hardware.telephony" required="true"/>
 </manifest>

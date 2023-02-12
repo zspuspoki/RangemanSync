@@ -33,13 +33,7 @@ namespace RangemanSync.Android
         /// <summary>
         /// Your Base 64 public key
         /// </summary>
-        private const string Base64PublicKey =
-            "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA96TCUr/Rhx/fcIVcCrWTz0FKvI+hZ" +
-            "ICb/yXaxNPhSWeo7TROB+Op5wKhdmjsaSvbi/v75RgyikS/HrSKvQCqwix6b3IgjIu8iGYYZz" +
-            "2ieoFMVt39WFP20fSfjNoBr0KJOsoIAso6zF845ZtIE+3vJFg4z/tTe/jPgi73AYJS6RnUO2p" +
-            "C2tzeGVe+TQemhPUfFWAczunpAoT8ioBCYzK1FzTc1uyAFMh8riijrKDXbQd42nByJq3SSjJi" +
-            "yx/5pcMMj2kWvuJjD5ugk0X10jEfwptVQytXOAvMPhbyvJ2yNN6Ha9ZUHIawXC+JyCr9bvMAo" +
-            "KIFTqzqLYfpX10feYTDsQIDAQAB";
+        private const string Base64PublicKey = @"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAhczRaPwUGcgBzXvXdHugrehPIDBM7KF0h1300pFFQPziPAQrPOOQSiupj10gOA4xNOhmI++F9iq6t8tVuJY4ELPxy8IxPzyZOANMQFUzUrFqSETxU/XoRjs+7Gsknf9cTjbkXs7yIPzNWXlSbDyxKxMaqn35UrIxjmBTNI+uO243MMAqY+fMqDUzAfBD3KPKSRMRU8PgRm37uChoLVkfw03YDeS0rms8iGwnhvBYBJnCGz2tEGXv+/1C965IcghYetyMSNnQzX0vkwjOFxg77echzm2N/D8CM1/rfmIKxIAZezAQRayZWhNNEqox5oZv22r7r1magCqxD6m/iJGUWQIDAQAB";
 
         // Generate your own 20 random bytes, and put them here.
         private static readonly byte[] Salt = new byte[]

@@ -7,7 +7,7 @@ namespace RangemanSync.Android.Services
 
     public class LicenseInfoDistributorService : ILicenseDistributor
     {
-        public LicenseValidity Validity { get; set; } = LicenseValidity.Valid;
+        public LicenseValidity Validity { get; set; } = LicenseValidity.Invalid;
         public string ErrorCode { get; set; } = "";
 
         public void setErrorCode(string errorCode)

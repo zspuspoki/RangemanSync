@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -8,12 +7,19 @@ namespace Rangeman.Common
 {
     internal static class Utils
     {
-        public static string GetPrintableBytesArray(byte[] bytes)
+        public static string GetPrintableBytesArray(byte[] bytes, bool hideSensitiveData = true)
         {
             var sb = new StringBuilder("new byte[] { ");
             foreach (var b in bytes)
             {
-                sb.Append(b.ToString("X2") + ", ");
+                if (!hideSensitiveData)
+                {
+                    sb.Append(b.ToString("X2") + ", ");
+                }
+                else
+                {
+                    sb.Append("??, ");
+                }
             }
             sb.Append("}");
 

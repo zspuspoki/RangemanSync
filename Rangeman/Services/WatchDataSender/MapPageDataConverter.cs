@@ -63,7 +63,7 @@ namespace Rangeman.WatchDataSender
 
             var result = Utils.GetAllDataArray(resultList);
 
-            logger.LogDebug($"--- Header byte array from converter : {Utils.GetPrintableBytesArray(result)}");
+            logger.LogDebug($"--- Header byte array from converter : {Utils.GetPrintableBytesArray(result, hideSensitiveData: false)}");
 
             return result;
         }

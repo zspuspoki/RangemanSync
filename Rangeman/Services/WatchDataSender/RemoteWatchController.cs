@@ -28,11 +28,11 @@ namespace Rangeman.WatchDataSender
             gattServer.NotifyCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid), Guid.Parse(BLEConstants.CasioConvoyCharacteristic),
             (data) =>
             {
-                logger.LogDebug($"--- SendInitCommandsAndWaitForCCCData - NotifyCharacteristicValue. Received data bytes : {Utils.GetPrintableBytesArray(data)}");
+                logger.LogDebug($"--- SendInitCommandsAndWaitForCCCData - NotifyCharacteristicValue. Received data bytes : {Utils.GetPrintableBytesArray(data, hideSensitiveData: false)}");
 
                 if (data.SequenceEqual(convoyData))
                 {
-                    logger.LogDebug($"--- SendInitCommandsAndWaitForCCCData - NotifyCharacteristicValue. data equals to convoy data : {Utils.GetPrintableBytesArray(convoyData)}");
+                    logger.LogDebug($"--- SendInitCommandsAndWaitForCCCData - NotifyCharacteristicValue. data equals to convoy data : {Utils.GetPrintableBytesArray(convoyData, hideSensitiveData: false)}");
                     taskCompletionSource.SetResult(data);
                 }
             }, 
@@ -81,7 +81,7 @@ namespace Rangeman.WatchDataSender
             gattServer.NotifyCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid), Guid.Parse(BLEConstants.CasioConvoyCharacteristic),
             (data) =>
             {
-                logger.LogDebug($"--- SendCategoryAndWaitForConnectionParams - NotifyCharacteristicValue. Received data bytes : {Utils.GetPrintableBytesArray(data)}");
+                logger.LogDebug($"--- SendCategoryAndWaitForConnectionParams - NotifyCharacteristicValue. Received data bytes : {Utils.GetPrintableBytesArray(data, hideSensitiveData: false)}");
                 var kindData = data[0];
 
                 if (kindData == 2 || kindData == 6)
@@ -112,7 +112,7 @@ namespace Rangeman.WatchDataSender
             gattServer.NotifyCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid), Guid.Parse(BLEConstants.CasioDataRequestSPCharacteristic),
             (data) =>
             {
-                logger.LogDebug($"--- SendConnectionSettingsBasedOnParams - NotifyCharacteristicValue. Received data bytes : {Utils.GetPrintableBytesArray(data)}");
+                logger.LogDebug($"--- SendConnectionSettingsBasedOnParams - NotifyCharacteristicValue. Received data bytes : {Utils.GetPrintableBytesArray(data, hideSensitiveData: false)}");
                 if (data[0] == 0 && data[1] == categoryId)
                 { 
                     taskCompletionSource.SetResult(data);
@@ -155,7 +155,7 @@ namespace Rangeman.WatchDataSender
             gattServer.NotifyCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid), Guid.Parse(BLEConstants.CasioDataRequestSPCharacteristic),
                 (data) =>
                 {
-                    logger.LogDebug($"--- CloseCurrentCategoryAndWaitForResponse - NotifyCharacteristicValue. Received data bytes : {Utils.GetPrintableBytesArray(data)}");
+                    logger.LogDebug($"--- CloseCurrentCategoryAndWaitForResponse - NotifyCharacteristicValue. Received data bytes : {Utils.GetPrintableBytesArray(data, hideSensitiveData: false)}");
                     //if (data[0] == 4)
                     //{
                     //    if (data[1] == categoryId)
@@ -189,7 +189,7 @@ namespace Rangeman.WatchDataSender
             gattServer.NotifyCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid), Guid.Parse(BLEConstants.CasioConvoyCharacteristic),
                 (data) =>
                 {
-                    logger.LogDebug($"--- WriteFinalClosingData - NotifyCharacteristicValue. Received data bytes : {Utils.GetPrintableBytesArray(data)}");
+                    logger.LogDebug($"--- WriteFinalClosingData - NotifyCharacteristicValue. Received data bytes : {Utils.GetPrintableBytesArray(data, hideSensitiveData: false)}");
                     if (data[0] == 0x04 && data[1] == 0x00 && data[2] == 0x18)
                     {
                         taskCompletionSource.SetResult(data);

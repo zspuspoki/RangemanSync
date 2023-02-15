@@ -50,10 +50,6 @@
                         <CheckBox  IsChecked="{Binding SendLogFilesChecked}"/>
                         <Label TextColor="Black" Text="Send log files to the support email"/>
                     </StackLayout>
-                    <StackLayout Orientation="Horizontal">
-                        <CheckBox  IsChecked="{Binding ShowDeviceIdChecked}"/>
-                        <Label TextColor="Black" Text="Show me my device ID used by the licensee service"/>
-                    </StackLayout>
                 </StackLayout>
             </Frame>
             <Button Text="Apply changes" x:Name="ApplyButton" Command="{Binding Path=ApplyCommand}" />

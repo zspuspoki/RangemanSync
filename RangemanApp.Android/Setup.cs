@@ -3,7 +3,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Rangeman;
-using Rangeman.Services.DeviceId;
 using Rangeman.Services.LicenseDistributor;
 using Rangeman.Services.SharedPreferences;
 using System;
@@ -17,17 +16,15 @@ namespace RangemanSync.Android
         private readonly FormsAppCompatActivity mainActivity;
         private readonly ISharedPreferencesService sharedPreferencesService;
         private readonly ILicenseDistributor licenseDistributor;
-        private readonly IDeviceIdService deviceIdService;
 
         public Setup(Context context, FormsAppCompatActivity mainActivity, 
             ISharedPreferencesService sharedPreferencesService, 
-            ILicenseDistributor licenseDistributor, IDeviceIdService deviceIdService)
+            ILicenseDistributor licenseDistributor)
         {
             this.context = context;
             this.mainActivity = mainActivity;
             this.sharedPreferencesService = sharedPreferencesService;
             this.licenseDistributor = licenseDistributor;
-            this.deviceIdService = deviceIdService;
         }
 
         public Action<ConfigurationBuilder> Configuration =>
@@ -45,7 +42,6 @@ namespace RangemanSync.Android
                 serviceCollection.AddSingleton<ISaveGPXFileService, SaveGPXFileService>();
                 serviceCollection.AddSingleton<ISharedPreferencesService>(sharedPreferencesService);
                 serviceCollection.AddSingleton<ILicenseDistributor>(licenseDistributor);
-                serviceCollection.AddSingleton<IDeviceIdService>(deviceIdService);
             };
     }
 }

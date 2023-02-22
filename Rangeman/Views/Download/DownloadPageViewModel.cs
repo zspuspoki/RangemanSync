@@ -1,14 +1,9 @@
 ﻿using Android.Content;
 using Microsoft.Extensions.Logging;
-using Rangeman.DataExtractors.Data;
 using Rangeman.Services.BluetoothConnector;
-using Rangeman.Services.LicenseDistributor;
 using Rangeman.Services.SharedPreferences;
 using Rangeman.Services.WatchDataReceiver;
 using Rangeman.Views.Download;
-using SharpGPX;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Xamarin.Forms;
@@ -26,21 +21,15 @@ namespace Rangeman
         private readonly IDownloadPageView downloadPageView;
         private readonly ILoggerFactory loggerFactory;
         private readonly ISharedPreferencesService sharedPreferencesService;
-        private readonly ISaveGPXFileService saveGPXFileService;
         private bool disconnectButtonCanBePressed = true;
         private bool downloadHeadersButtonCanBePressed = true;
-        private bool saveGPXButtonCanBePressed = true;
-        private DateTime lastHeaderDownloadTime;
-        private bool hasValidLicense = true;
 
         private ICommand disconnectCommand;
         private ICommand downloadHeadersCommand;
-        private ICommand saveGPXCommand;
 
         public DownloadPageViewModel(Context context, BluetoothConnectorService bluetoothConnectorService, 
             AppShellViewModel appShellViewModel, IDownloadPageView downloadPageView,
-            ILoggerFactory loggerFactory, ISharedPreferencesService sharedPreferencesService,
-            ISaveGPXFileService saveGPXFileService, ILicenseDistributor licenseDistributor)
+            ILoggerFactory loggerFactory, ISharedPreferencesService sharedPreferencesService)
         {
             this.logger = loggerFactory.CreateLogger<DownloadPageViewModel>();
 
@@ -51,16 +40,6 @@ namespace Rangeman
             this.downloadPageView = downloadPageView;
             this.loggerFactory = loggerFactory;
             this.sharedPreferencesService = sharedPreferencesService;
-            this.saveGPXFileService = saveGPXFileService;
-
-            HandleLicenseResponse(licenseDistributor);
-            HandleLicenseErrorResponse(licenseDistributor);
-
-            MessagingCenter.Subscribe<ILicenseDistributor>(this, DistributorMessages.LicenseResultReceived.ToString(),
-                HandleLicenseResponse);
-
-            MessagingCenter.Subscribe<ILicenseDistributor>(this, DistributorMessages.AppErrorReceived.ToString(),
-                HandleLicenseErrorResponse);
         }
 
         #region Button handlers
@@ -103,7 +82,6 @@ namespace Rangeman
                 logPointMemoryService.ProgressChanged -= LogPointMemoryService_ProgressChanged;
 
                 DisconnectButtonIsVisible = false;
-                lastHeaderDownloadTime = DateTime.Now;
                 return true;
             },
             async () =>
@@ -134,68 +112,12 @@ namespace Rangeman
             SetProgressMessage(e.Text);
         }
 
-        private async void SaveGPXFile(List<LogData> logDataEntries)
-        {
-            GpxClass gpx = new GpxClass();
-
-            gpx.Metadata.time = SelectedLogHeader.HeaderTime;
-            gpx.Metadata.timeSpecified = true;
-            gpx.Metadata.desc = "Track exported from Casio GPR-B1000 watch";
-
-            gpx.Tracks.Add(new SharpGPX.GPX1_1.trkType());
-            gpx.Tracks[0].trkseg.Add(new SharpGPX.GPX1_1.trksegType());
-
-            foreach (var logEntry in logDataEntries)
-            {
-                var wpt = new SharpGPX.GPX1_1.wptType
-                {
-                    lat = (decimal)logEntry.Latitude,
-                    lon = (decimal)logEntry.Longitude,   // ele tag : pressure -> elevation conversion ?
-                    time = logEntry.Date,
-                    timeSpecified = true,
-                };
-
-                gpx.Tracks[0].trkseg[0].trkpt.Add(wpt);
-            }
-
-            var headerTime = SelectedLogHeader.HeaderTime;
-            var fileName = $"GPR-B1000-Route-{headerTime.Year}-{headerTime.Month}-{headerTime.Day}-2.gpx";
-
-            var gpxString = gpx.ToXml();
-            sharedPreferencesService.SetValue(Constants.PrefKeyGPX, gpxString);
-            saveGPXFileService.SaveGPXFile(fileName);
-        }
-
         private void SetProgressMessage(string message)
         {
             ProgressMessage = message;
         }
 
         #endregion
-
-        #region Licensing callbacks
-        private void HandleLicenseResponse(ILicenseDistributor licenseDistributor)
-        {
-            if (licenseDistributor.Validity == LicenseValidity.Invalid)
-            {
-                hasValidLicense = false;
-            }
-            else
-            {
-                hasValidLicense = true;
-            }
-        }
-
-        private void HandleLicenseErrorResponse(ILicenseDistributor licenseDistributor)
-        {
-            if (!string.IsNullOrEmpty(licenseDistributor.ErrorCode))
-            {
-                logger.LogDebug($"Handling license checking error on Download. Error code: {licenseDistributor.ErrorCode}");
-                ProgressMessage = $"Error occured during getting the license. Error code: {licenseDistributor.ErrorCode}";
-            }
-        }
-        #endregion
-
 
         #region Properties
         public ObservableCollection<LogHeaderViewModel> LogHeaderList { get; } = new ObservableCollection<LogHeaderViewModel>();

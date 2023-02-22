@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using nexus.protocols.ble;
 using Rangeman.Services.BluetoothConnector;
-using Rangeman.Services.PhoneLocation;
 using Rangeman.Views.Download;
 using Serilog;
 using Serilog.Exceptions;
@@ -73,7 +72,6 @@ namespace Rangeman
             IConfigurationRoot configurationRoot)
         {
             serviceCollection.AddScoped<IConfiguration>(_ => configurationRoot);
-            serviceCollection.AddSingleton<ILocationService, LocationService>();
             serviceCollection.AddViewModels<DownloadPageViewModel>();
             serviceCollection.AddSingleton<ConfigPageViewModel>();
 

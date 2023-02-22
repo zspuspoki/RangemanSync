@@ -4,43 +4,25 @@ using Android.Runtime;
 using Android.OS;
 using Xamarin.Essentials;
 using Rangeman;
-using Android.Content;
 using Rangeman.Services.SharedPreferences;
 using System.Threading.Tasks;
 using AndroidContent = Android.Content;
 using System;
 using Environment = System.Environment;
 using System.IO;
-using Rangeman.Services.LicenseDistributor;
-using RangemanSync.Android.Services;
 using Constants = Rangeman.Constants;
 using Android;
 using AndroidX.Core.Content;
 using AndroidX.Core.App;
-using Google.Android.Vending.Licensing;
 
 namespace RangemanSync.Android
 {
     [Activity(Label = "RangemanSync", Icon = "@mipmap/icon", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize )]
-    public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity, ActivityCompat.IOnRequestPermissionsResultCallback, ILicenseCheckerCallback
+    public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity, ActivityCompat.IOnRequestPermissionsResultCallback
     {
         private ISharedPreferencesService preferencesService;
-        private readonly ILicenseDistributor licenseDistributor = new LicenseInfoDistributorService();
         private const int BLUETOOTH_PERMISSION_REQUEST = 1;
         private const int LOCATION_PERMISSION_REQUEST = 2;
-
-        #region License checking related fields
-        /// <summary>
-        /// Your Base 64 public key
-        /// </summary>
-        private const string Base64PublicKey = @"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAhczRaPwUGcgBzXvXdHugrehPIDBM7KF0h1300pFFQPziPAQrPOOQSiupj10gOA4xNOhmI++F9iq6t8tVuJY4ELPxy8IxPzyZOANMQFUzUrFqSETxU/XoRjs+7Gsknf9cTjbkXs7yIPzNWXlSbDyxKxMaqn35UrIxjmBTNI+uO243MMAqY+fMqDUzAfBD3KPKSRMRU8PgRm37uChoLVkfw03YDeS0rms8iGwnhvBYBJnCGz2tEGXv+/1C965IcghYetyMSNnQzX0vkwjOFxg77echzm2N/D8CM1/rfmIKxIAZezAQRayZWhNNEqox5oZv22r7r1magCqxD6m/iJGUWQIDAQAB";
-
-        // Generate your own 20 random bytes, and put them here.
-        private static readonly byte[] Salt = new byte[]
-            { 46, 65, 30, 128, 103, 57, 74, 64, 51, 88, 95, 45, 77, 117, 36, 113, 11, 32, 64, 89 };
-
-        private LicenseChecker checker;
-        #endregion
 
         #region EULA checking related fields
         private const string EULA_HAS_BEEN_READ = nameof(EULA_HAS_BEEN_READ);
@@ -62,16 +44,11 @@ namespace RangemanSync.Android
 
             preferencesService = new SharedPreferencesService();
 
-            var setup = new Setup(ApplicationContext, this, preferencesService, 
-                licenseDistributor);
+            var setup = new Setup(ApplicationContext, this, preferencesService);
             LoadApplication(new App(setup.Configuration, setup.DependencyInjection));
 
             var eulaHasBeenAccepted = await UserHasAcceptedEULA();
 
-            if (eulaHasBeenAccepted)
-            {
-                ConfigureLicenseChecking();
-            }
         }
 
         #region EULA checking
@@ -133,42 +110,6 @@ namespace RangemanSync.Android
             }
 
         }
-        #endregion
-
-        #region License checking related methods
-        private void ConfigureLicenseChecking()
-        {
-            // Try to use more data here. ANDROID_ID is a single point of attack.
-            string deviceId = global::Android.Provider.Settings.Secure.GetString(ContentResolver, global::Android.Provider.Settings.Secure.AndroidId);
-
-            // Construct the LicenseChecker with a policy.
-            var obfuscator = new AESObfuscator(Salt, PackageName, deviceId);
-            var policy = new ServerManagedPolicy(this, obfuscator);
-            checker = new LicenseChecker(this, policy, Base64PublicKey);
-
-            DoCheckLicense();
-        }
-
-        private void DoCheckLicense()
-        {
-            checker.CheckAccess(this);
-        }
-
-        public void Allow([GeneratedEnum] PolicyResponse reason)
-        {
-            licenseDistributor.SetValidity(LicenseValidity.Valid);
-        }
-
-        public void ApplicationError([GeneratedEnum] LicenseCheckerErrorCode errorCode)
-        {
-            licenseDistributor.setErrorCode(errorCode.ToString());
-        }
-
-        public void DontAllow([GeneratedEnum] PolicyResponse reason)
-        {
-            licenseDistributor.SetValidity(LicenseValidity.Invalid);
-        }
-
         #endregion
 
         #region Error handling
@@ -295,38 +236,5 @@ namespace RangemanSync.Android
         }
         #endregion
 
-        protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
-        {
-            base.OnActivityResult(requestCode, resultCode, data);
-
-            if (resultCode == Result.Ok)
-            {
-                if (requestCode == ActivityRequestCode.SaveGPXFile)
-                {
-                    using (Stream stream = this.ContentResolver.OpenOutputStream(data.Data, "w"))
-                    {
-                        using (var javaStream = new Java.IO.BufferedOutputStream(stream))
-                        {
-                            string gpx = preferencesService.GetValue(Constants.PrefKeyGPX, "");
-
-                            if (!string.IsNullOrEmpty(gpx))
-                            {
-                                var gpxBytes = System.Text.Encoding.Unicode.GetBytes(gpx);
-                                javaStream.Write(gpxBytes, 0, gpxBytes.Length);
-                            }
-
-                            javaStream.Flush();
-                            javaStream.Close();
-                        }
-                    }
-                }
-            }
-        }
-
-        protected override void OnDestroy()
-        {
-            base.OnDestroy();
-            checker.OnDestroy();
-        }
     }
 }

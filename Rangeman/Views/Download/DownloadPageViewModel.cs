@@ -1,7 +1,6 @@
 ﻿using Android.Content;
 using Microsoft.Extensions.Logging;
 using Rangeman.Services.BluetoothConnector;
-using Rangeman.Services.SharedPreferences;
 using Rangeman.Services.WatchDataReceiver;
 using Rangeman.Views.Download;
 using System.Collections.ObjectModel;
@@ -20,7 +19,6 @@ namespace Rangeman
         private readonly AppShellViewModel appShellViewModel;
         private readonly IDownloadPageView downloadPageView;
         private readonly ILoggerFactory loggerFactory;
-        private readonly ISharedPreferencesService sharedPreferencesService;
         private bool disconnectButtonCanBePressed = true;
         private bool downloadHeadersButtonCanBePressed = true;
 
@@ -29,7 +27,7 @@ namespace Rangeman
 
         public DownloadPageViewModel(Context context, BluetoothConnectorService bluetoothConnectorService, 
             AppShellViewModel appShellViewModel, IDownloadPageView downloadPageView,
-            ILoggerFactory loggerFactory, ISharedPreferencesService sharedPreferencesService)
+            ILoggerFactory loggerFactory)
         {
             this.logger = loggerFactory.CreateLogger<DownloadPageViewModel>();
 
@@ -39,7 +37,6 @@ namespace Rangeman
             this.appShellViewModel = appShellViewModel;
             this.downloadPageView = downloadPageView;
             this.loggerFactory = loggerFactory;
-            this.sharedPreferencesService = sharedPreferencesService;
         }
 
         #region Button handlers

@@ -4,7 +4,6 @@ using Android.Runtime;
 using Android.OS;
 using Xamarin.Essentials;
 using Rangeman;
-using Rangeman.Services.SharedPreferences;
 using System.Threading.Tasks;
 using AndroidContent = Android.Content;
 using System;
@@ -20,7 +19,6 @@ namespace RangemanSync.Android
     [Activity(Label = "RangemanSync", Icon = "@mipmap/icon", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize )]
     public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity, ActivityCompat.IOnRequestPermissionsResultCallback
     {
-        private ISharedPreferencesService preferencesService;
         private const int BLUETOOTH_PERMISSION_REQUEST = 1;
         private const int LOCATION_PERMISSION_REQUEST = 2;
 
@@ -42,9 +40,7 @@ namespace RangemanSync.Android
 
             CheckPermissions_Compat();
 
-            preferencesService = new SharedPreferencesService();
-
-            var setup = new Setup(ApplicationContext, this, preferencesService);
+            var setup = new Setup(ApplicationContext, this);
             LoadApplication(new App(setup.Configuration, setup.DependencyInjection));
 
             var eulaHasBeenAccepted = await UserHasAcceptedEULA();

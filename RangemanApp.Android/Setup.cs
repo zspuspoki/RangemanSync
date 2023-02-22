@@ -2,8 +2,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using Rangeman;
-using Rangeman.Services.SharedPreferences;
 using System;
 using Xamarin.Forms.Platform.Android;
 
@@ -13,14 +11,11 @@ namespace RangemanSync.Android
     {
         private readonly Context context;
         private readonly FormsAppCompatActivity mainActivity;
-        private readonly ISharedPreferencesService sharedPreferencesService;
 
-        public Setup(Context context, FormsAppCompatActivity mainActivity, 
-            ISharedPreferencesService sharedPreferencesService)
+        public Setup(Context context, FormsAppCompatActivity mainActivity)
         {
             this.context = context;
             this.mainActivity = mainActivity;
-            this.sharedPreferencesService = sharedPreferencesService;
         }
 
         public Action<ConfigurationBuilder> Configuration =>
@@ -35,7 +30,6 @@ namespace RangemanSync.Android
             {
                 serviceCollection.AddSingleton(this.context);
                 serviceCollection.AddSingleton(mainActivity);
-                serviceCollection.AddSingleton<ISharedPreferencesService>(sharedPreferencesService);
             };
     }
 }

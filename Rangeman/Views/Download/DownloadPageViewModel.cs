@@ -117,79 +117,6 @@ namespace Rangeman
             downloadHeadersButtonCanBePressed = true;
         }
 
-        private async void DownloadSaveGPXButton_Clicked()
-        {
-            logger.LogInformation("--- MainPage - start DownloadSaveGPXButton_Clicked");
-
-            if (!hasValidLicense)
-            {
-                ProgressMessage = "Invalid license detected : downloading is not allowed.";
-                return;
-            }
-
-            if (SelectedLogHeader == null)
-            {
-                logger.LogDebug("DownloadSaveGPXButton_Clicked : One log header entry should be selected");
-                SetProgressMessage("Please select a log header from the list or start downloading the list by using the download headers button if you haven't done it yet.");
-                return;
-            }
-
-            var timeElapsedSinceLastHeaderDownloadTime = DateTime.Now - lastHeaderDownloadTime;
-
-            if(timeElapsedSinceLastHeaderDownloadTime.TotalMinutes > 30)
-            {
-                logger.LogDebug($"--- Old header data detected. Elapsed minutes = {timeElapsedSinceLastHeaderDownloadTime}");
-                SetProgressMessage("The header data is more than 30 minutes old. Please download the headers again by pressing the Download headers button.");
-                return;
-            }
-
-            SetProgressMessage("Looking for Casio GPR-B1000 device. Please connect your watch.");
-
-            saveGPXButtonCanBePressed = false;
-            DisableOtherTabs();
-
-            await bluetoothConnectorService.FindAndConnectToWatch(SetProgressMessage, async (connection) =>
-            {
-                logger.LogDebug("DownloadSaveGPXButton_Clicked : Before GetLogDataAsync");
-                logger.LogDebug($"Selected ordinal number: {SelectedLogHeader.OrdinalNumber}");
-                var logPointMemoryService = new LogPointMemoryExtractorService(connection, loggerFactory);
-                logPointMemoryService.ProgressChanged += LogPointMemoryService_ProgressChanged;
-                var selectedHeader = SelectedLogHeader;
-                var logDataEntries = await logPointMemoryService.GetLogDataAsync(
-                    selectedHeader.DataSize,
-                    selectedHeader.DataCount,
-                    selectedHeader.LogAddress,
-                    selectedHeader.LogTotalLength);
-
-                logPointMemoryService.ProgressChanged -= LogPointMemoryService_ProgressChanged;
-
-                if (logDataEntries!= null)
-                {
-                    logger.LogDebug("-- Inside DownloadSaveAsGPXButton: logDataEntries is not null! Calling SaveGPXFile()");
-                    SaveGPXFile(logDataEntries);
-                }
-                else
-                {
-                    ProgressMessage = "The data downloading from the watch has been ended without receiving all of the data including the end transmission command. Please try again by pressing the download as GPX button again.";
-                    logger.LogDebug("-- Inside DownloadSaveAsGPXButton: logDataEntries is null");
-                }
-
-                DisconnectButtonIsVisible = false;
-
-                return true;
-            },
-            async () =>
-            {
-                SetProgressMessage("An error occured during sending watch commands. Please try to connect again");
-                return true;
-            },
-            () => DisconnectButtonIsVisible = true);
-
-            EnableOtherTabs();
-            saveGPXButtonCanBePressed = true;
-            //Save selected log header as GPX
-        }
-
         private void DisableOtherTabs()
         {
             appShellViewModel.ConfigPageIsEnabled = false;
@@ -314,18 +241,6 @@ namespace Rangeman
             }
         }
 
-        public ICommand SaveGPXCommand
-        {
-            get
-            {
-                if (saveGPXCommand == null)
-                {
-                    saveGPXCommand = new Command((o) => DownloadSaveGPXButton_Clicked(), (o) => saveGPXButtonCanBePressed);
-                }
-
-                return saveGPXCommand;
-            }
-        }
         #endregion
 
         #endregion

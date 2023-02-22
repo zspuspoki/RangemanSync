@@ -79,19 +79,12 @@
     <Compile Include="Views\Download\IDownloadPageView.cs" />
     <Compile Include="Views\Download\LogHeaderViewModel.cs" />
     <Compile Include="Views\Download\LogHeaderViewModelConverter.cs" />
-    <Compile Include="Views\Map\AddressPanelViewModel.cs" />
-    <Compile Include="Views\Map\CircularLinkedList.cs" />
-    <Compile Include="Views\Map\IMapPageView.cs" />
-    <Compile Include="Views\Map\MissingNodeToAddViewModel.cs" />
-    <Compile Include="Views\Map\NodesViewModel.cs" />
-    <Compile Include="Views\Map\NodeViewModel.cs" />
     <Compile Include="Views\ViewModelBase.cs" />
     <Compile Include="Services\WatchDataReceiver\CasioConvoyAndCasioDataRequestObserver.cs" />
     <Compile Include="Services\WatchDataReceiver\CharChangedObserver.cs" />
     <Compile Include="Services\WatchDataReceiver\DataExtractors\Data\LogData.cs" />
     <Compile Include="Services\WatchDataReceiver\DataExtractors\Data\LogDataExtractor.cs" />
     <Compile Include="Services\WatchDataReceiver\DataExtractors\IDataExtractor.cs" />
-    <Compile Include="Views\Map\GpsCoordinatesViewModel.cs" />
     <Compile Include="Services\WatchDataReceiver\DataExtractors\Header\LogAndPointMemoryHeaderParser.cs" />
     <Compile Include="Services\WatchDataReceiver\DataExtractors\Header\LogHeaderDataInfo.cs" />
     <Compile Include="Services\WatchDataReceiver\DataReceiverProgressEventArgs.cs" />
@@ -101,22 +94,11 @@
       <DependentUpon>DownloadPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Download\DownloadPageViewModel.cs" />
-    <Compile Include="Views\Map\MapPage.xaml.cs">
-      <DependentUpon>MapPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Map\MapPageViewModel.cs" />
     <Compile Include="Services\WatchDataReceiver\RemoteWatchController.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\Common\Util.cs" />
-    <Compile Include="Services\WatchDataSender\BufferedConvoySender.cs" />
-    <Compile Include="Services\WatchDataSender\CategoryToSend.cs" />
-    <Compile Include="Services\WatchDataSender\ConnectionParameters.cs" />
-    <Compile Include="Services\WatchDataSender\MapPageDataConverter.cs" />
     <Compile Include="Services\Common\Crc16.cs" />
-    <Compile Include="Services\WatchDataSender\DataSenderProgressEventArgs.cs" />
-    <Compile Include="Services\WatchDataSender\RemoteWatchController.cs" />
-    <Compile Include="Services\WatchDataSender\WatchDataSenderService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />
@@ -200,11 +182,6 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="App.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Views\Map\MapPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>

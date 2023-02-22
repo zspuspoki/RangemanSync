@@ -15,12 +15,10 @@ namespace Rangeman
         private bool showCalculatedDistanceFromYourPosition;
 
         private ICommand applyCommand;
-        private readonly MapPageViewModel mapPageViewModel;
         private readonly IConfiguration config;
 
-        public ConfigPageViewModel(MapPageViewModel mapPageViewModel, IConfiguration config)
+        public ConfigPageViewModel(IConfiguration config)
         {
-            this.mapPageViewModel = mapPageViewModel;
             this.config = config;
         }
         public bool UseMbTilesChecked
@@ -88,21 +86,11 @@ namespace Rangeman
 
         private async void ApplySettings()
         {
-            if (UseMbTilesChecked)
-            {
-                mapPageViewModel.UpdateMapToUseMbTilesFile();
-            }
-            else
-            {
-                mapPageViewModel.UpdateMapToUseWebBasedMbTiles();
-            }
-
             if(sendLogFilesChecked)
             {
                 SendEmailToDevSupport();
             }
 
-            mapPageViewModel.ShowCalculatedDistances = ShowCalculatedDistanceFromYourPosition;
             SetApplyFinishedProgressMessage();
 
         }

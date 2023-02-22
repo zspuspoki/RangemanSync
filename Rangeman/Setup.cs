@@ -5,7 +5,6 @@ using nexus.protocols.ble;
 using Rangeman.Services.BluetoothConnector;
 using Rangeman.Services.PhoneLocation;
 using Rangeman.Views.Download;
-using Rangeman.Views.Map;
 using Serilog;
 using Serilog.Exceptions;
 using System;
@@ -36,9 +35,6 @@ namespace Rangeman
 
             serviceCollection.AddSingleton<IDownloadPageView, DownloadPage>();
             serviceCollection.AddViewSingleton<IDownloadPageView, DownloadPage, DownloadPageViewModel>();
-
-            serviceCollection.AddSingleton<IMapPageView, MapPage>();
-            serviceCollection.AddViewSingleton<IMapPageView, MapPage, MapPageViewModel>();
 
             return serviceCollection;
         }
@@ -79,9 +75,6 @@ namespace Rangeman
             serviceCollection.AddScoped<IConfiguration>(_ => configurationRoot);
             serviceCollection.AddSingleton<ILocationService, LocationService>();
             serviceCollection.AddViewModels<DownloadPageViewModel>();
-            serviceCollection.AddSingleton<MapPageViewModel>();
-            serviceCollection.AddViewModels<NodesViewModel>();
-            serviceCollection.AddViewModels<AddressPanelViewModel>();
             serviceCollection.AddSingleton<ConfigPageViewModel>();
 
             serviceCollection.AddSingleton<BluetoothConnectorService>((ctx) => 

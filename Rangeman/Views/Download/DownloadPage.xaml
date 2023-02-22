@@ -19,7 +19,6 @@
                 </ListView.ItemTemplate>
             </ListView>
             <Button Text="Download Headers"  x:Name="DownloadHeadersButton" Command="{Binding Path=DownloadHeadersCommand}" IsVisible="{Binding WatchCommandButtonsAreVisible}"/>
-            <Button Text="Download / Save as GPX" x:Name="DownloadSaveGPXButton" Command="{Binding Path=SaveGPXCommand}" IsVisible="{Binding WatchCommandButtonsAreVisible}"/>
             <Button Text="Disconnect watch" x:Name="DisconnectButton" Command="{Binding Path=DisconnectCommand}"  IsVisible="{Binding DisconnectButtonIsVisible}"/>
         </StackLayout>
     </ContentPage.Content>

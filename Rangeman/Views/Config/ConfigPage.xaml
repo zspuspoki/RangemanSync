@@ -8,38 +8,6 @@
                    CornerRadius="5"
                    Padding="8">
                 <StackLayout>
-                    <Label Text="Map source" TextColor="Black"
-                           FontSize="Medium"
-                           FontAttributes="Bold" />
-                    <BoxView Color="Gray"
-                             HeightRequest="2"
-                             HorizontalOptions="Fill" />
-                    <StackLayout Orientation="Horizontal">
-                        <CheckBox IsChecked="{Binding UseMbTilesChecked}" />
-                        <Label TextColor="Black" Text="Use the selected mbtiles file from your phone"/>
-                    </StackLayout>
-                </StackLayout>
-            </Frame>
-            <Frame BorderColor="Gray"
-                   CornerRadius="5"
-                   Padding="8">
-                <StackLayout>
-                    <Label Text="Map page configuration" TextColor="Black"
-                           FontSize="Medium"
-                           FontAttributes="Bold" />
-                    <BoxView Color="Gray"
-                             HeightRequest="2"
-                             HorizontalOptions="Fill" />
-                    <StackLayout Orientation="Horizontal">
-                        <CheckBox IsChecked="{Binding ShowCalculatedDistanceFromYourPosition}" />
-                        <Label TextColor="Black" Text="Show calculated distance from your current position"/>
-                    </StackLayout>
-                </StackLayout>
-            </Frame>
-            <Frame BorderColor="Gray"
-                   CornerRadius="5"
-                   Padding="8">
-                <StackLayout>
                     <Label Text="Error reporting / support" TextColor="Black"
                            FontSize="Medium"
                            FontAttributes="Bold" />

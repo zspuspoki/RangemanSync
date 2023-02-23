@@ -6,7 +6,7 @@
         <StackLayout>
             <Frame BorderColor="Gray"
                    CornerRadius="5"
-                   Padding="8">
+                   Padding="8" VerticalOptions="FillAndExpand">
                 <StackLayout>
                     <Label Text="Error reporting / support" TextColor="Black"
                            FontSize="Medium"
@@ -15,7 +15,7 @@
                              HeightRequest="2"
                              HorizontalOptions="Fill" />
                     <StackLayout Orientation="Horizontal">
-                        <CheckBox  IsChecked="{Binding SendLogFilesChecked}"/>
+                        <CheckBox  IsChecked="{Binding SendLogFilesChecked}" VerticalOptions="Center" Margin="-4"/>
                         <Label TextColor="Black" Text="Send log files to the support email"/>
                     </StackLayout>
                 </StackLayout>

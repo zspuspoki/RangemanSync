@@ -12,6 +12,6 @@
     
 	</rule>
 	<module path="C:\Git\RangemanSyncXamarin\RangemanApp.Android\bin\Release\Rangeman.dll"/>
-	<module path="C:\Git\RangemanSyncXamarin\RangemanApp.Android\bin\Release\RangemanSync.Android.dll"/>
+	<module path="C:\Git\RangemanSyncXamarin\RangemanApp.Android\bin\Release\RangemanSyncDemo.Android.dll"/>
 	<probePath>C:\Git\RangemanSyncXamarin\RangemanApp.Android\obj\Release\120\android\assets</probePath>
 </project>

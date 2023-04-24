@@ -60,6 +60,7 @@
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="IPageLifeCycleAware.cs" />
+    <Compile Include="MyCustomEntry.cs" />
     <Compile Include="MyDataTemplateExtension.cs" />
     <Compile Include="RouteFactory.cs" />
     <Compile Include="Services\BluetoothConnector\BluetoothConnectorService.cs" />

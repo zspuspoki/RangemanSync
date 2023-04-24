@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:mapsui="clr-namespace:Mapsui.UI.Forms;assembly=Mapsui.UI.Forms" xmlns:controls="clr-namespace:Xamarin.Forms.Controls;assembly=CircularProgressBar" 
              xmlns:map="clr-namespace:Rangeman.Views.Map"
+             xmlns:local="clr-namespace:EntryDecimal"
              xmlns:xct="http://xamarin.com/schemas/2020/toolkit"
              x:Class="Rangeman.MapPage">
     <ContentPage.Resources>
@@ -96,8 +97,8 @@
                     <Entry x:Name="Country"
                        Placeholder="Country"
                        Text="{Binding AddressPanelViewModel.Country}" TextColor="Black" IsVisible="{Binding AddressPanelViewModel.CanDisplayAddressEntries}" />
-                    
-                    <Entry x:Name="Latitude"
+
+                    <local:MyCustomEntry x:Name="Latitude"
                            Placeholder="Latitude"
                            Text="{Binding AddressPanelViewModel.Latitude}" TextColor="Black"
                            IsVisible="{Binding AddressPanelViewModel.UseGPSCoordinatesInsteadOfAddress}"
@@ -111,9 +112,9 @@
                                                            Flags="ValidateOnAttaching, ValidateOnValueChanging" 
                                                            IsValid="{Binding AddressPanelViewModel.IsLatitudeValid}"/>
                         </Entry.Behaviors>
-                    </Entry>
+                    </local:MyCustomEntry>
 
-                    <Entry x:Name="Longitude"
+                    <local:MyCustomEntry x:Name="Longitude"
                            Placeholder="Longitude"
                            Text="{Binding AddressPanelViewModel.Longitude}" TextColor="Black"
                            IsVisible="{Binding AddressPanelViewModel.UseGPSCoordinatesInsteadOfAddress}"
@@ -121,13 +122,12 @@
                         <Entry.Behaviors>
                             <xct:NumericValidationBehavior InvalidStyle="{StaticResource InvalidEntryStyle}"
                                                            MinimumValue="-180"
-                                                           MaximumValue="180"
-                                                           MaximumDecimalPlaces="7"
+                                                           MaximumValue="180"                                                
                                                            x:Name="LongitudeValidationRule" 
                                                            Flags="ValidateOnAttaching, ValidateOnValueChanging" 
                                                            IsValid="{Binding AddressPanelViewModel.IsLongitudeValid}"/>
                         </Entry.Behaviors>
-                    </Entry>
+                    </local:MyCustomEntry>
                     <Button Text="Show on map"
                         Margin="16,0" Command="{Binding AddressPanelViewModel.ShowOnMapCommand}" />
 

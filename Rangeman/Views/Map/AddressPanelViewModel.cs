@@ -20,8 +20,8 @@ namespace Rangeman.Views.Map
         private Position position;
         private bool useGPSCoordinatesInsteadOfAddress;
         private bool canDisplayAddressEntries = true;
-        private double longitude;
-        private double latitude;
+        private string longitude;
+        private string latitude;
         private readonly IMapPageView mapPageView;
         private readonly ILocationService locationService;
 
@@ -65,8 +65,8 @@ namespace Rangeman.Views.Map
             {
                 position = new Position(location.Latitude, location.Longitude);
 
-                Longitude = position.Longitude;
-                Latitude = position.Latitude;
+                Longitude = position.Longitude.ToString();
+                Latitude = position.Latitude.ToString();
 
                 await SetAddressAsync(position);
             }
@@ -78,8 +78,8 @@ namespace Rangeman.Views.Map
 
         private async Task SetPosition()
         {
-            double latitude = this.latitude;
-            double longitude = this.longitude;
+            double latitude = double.Parse(this.latitude);
+            double longitude = double.Parse(this.longitude);
 
             if (!UseGPSCoordinatesInsteadOfAddress)
             {
@@ -158,7 +158,7 @@ namespace Rangeman.Views.Map
             } 
         }
 
-        public double Longitude 
+        public string Longitude 
         { 
             get => longitude; 
             set 
@@ -168,7 +168,7 @@ namespace Rangeman.Views.Map
             } 
         }
 
-        public double Latitude 
+        public string Latitude 
         { 
             get => latitude; 
             set 

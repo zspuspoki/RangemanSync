@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-
+using System.Globalization;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -13,6 +13,11 @@ namespace Rangeman
         public App(Action<ConfigurationBuilder> configuration, 
             Action<IServiceCollection, IConfigurationRoot> dependencyServiceConfiguration)
         {
+            CultureInfo customCulture = (CultureInfo)System.Threading.Thread.CurrentThread.CurrentCulture.Clone();
+            customCulture.NumberFormat.NumberDecimalSeparator = ".";
+
+            System.Threading.Thread.CurrentThread.CurrentCulture = customCulture;
+
             InitializeComponent();
 
             IConfigurationRoot configurationRoot = Setup.Configuration

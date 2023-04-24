@@ -15,7 +15,7 @@
                              HeightRequest="2"
                              HorizontalOptions="Fill" />
                     <StackLayout Orientation="Horizontal">
-                        <CheckBox IsChecked="{Binding UseMbTilesChecked}" />
+                        <CheckBox IsChecked="{Binding UseMbTilesChecked}" x:Name="MbTilesCheckBox"/>
                         <Label TextColor="Black" Text="Use the selected mbtiles file from your phone"/>
                     </StackLayout>
                 </StackLayout>

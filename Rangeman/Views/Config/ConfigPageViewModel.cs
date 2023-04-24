@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Rangeman.Services.SharedPreferences;
 using System;
 using System.IO;
 using System.Windows.Input;
@@ -17,12 +18,15 @@ namespace Rangeman
         private ICommand applyCommand;
         private readonly MapPageViewModel mapPageViewModel;
         private readonly IConfiguration config;
+        private readonly ISharedPreferencesService sharedPreferencesService;
 
-        public ConfigPageViewModel(MapPageViewModel mapPageViewModel, IConfiguration config)
+        public ConfigPageViewModel(MapPageViewModel mapPageViewModel, IConfiguration config, ISharedPreferencesService sharedPreferencesService)
         {
             this.mapPageViewModel = mapPageViewModel;
             this.config = config;
+            this.sharedPreferencesService = sharedPreferencesService;
         }
+
         public bool UseMbTilesChecked
         {
             get => useMbTilesChecked;
@@ -71,6 +75,16 @@ namespace Rangeman
 
         public string ProgressMessage { get => progressMessage; set { progressMessage = value; OnPropertyChanged("ProgressMessage"); } }
 
+        public void SetMbTilesCheckBoxesState()
+        {
+            var savedMbTilesFileName = sharedPreferencesService.GetValue(Constants.MbTilesFile, string.Empty);
+
+            if(!string.IsNullOrWhiteSpace(savedMbTilesFileName))
+            {
+                UseMbTilesChecked = true;
+            }
+        }
+
         private void SetPressApplyButtonProgressMessage()
         {
             ProgressMessage = "Changes haven't been applied yet. Please press the apply button to do this now.";
@@ -86,7 +100,7 @@ namespace Rangeman
             return true;
         }
 
-        private async void ApplySettings()
+        private void ApplySettings()
         {
             if (UseMbTilesChecked)
             {

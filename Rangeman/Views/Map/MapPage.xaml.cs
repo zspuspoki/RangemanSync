@@ -1,4 +1,5 @@
-﻿using BruTile.MbTiles;
+﻿using Android.Graphics;
+using BruTile.MbTiles;
 using Mapsui;
 using Mapsui.Geometries;
 using Mapsui.Layers;
@@ -9,6 +10,7 @@ using Mapsui.UI.Forms;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using Rangeman.Services.PhoneLocation;
+using Rangeman.Services.SharedPreferences;
 using Rangeman.Views.Map;
 using SQLite;
 using System;
@@ -28,11 +30,14 @@ namespace Rangeman
         private const string LinesLayerName = "LinesBetweenPins";
         private readonly ILogger<MapPage> logger;
         private readonly ILocationService locationService;
+        private readonly ISharedPreferencesService sharedPreferencesService;
+        private bool previouslyUsedMbTilesHasBeenLoaded = false;
 
-        public MapPage(ILogger<MapPage> logger,ILocationService locationService)
+        public MapPage(ILogger<MapPage> logger,ILocationService locationService, ISharedPreferencesService sharedPreferencesService)
         {
             this.logger = logger;
             this.locationService = locationService;
+            this.sharedPreferencesService = sharedPreferencesService;
             locationService.GetPhoneLocation();
             InitializeComponent();
 
@@ -115,6 +120,12 @@ namespace Rangeman
                 }
 
                 mapView.MyLocationLayer.UpdateMyLocation(new Position(location.Latitude, location.Longitude), true);
+            }
+
+            if (!previouslyUsedMbTilesHasBeenLoaded)
+            {
+                LoadPreviouslyUsedMbTilesFile();
+                previouslyUsedMbTilesHasBeenLoaded = true;
             }
         }
 
@@ -250,27 +261,30 @@ namespace Rangeman
 
         public async void UpdateMapToUseMbTilesFile()
         {
-            logger.LogInformation("UpdateMapToUseMbTilesFile started");
-
-            var selectedFile = await SelectMBTilesFile();
-
-            if (selectedFile != null)
+            try
             {
-                logger.LogDebug($"Selected file's full path {selectedFile.FullPath}");
+                logger.LogInformation("UpdateMapToUseMbTilesFile started");
 
-                var mbTilesLayer = CreateMbTilesLayer(selectedFile.FullPath, "regular");
+                var selectedFile = await SelectMBTilesFile();
 
-                var map = new Mapsui.Map();
-                map.Layers.Add(mbTilesLayer);
+                if (selectedFile != null)
+                {
+                    SetMapSourceBasedOnMbTilesFile(selectedFile.FullPath);
 
-                mapView.Map = map;
+                    sharedPreferencesService.SetValue(Constants.MbTilesFile, selectedFile.FullPath);
 
-                ViewModel.ProgressMessage = $"Mbtiles based map selection has been completed. {selectedFile.FileName}";
+                    ViewModel.ProgressMessage = $"Mbtiles based map selection has been completed. {selectedFile.FileName}";
+                }
+                else
+                {
+                    logger.LogDebug("selectedFile is null");
+                    ViewModel.ProgressMessage = "Map setting was unsuccessful due to the problem with the file selection.";
+                }
             }
-            else
+            catch(Exception ex)
             {
-                logger.LogDebug("selectedFile is null");
-                ViewModel.ProgressMessage = "Map setting was unsuccessful due to the problem with the file selection.";
+                logger.LogDebug(ex, "Error using UpdateMapToUseMbTilesFile");
+                ViewModel.ProgressMessage = "An unexpected error occured during trying to set the map's source using an mbtiles file.";
             }
         }
 
@@ -279,12 +293,48 @@ namespace Rangeman
             try
             {
                 await InitializeMap(true);
+
+                sharedPreferencesService.SetValue(Constants.MbTilesFile, string.Empty);
+                
                 ViewModel.ProgressMessage = $"Web based mbtiles file selection has been completed.";
             }
             catch(Exception ex)
             {
                 logger.LogDebug(ex, "Error using UpdateMapToUseWebBasedMbTiles");
             }
+        }
+
+        private void LoadPreviouslyUsedMbTilesFile()
+        {
+            try
+            {
+                var fileFullPath = sharedPreferencesService.GetValue(Constants.MbTilesFile, string.Empty);
+                var fileName = System.IO.Path.GetFileName(fileFullPath);
+
+                if (!string.IsNullOrWhiteSpace(fileFullPath))
+                {
+                    SetMapSourceBasedOnMbTilesFile(fileFullPath);
+
+                    ViewModel.ProgressMessage = $"Mbtiles based map selection has been completed. {fileName}";
+                }
+            }
+            catch(Exception ex)
+            {
+                logger.LogDebug(ex, "Error using LoadPreviouslyUsedMbTilesFile");
+                ViewModel.ProgressMessage = "An unexpected error occured during trying to use the previously set mbtiles file. Please check if the file still exists.";
+            }
+        }
+
+        private void SetMapSourceBasedOnMbTilesFile(string fullPath)
+        {
+            logger.LogDebug($"Selected file's full path {fullPath}");
+
+            var mbTilesLayer = CreateMbTilesLayer(fullPath, "regular");
+
+            var map = new Mapsui.Map();
+            map.Layers.Add(mbTilesLayer);
+
+            mapView.Map = map;
         }
 
         private async Task<FileResult> SelectMBTilesFile()

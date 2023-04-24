@@ -40,7 +40,7 @@ namespace Rangeman.Views.Map
             }
             catch
             {
-                mapPageView.DisplayProgressMessage("An unexpected error occured during setting the address. Do you have internet connection?");
+                mapPageView.DisplayProgressMessage("An unexpected error occured during placing the pin on the map.");
             }
         }
 
@@ -51,9 +51,9 @@ namespace Rangeman.Views.Map
                 await SetPosition();
                 mapPageView.ShowOnMap(position);
             }
-            catch
+            catch(Exception ex)
             {
-                mapPageView.DisplayProgressMessage("An unexpected error occured during setting the address. Do you have internet connection?");
+                mapPageView.DisplayProgressMessage("An unexpected error occured during showing the address on the map.");
             }
         }
 
@@ -78,25 +78,32 @@ namespace Rangeman.Views.Map
 
         private async Task SetPosition()
         {
-            double latitude = double.Parse(this.latitude);
-            double longitude = double.Parse(this.longitude);
-
-            if (!UseGPSCoordinatesInsteadOfAddress)
+            try
             {
-                var location = (await Geocoding.GetLocationsAsync($"{street}, {city}, {country}")).FirstOrDefault();
+                double latitude = double.Parse(this.latitude);
+                double longitude = double.Parse(this.longitude);
 
-                if (location == null) return;
+                if (!UseGPSCoordinatesInsteadOfAddress)
+                {
+                    var location = (await Geocoding.GetLocationsAsync($"{street}, {city}, {country}")).FirstOrDefault();
 
-                latitude = location.Latitude;
-                longitude = location.Longitude;
+                    if (location == null) return;
+
+                    latitude = location.Latitude;
+                    longitude = location.Longitude;
+                }
+
+                if (!IsLongitudeValid || !IsLatitudeValid)
+                {
+                    return;
+                }
+
+                position = new Position(latitude, longitude);
             }
-
-            if (!IsLongitudeValid || !IsLatitudeValid)
+            catch
             {
-                return;
+                mapPageView.DisplayProgressMessage("An unexpected error occured during getting the location from the Internet. The device might be working offline.");
             }
-
-            position = new Position(latitude, longitude);
         }
 
         private async Task SetAddressAsync(Position p)

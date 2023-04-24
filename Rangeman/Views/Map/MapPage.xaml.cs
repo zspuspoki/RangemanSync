@@ -327,7 +327,7 @@ namespace Rangeman
         public void ShowOnMap(Position position)
         {
             var smc = SphericalMercator.FromLonLat(position.Longitude, position.Latitude);
-            mapView.Navigator.NavigateTo(smc, mapView.Map.Resolutions[17]);
+            mapView.Navigator.NavigateTo(smc, mapView.Map.Resolutions[mapView.Map.Resolutions.Count - 1]);
         }
 
         public void DisplayProgressMessage(string message)

@@ -311,7 +311,7 @@ namespace RangemanSync.Android
 
                             if (!string.IsNullOrEmpty(gpx))
                             {
-                                var gpxBytes = System.Text.Encoding.Unicode.GetBytes(gpx);
+                                var gpxBytes = System.Text.Encoding.UTF8.GetBytes(gpx);
                                 javaStream.Write(gpxBytes, 0, gpxBytes.Length);
                             }
 

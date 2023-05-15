@@ -211,6 +211,8 @@ namespace Rangeman
         {
             GpxClass gpx = new GpxClass();
 
+            GpxClass.XmlWriterSettings.Encoding = System.Text.Encoding.UTF8;
+
             gpx.Metadata.time = SelectedLogHeader.HeaderTime;
             gpx.Metadata.timeSpecified = true;
             gpx.Metadata.desc = "Track exported from Casio GPR-B1000 watch";

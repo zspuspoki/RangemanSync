@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using System.Windows.Markup;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 using Location = Xamarin.Essentials.Location;
@@ -20,8 +21,9 @@ namespace Rangeman.Views.Map
         private Position position;
         private bool useGPSCoordinatesInsteadOfAddress;
         private bool canDisplayAddressEntries = true;
-        private string longitude;
-        private string latitude;
+        private string latitudeLongitude;
+        private bool isLatitudeLongitudeInvalid = false;
+        private bool islatitudeLongitudeValid = false;
         private readonly IMapPageView mapPageView;
         private readonly ILocationService locationService;
 
@@ -35,8 +37,14 @@ namespace Rangeman.Views.Map
         {
             try
             {
+                if(UseGPSCoordinatesInsteadOfAddress && !IsLatitudeLongitudeValid)
+                {
+                    return;
+                }
+
                 await SetPosition();
                 mapPageView.PlaceOnMapClicked(position);
+                LatitudeLongitude = $"{position.Latitude}, {position.Longitude}";
             }
             catch
             {
@@ -48,8 +56,14 @@ namespace Rangeman.Views.Map
         {
             try
             {
+                if (UseGPSCoordinatesInsteadOfAddress && !IsLatitudeLongitudeValid)
+                {
+                    return;
+                }
+
                 await SetPosition();
                 mapPageView.ShowOnMap(position);
+                LatitudeLongitude = $"{position.Latitude}, {position.Longitude}";
             }
             catch(Exception ex)
             {
@@ -65,8 +79,7 @@ namespace Rangeman.Views.Map
             {
                 position = new Position(location.Latitude, location.Longitude);
 
-                Longitude = position.Longitude.ToString();
-                Latitude = position.Latitude.ToString();
+                LatitudeLongitude = $"{position.Latitude}, {position.Longitude}";
 
                 await SetAddressAsync(position);
             }
@@ -80,8 +93,23 @@ namespace Rangeman.Views.Map
         {
             try
             {
-                double latitude = double.Parse(this.latitude);
-                double longitude = double.Parse(this.longitude);
+                double latitude = 0;  
+                double longitude = 0;
+
+                if (IsLatitudeLongitudeValid)
+                {
+                    var latitudelongitudeSplitted = LatitudeLongitude.Split(',');
+
+                    if (latitudelongitudeSplitted.Length == 2)
+                    {
+                        if (double.TryParse(latitudelongitudeSplitted[0], out var latitudeEntered) &&
+                            double.TryParse(latitudelongitudeSplitted[1], out var longitudeEntered))
+                        {
+                            latitude = latitudeEntered;
+                            longitude = longitudeEntered;
+                        }
+                    }
+                }
 
                 if (!UseGPSCoordinatesInsteadOfAddress)
                 {
@@ -93,7 +121,7 @@ namespace Rangeman.Views.Map
                     longitude = location.Longitude;
                 }
 
-                if (!IsLongitudeValid || !IsLatitudeValid)
+                if (!IsLatitudeLongitudeValid)
                 {
                     return;
                 }
@@ -165,27 +193,34 @@ namespace Rangeman.Views.Map
             } 
         }
 
-        public string Longitude 
-        { 
-            get => longitude; 
-            set 
-            { 
-                longitude = value; 
-                OnPropertyChanged("Longitude"); 
-            } 
+        public bool IsLatitudeLongitudeValid 
+        {
+            get => islatitudeLongitudeValid;
+            set
+            {
+                islatitudeLongitudeValid = value;
+                IsLatitudeLongitudeInvalid = !value;
+            }
         }
 
-        public string Latitude 
-        { 
-            get => latitude; 
-            set 
-            { 
-                latitude = value; 
-                OnPropertyChanged("Latitude"); 
-            } 
+        public string LatitudeLongitude
+        {
+            get => latitudeLongitude;
+            set
+            {
+                latitudeLongitude = value;
+                OnPropertyChanged("LatitudeLongitude");
+            }
         }
 
-        public bool IsLongitudeValid { get; set; }
-        public bool IsLatitudeValid { get; set; }
+        public bool IsLatitudeLongitudeInvalid 
+        { 
+            get => isLatitudeLongitudeInvalid; 
+            set
+            {
+                isLatitudeLongitudeInvalid = value;
+                OnPropertyChanged("IsLatitudeLongitudeInvalid");
+            }
+        }
     }
 }

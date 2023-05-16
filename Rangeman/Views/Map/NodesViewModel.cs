@@ -134,6 +134,25 @@ namespace Rangeman.Views.Map
             return null;
         }
 
+        public bool HasTheSameLatitudeLongitudeNode(double latitude, double longitude)
+        {
+            LinkedListNode<NodeViewModel> node = nodes.First;
+            if (node != null)
+            {
+                do
+                {
+                    if(node.Value.Latitude == latitude && node.Value.Longitude == longitude)
+                    {
+                        return true;
+                    }
+
+                    node = node.Next;
+                } while (node != nodes.First && node!= null);
+            }
+
+            return false;
+        }
+
         public IEnumerable<GpsCoordinatesViewModel> GetStartEndCoordinates(bool removeEmptyEntries = true)
         {
             return GetCoordinatesByCategory(new NodeViewModel { Title = "S" }, NodeCategory.StartEnd, removeEmptyEntries);

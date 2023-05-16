@@ -4,6 +4,7 @@
              xmlns:mapsui="clr-namespace:Mapsui.UI.Forms;assembly=Mapsui.UI.Forms" xmlns:controls="clr-namespace:Xamarin.Forms.Controls;assembly=CircularProgressBar" 
              xmlns:map="clr-namespace:Rangeman.Views.Map"
              xmlns:local="clr-namespace:EntryDecimal"
+             xmlns:local2="clr-namespace:Rangeman"
              xmlns:xct="http://xamarin.com/schemas/2020/toolkit"
              x:Class="Rangeman.MapPage">
     <ContentPage.Resources>
@@ -98,36 +99,22 @@
                        Placeholder="Country"
                        Text="{Binding AddressPanelViewModel.Country}" TextColor="Black" IsVisible="{Binding AddressPanelViewModel.CanDisplayAddressEntries}" />
 
-                    <local:MyCustomEntry x:Name="Latitude"
-                           Placeholder="Latitude"
-                           Text="{Binding AddressPanelViewModel.Latitude}" TextColor="Black"
-                           IsVisible="{Binding AddressPanelViewModel.UseGPSCoordinatesInsteadOfAddress}"
-                           Keyboard="Numeric">
+                    <local:MyCustomEntry x:Name="LatitudeLongitude"
+                           Placeholder="LatitudeLongitude"
+                           Text="{Binding AddressPanelViewModel.LatitudeLongitude}" TextColor="Black"
+                           IsVisible="{Binding AddressPanelViewModel.UseGPSCoordinatesInsteadOfAddress}">
                         <Entry.Behaviors>
-                            <xct:NumericValidationBehavior InvalidStyle="{StaticResource InvalidEntryStyle}"
-                                                           MinimumValue="-90"
-                                                           MaximumValue="90"
-                                                           MaximumDecimalPlaces="7"
-                                                           x:Name="LatitudeValidationRule" 
-                                                           Flags="ValidateOnAttaching, ValidateOnValueChanging" 
-                                                           IsValid="{Binding AddressPanelViewModel.IsLatitudeValid}"/>
+                            <local2:LatitudeLongitudeValidationBehavior InvalidStyle="{StaticResource InvalidEntryStyle}"
+                                                                        x:Name="LatitudeLongitudeValidationRule" 
+                                                                        Flags="ValidateOnAttaching, ValidateOnValueChanging" 
+                                                                        IsValid="{Binding AddressPanelViewModel.IsLatitudeLongitudeValid}"/>
                         </Entry.Behaviors>
                     </local:MyCustomEntry>
 
-                    <local:MyCustomEntry x:Name="Longitude"
-                           Placeholder="Longitude"
-                           Text="{Binding AddressPanelViewModel.Longitude}" TextColor="Black"
-                           IsVisible="{Binding AddressPanelViewModel.UseGPSCoordinatesInsteadOfAddress}"
-                           Keyboard="Numeric">
-                        <Entry.Behaviors>
-                            <xct:NumericValidationBehavior InvalidStyle="{StaticResource InvalidEntryStyle}"
-                                                           MinimumValue="-180"
-                                                           MaximumValue="180"                                                
-                                                           x:Name="LongitudeValidationRule" 
-                                                           Flags="ValidateOnAttaching, ValidateOnValueChanging" 
-                                                           IsValid="{Binding AddressPanelViewModel.IsLongitudeValid}"/>
-                        </Entry.Behaviors>
-                    </local:MyCustomEntry>
+                    <Label Text="Latitude - Longitude value is invalid" 
+                           IsVisible="{Binding AddressPanelViewModel.IsLatitudeLongitudeInvalid}" 
+                           TextColor="Red"></Label>
+
                     <Button Text="Show on map"
                         Margin="16,0" Command="{Binding AddressPanelViewModel.ShowOnMapCommand}" />
 

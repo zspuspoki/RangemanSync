@@ -241,6 +241,12 @@ namespace Rangeman
 
         public void PlaceOnMapClicked(Position p)
         {
+            if(ViewModel.NodesViewModel.HasTheSameLatitudeLongitudeNode(p.Latitude, p.Longitude))
+            {
+                ViewModel.ProgressMessage = "Error! The map already has a node with the same latitude - longitude values.";
+                return;
+            }
+
             var pinTitle = AddNodeToViewModelAndGetPinTitle(p.Longitude, p.Latitude);
 
             if (pinTitle == null)

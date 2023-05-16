@@ -73,6 +73,7 @@
     <Compile Include="Services\SharedPreferences\ISharedPreferencesService.cs" />
     <Compile Include="Setup.cs" />
     <Compile Include="ShellExtension.cs" />
+    <Compile Include="Validation\LatitudeLongitudeValidationBehavior.cs" />
     <Compile Include="Views\Config\ConfigPage.xaml.cs">
       <DependentUpon>ConfigPage.xaml</DependentUpon>
     </Compile>

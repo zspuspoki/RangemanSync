@@ -4,6 +4,7 @@ using Microsoft.Extensions.FileProviders;
 using nexus.protocols.ble;
 using Rangeman.Services.BluetoothConnector;
 using Rangeman.Services.PhoneLocation;
+using Rangeman.Views.Coordinates;
 using Rangeman.Views.Download;
 using Rangeman.Views.Map;
 using Serilog;
@@ -33,6 +34,8 @@ namespace Rangeman
         public static IServiceCollection AddViews(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddViewSingleton<ConfigPage, ConfigPageViewModel>();
+
+            serviceCollection.AddViewSingleton<CoordinatesPage, CoordinatesViewModel>();
 
             serviceCollection.AddSingleton<IDownloadPageView, DownloadPage>();
             serviceCollection.AddViewSingleton<IDownloadPageView, DownloadPage, DownloadPageViewModel>();

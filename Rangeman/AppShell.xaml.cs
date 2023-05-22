@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Rangeman.Views.Coordinates;
 using System;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
@@ -14,6 +15,7 @@ namespace Rangeman
 
             Routing.RegisterRoute("Download", ServiceProvider.GetRequiredService<MyRouteFactory<DownloadPage>>());
             Routing.RegisterRoute("Map", ServiceProvider.GetRequiredService<MyRouteFactory<MapPage>>());
+            Routing.RegisterRoute("Coordinates", ServiceProvider.GetRequiredService<MyRouteFactory<CoordinatesPage>>());
             Routing.RegisterRoute("Config", ServiceProvider.GetRequiredService<MyRouteFactory<ConfigPage>>());
 
             InitializeComponent();

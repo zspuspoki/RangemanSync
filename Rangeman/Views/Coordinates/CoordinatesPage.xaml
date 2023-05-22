@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+xmlns:datagrid="clr-namespace:Syncfusion.SfDataGrid.XForms;assembly=Syncfusion.SfDataGrid.XForms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Rangeman.Views.Coordinates;assembly=Rangeman"
+             x:Class="Rangeman.Views.Coordinates.CoordinatesPage">
+    
+    <ContentPage.Content>
+        <StackLayout>
+            <Label Text="{Binding ProgressMessage}" TextColor="Red" x:Name="lblProgress" />
+            <datagrid:SfDataGrid 
+                ColumnSizer="Star"
+                ItemsSource="{Binding CoordinateInfoCollection}"
+                AllowEditing="True"
+                SelectionMode="Single"
+                NavigationMode="Cell"
+                AutoGenerateColumns="True"
+                EditTapAction="OnTap"
+                LostFocusBehavior="EndEditCurrentCell"
+                >
+
+                <datagrid:SfDataGrid.Columns>
+                    <datagrid:GridTextColumn HeaderText="Node Name" 
+                                   MappingName="NodeName" AllowEditing="False" />
+                    <datagrid:GridTextColumn HeaderText="GPS Coordinates ( latitude, longitude )"
+                                   MappingName="Coordinates" AllowEditing="True" />
+                    <datagrid:GridTextColumn HeaderText="Coordinate's name"
+                                   MappingName="CoordinateName" AllowEditing="True" />
+                </datagrid:SfDataGrid.Columns>
+                
+            </datagrid:SfDataGrid>
+
+            <Button Text="Send to the watch"  x:Name="SendToWatchButton" Command="{Binding Path=SendToWatchCommand}" IsVisible="{Binding WatchCommandButtonsAreVisible}"/>
+            <Button Text="Disconnect watch" x:Name="DisconnectButton" Command="{Binding Path=DisconnectCommand}"  IsVisible="{Binding DisconnectButtonIsVisible}"/>            
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

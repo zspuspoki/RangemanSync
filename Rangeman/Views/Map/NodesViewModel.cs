@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Rangeman.Views.Map
 {
-    public class NodesViewModel : ViewModelBase
+    public class NodesViewModel : ViewModelBase, INodesViewModel
     {
         private CircularLinkedList<NodeViewModel> nodes;
 
@@ -11,8 +11,8 @@ namespace Rangeman.Views.Map
         private NodeViewModel currentSelectedNode;
         private NodeViewModel userSelectedPinNodeForDeletion;
 
-        public NodeViewModel CurrentSelectedNode 
-        { 
+        public NodeViewModel CurrentSelectedNode
+        {
             get
             {
                 return currentSelectedNode;
@@ -98,12 +98,12 @@ namespace Rangeman.Views.Map
             {
                 var oldNode = currentSelectedLinkedListNode;
                 currentSelectedLinkedListNode = currentSelectedLinkedListNode.Next();
-                if(currentSelectedLinkedListNode == null)
+                if (currentSelectedLinkedListNode == null)
                 {
                     currentSelectedLinkedListNode = oldNode;
                     break;
                 }
-            } while (currentSelectedLinkedListNode.Value.HasValidCoordinates || 
+            } while (currentSelectedLinkedListNode.Value.HasValidCoordinates ||
                     currentSelectedLinkedListNode.Value.Visible == false);
             CurrentSelectedNode = currentSelectedLinkedListNode.Value;
         }
@@ -112,7 +112,7 @@ namespace Rangeman.Views.Map
         {
             if (currentSelectedLinkedListNode != null)
             {
-                if(currentSelectedLinkedListNode.Value is MissingNodeToAddViewModel)
+                if (currentSelectedLinkedListNode.Value is MissingNodeToAddViewModel)
                 {
                     return null;
                 }
@@ -122,7 +122,7 @@ namespace Rangeman.Views.Map
                 currentSelectedLinkedListNode.Value.Latitude = latitude;
                 currentSelectedLinkedListNode.Value.Visible = false;
 
-                SetCurrentNodeThatCanBePlacedOnMap(nodeTitle, () => 
+                SetCurrentNodeThatCanBePlacedOnMap(nodeTitle, () =>
                 {
                     var missingNodeToAddViewModel = new MissingNodeToAddViewModel();
                     currentSelectedLinkedListNode = new LinkedListNode<NodeViewModel>(missingNodeToAddViewModel);
@@ -141,13 +141,13 @@ namespace Rangeman.Views.Map
             {
                 do
                 {
-                    if(node.Value.Latitude == latitude && node.Value.Longitude == longitude)
+                    if (node.Value.Latitude == latitude && node.Value.Longitude == longitude)
                     {
                         return true;
                     }
 
                     node = node.Next;
-                } while (node != nodes.First && node!= null);
+                } while (node != nodes.First && node != null);
             }
 
             return false;
@@ -168,12 +168,12 @@ namespace Rangeman.Views.Map
         {
             var result = new List<GpsCoordinatesViewModel>();
             result.AddRange(GetStartEndCoordinates(false));
-            
+
             var transitpointCoordinates = GetTransitPointCoordinates(false);
             var trimIndex = -1;
             bool enableTrimming = false;
 
-            for(int i=1;i<transitpointCoordinates.Count;i++)
+            for (int i = 1; i < transitpointCoordinates.Count; i++)
             {
                 if (!transitpointCoordinates[i].HasValidCoordinates)
                 {
@@ -181,7 +181,7 @@ namespace Rangeman.Views.Map
                 }
                 else
                 {
-                    if(trimIndex != -1)
+                    if (trimIndex != -1)
                     {
                         enableTrimming = true;
                         break;
@@ -207,7 +207,7 @@ namespace Rangeman.Views.Map
             var startNodeHasCoordinates = startNode.Value.HasValidCoordinates;
             var goalNodeHasCoordinates = goalNode.Value.HasValidCoordinates;
 
-            if(!(startNodeHasCoordinates && goalNodeHasCoordinates))
+            if (!(startNodeHasCoordinates && goalNodeHasCoordinates))
             {
                 return false;
             }
@@ -248,7 +248,7 @@ namespace Rangeman.Views.Map
             var currentLinkedListNode = nodes.Find(firstNodeToLookFor);
             while (currentLinkedListNode.Value.Category == category)
             {
-                if(removeEmptyEntries && !currentLinkedListNode.Value.HasValidCoordinates)
+                if (removeEmptyEntries && !currentLinkedListNode.Value.HasValidCoordinates)
                 {
                     currentLinkedListNode = currentLinkedListNode.Next();
                     continue;
@@ -277,7 +277,7 @@ namespace Rangeman.Views.Map
                 currentSelectedLinkedListNode = currentSelectedLinkedListNode.Next();
                 if (currentSelectedLinkedListNode.Value.Title == nodeTitle)
                 {
-                    if(actionWhenOneCircleEndedWithoutResult != null)
+                    if (actionWhenOneCircleEndedWithoutResult != null)
                     {
                         actionWhenOneCircleEndedWithoutResult();
                     }

@@ -18,6 +18,8 @@ namespace Rangeman
 
             System.Threading.Thread.CurrentThread.CurrentCulture = customCulture;
 
+            Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("MjE0NTcyMUAzMjMxMmUzMjJlMzVadXNqbHA2YUJwODZKRE84amxDZ1VsWHNvLzlLelNlOGFPSHE4bTFRS2JVPQ==");
+
             InitializeComponent();
 
             IConfigurationRoot configurationRoot = Setup.Configuration

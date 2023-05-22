@@ -13,11 +13,11 @@ namespace Rangeman.WatchDataSender
 {
     internal class MapPageDataConverter
     {
-        private readonly NodesViewModel nodesViewModel;
+        private readonly INodesViewModel nodesViewModel;
         private List<byte[]> transitPointsWithInterimPoints;
         private ILogger<MapPageDataConverter> logger;
 
-        public MapPageDataConverter(NodesViewModel nodesViewModel, ILoggerFactory loggerFactory)
+        public MapPageDataConverter(INodesViewModel nodesViewModel, ILoggerFactory loggerFactory)
         {
             logger = loggerFactory.CreateLogger<MapPageDataConverter>();
             this.nodesViewModel = nodesViewModel;

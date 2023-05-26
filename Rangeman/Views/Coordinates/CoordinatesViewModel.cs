@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Rangeman.Services.BluetoothConnector;
+using Rangeman.Services.SharedPreferences;
 using Rangeman.Views.Map;
 using Rangeman.WatchDataSender;
 using System;
@@ -32,6 +34,8 @@ namespace Rangeman.Views.Coordinates
 
         private readonly BluetoothConnectorService bluetoothConnectorService;
         private readonly ILoggerFactory loggerFactory;
+        private readonly ISaveCoordinatesDataService saveCoordinatesDataService;
+        private readonly ISharedPreferencesService sharedPreferencesService;
         private ILogger<CoordinatesViewModel> logger;
         private readonly CoordinateInfoValidator coordinateInfoValidator;
 
@@ -67,6 +71,22 @@ namespace Rangeman.Views.Coordinates
                 return disconnectCommand;
             }
         }
+
+        private bool saveButtonCanBePressed = true;
+        private ICommand saveCommand;
+
+        public ICommand SaveCommand
+        {
+            get
+            {
+                if (saveCommand == null)
+                {
+                    saveCommand = new Command((o) => SaveButton_Clicked(), (o) => saveButtonCanBePressed);
+                }
+
+                return saveCommand;
+            }
+        }
         #endregion
 
         private bool watchCommandButtonsAreVisible = true;
@@ -84,13 +104,16 @@ namespace Rangeman.Views.Coordinates
             }
         }
 
-        public CoordinatesViewModel(BluetoothConnectorService bluetoothConnectorService, ILoggerFactory loggerFactory)
+        public CoordinatesViewModel(BluetoothConnectorService bluetoothConnectorService, ILoggerFactory loggerFactory, 
+            ISaveCoordinatesDataService saveCoordinatesDataService,ISharedPreferencesService sharedPreferencesService)
         {
             this.logger = loggerFactory.CreateLogger<CoordinatesViewModel>();
             coordinateInfo = new ObservableCollection<CoordinateInfo>();
             this.GenerateCoordinateInfo();
             this.bluetoothConnectorService = bluetoothConnectorService;
             this.loggerFactory = loggerFactory;
+            this.saveCoordinatesDataService = saveCoordinatesDataService;
+            this.sharedPreferencesService = sharedPreferencesService;
             this.coordinateInfoValidator = new CoordinateInfoValidator(coordinateInfo);
         }
 
@@ -138,6 +161,16 @@ namespace Rangeman.Views.Coordinates
             await bluetoothConnectorService.DisconnectFromWatch(SetProgressMessage);
             DisconnectButtonIsVisible = false;
             disconnectButtonCanBePressed = true;
+        }
+
+        private async void SaveButton_Clicked()
+        {
+            saveButtonCanBePressed = false;
+            var tableDataToSave = JsonConvert.SerializeObject(coordinateInfo);
+            sharedPreferencesService.SetValue(Constants.PrefSaveCoordinatesData, tableDataToSave);
+            var guid = Guid.NewGuid();
+            saveCoordinatesDataService.SaveCoordinatesData($"Coordinates_{guid}.xml");
+            saveButtonCanBePressed = true;
         }
         #endregion
 

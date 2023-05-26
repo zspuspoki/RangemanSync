@@ -30,6 +30,11 @@ xmlns:datagrid="clr-namespace:Syncfusion.SfDataGrid.XForms;assembly=Syncfusion.S
                 
             </datagrid:SfDataGrid>
 
+            <StackLayout Orientation="Horizontal">
+                <Button Text="Open File" x:Name="OpenButton" HorizontalOptions="FillAndExpand" Clicked="OpenButton_Clicked" />
+                <Button Text="Save" x:Name="SaveButon" HorizontalOptions="FillAndExpand" Command="{Binding Path=SaveCommand}" IsVisible="{Binding WatchCommandButtonsAreVisible}"/>
+            </StackLayout>
+            
             <Button Text="Send to the watch"  x:Name="SendToWatchButton" Command="{Binding Path=SendToWatchCommand}" IsVisible="{Binding WatchCommandButtonsAreVisible}"/>
             <Button Text="Disconnect watch" x:Name="DisconnectButton" Command="{Binding Path=DisconnectCommand}"  IsVisible="{Binding DisconnectButtonIsVisible}"/>            
         </StackLayout>

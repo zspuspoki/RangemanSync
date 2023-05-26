@@ -5,6 +5,7 @@ using Microsoft.Extensions.FileProviders;
 using Rangeman;
 using Rangeman.Services.LicenseDistributor;
 using Rangeman.Services.SharedPreferences;
+using RangemanSync.Android.Services;
 using System;
 using Xamarin.Forms.Platform.Android;
 
@@ -40,6 +41,7 @@ namespace RangemanSync.Android
                 serviceCollection.AddSingleton(this.context);
                 serviceCollection.AddSingleton(mainActivity);
                 serviceCollection.AddSingleton<ISaveGPXFileService, SaveGPXFileService>();
+                serviceCollection.AddSingleton<ISaveCoordinatesDataService, SaveCoordinatesDataService>();
                 serviceCollection.AddSingleton<ISharedPreferencesService>(sharedPreferencesService);
                 serviceCollection.AddSingleton<ILicenseDistributor>(licenseDistributor);
             };

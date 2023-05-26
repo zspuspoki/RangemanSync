@@ -301,24 +301,35 @@ namespace RangemanSync.Android
 
             if (resultCode == Result.Ok)
             {
-                if (requestCode == ActivityRequestCode.SaveGPXFile)
+                switch(requestCode)
                 {
-                    using (Stream stream = this.ContentResolver.OpenOutputStream(data.Data, "w"))
+                    case ActivityRequestCode.SaveGPXFile:
+                        SaveFile(data, Constants.PrefKeyGPX);
+                        break;
+
+                    case ActivityRequestCode.SaveCoordinatesData:
+                        SaveFile(data, Constants.PrefSaveCoordinatesData);
+                        break;
+                }
+            }
+        }
+
+        private void SaveFile(Intent data, string preferencesKey)
+        {
+            using (Stream stream = this.ContentResolver.OpenOutputStream(data.Data, "w"))
+            {
+                using (var javaStream = new Java.IO.BufferedOutputStream(stream))
+                {
+                    string gpx = preferencesService.GetValue(preferencesKey, "");
+
+                    if (!string.IsNullOrEmpty(gpx))
                     {
-                        using (var javaStream = new Java.IO.BufferedOutputStream(stream))
-                        {
-                            string gpx = preferencesService.GetValue(Constants.PrefKeyGPX, "");
-
-                            if (!string.IsNullOrEmpty(gpx))
-                            {
-                                var gpxBytes = System.Text.Encoding.UTF8.GetBytes(gpx);
-                                javaStream.Write(gpxBytes, 0, gpxBytes.Length);
-                            }
-
-                            javaStream.Flush();
-                            javaStream.Close();
-                        }
+                        var gpxBytes = System.Text.Encoding.UTF8.GetBytes(gpx);
+                        javaStream.Write(gpxBytes, 0, gpxBytes.Length);
                     }
+
+                    javaStream.Flush();
+                    javaStream.Close();
                 }
             }
         }

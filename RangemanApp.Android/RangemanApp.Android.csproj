@@ -98,6 +98,7 @@
     <Compile Include="Renderer\AndroidCustomEntryRenderer.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\SaveCoordinatesDataService.cs" />
     <Compile Include="Services\SaveGPXFileService.cs" />
     <Compile Include="Services\LicenseInfoDistributorService.cs" />
     <Compile Include="Setup.cs" />

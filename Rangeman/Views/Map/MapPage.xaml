@@ -53,7 +53,7 @@
                       AbsoluteLayout.LayoutFlags="PositionProportional"
                       HeightRequest="65"
                       WidthRequest="65"
-                      CornerRadius="25" Text="Del node" x:Name="DeleteNodeButton" 
+                      CornerRadius="25" Text="Del" x:Name="DeleteNodeButton" 
                       IsVisible="{Binding WatchCommandButtonsAreVisible}" 
                       Command="{Binding Path=DeleteCommand}"/>
 
@@ -78,7 +78,7 @@
                       AbsoluteLayout.LayoutFlags="PositionProportional"
                       HeightRequest="65"
                       WidthRequest="65"
-                      CornerRadius="25" Text="Addr" x:Name="AddressButton"
+                      CornerRadius="25" Text="Adr" x:Name="AddressButton"
                       IsVisible="{Binding WatchCommandButtonsAreVisible}" 
                       Command="{Binding Path=AddressCommand}"/>
 

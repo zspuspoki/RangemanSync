@@ -116,10 +116,8 @@ namespace Rangeman
 
                 if (location != null)
                 {
-                    Console.WriteLine($"Latitude: {location.Latitude}, Longitude: {location.Longitude}, Altitude: {location.Altitude}");
+                    mapView.MyLocationLayer.UpdateMyLocation(new Position(location.Latitude, location.Longitude), true);
                 }
-
-                mapView.MyLocationLayer.UpdateMyLocation(new Position(location.Latitude, location.Longitude), true);
             }
 
             if (!previouslyUsedMbTilesHasBeenLoaded)

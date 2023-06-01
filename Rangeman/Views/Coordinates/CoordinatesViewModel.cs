@@ -142,7 +142,7 @@ namespace Rangeman.Views.Coordinates
                     watchDataSenderService.ProgressChanged += WatchDataSenderService_ProgressChanged;
                     await watchDataSenderService.SendRoute();
 
-                    logger.LogDebug("Map tab - after awaiting SendRoute()");
+                    logger.LogDebug("Coordinates tab - after awaiting SendRoute()");
 
                     DisconnectButtonIsVisible = false;
                     return true;

@@ -95,6 +95,16 @@
     <Compile Include="Views\Map\MissingNodeToAddViewModel.cs" />
     <Compile Include="Views\Map\NodesViewModel.cs" />
     <Compile Include="Views\Map\NodeViewModel.cs" />
+    <Compile Include="Views\Time\CustomTime.xaml.cs">
+      <DependentUpon>CustomTime.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Time\CustomTimeInfo.cs" />
+    <Compile Include="Views\Time\CustomTimeViewModel.cs" />
+    <Compile Include="Views\Time\NTPTime.xaml.cs">
+      <DependentUpon>NTPTime.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Time\NTPTimeInfo.cs" />
+    <Compile Include="Views\Time\NTPTimeViewModel.cs" />
     <Compile Include="Views\ViewModelBase.cs" />
     <Compile Include="Services\WatchDataReceiver\CasioConvoyAndCasioDataRequestObserver.cs" />
     <Compile Include="Services\WatchDataReceiver\CharChangedObserver.cs" />
@@ -180,6 +190,9 @@
     <PackageReference Include="Serilog.Sinks.File">
       <Version>5.0.0</Version>
     </PackageReference>
+    <PackageReference Include="Syncfusion.Xamarin.SfDataForm">
+      <Version>21.2.5</Version>
+    </PackageReference>
     <PackageReference Include="Syncfusion.Xamarin.SfDataGrid">
       <Version>21.2.5</Version>
     </PackageReference>
@@ -239,6 +252,16 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Views\Coordinates\CoordinatesPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\Time\CustomTime.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\Time\NTPTime.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>

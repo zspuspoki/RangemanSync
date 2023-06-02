@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:dataform="clr-namespace:Syncfusion.XForms.DataForm;assembly=Syncfusion.SfDataForm.XForms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Rangeman.Views.Time.NTPTime"
+             xmlns:local="clr-namespace:Rangeman.Views.Time"
+             Title="Time - sending using an NTP server">
+
+    <ContentPage.BindingContext>
+        <local:NTPTimeViewModel/>
+    </ContentPage.BindingContext>
+
+    <ContentPage.Content>
+        <Grid Margin="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="60"/>
+            </Grid.RowDefinitions>
+            <dataform:SfDataForm x:Name="dataForm" LayoutOptions="TextInputLayout" ValidationMode="Explicit" DataObject="{Binding NTPTimeInfo}">
+            </dataform:SfDataForm>
+            <Button x:Name="sendToWatch" Grid.Row="1"  Text="Send to watch" TextColor="#FFFFFF"
+                  WidthRequest="150" HeightRequest="40" BackgroundColor="#2196F3" HorizontalOptions="Center"
+                    VerticalOptions="Center"
+                  Command="{Binding Path=BindingContext.CommitCommand, Source={x:Reference Name=dataForm}}"                   
+                                                CommandParameter="{Binding Source={x:Reference Name=dataForm}}"   />
+        </Grid>
+    </ContentPage.Content>
+</ContentPage>

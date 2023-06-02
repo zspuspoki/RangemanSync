@@ -4,15 +4,17 @@
              xmlns:e="clr-namespace:Rangeman"
              xmlns:local="clr-namespace:Rangeman"
              xmlns:coordinates="clr-namespace:Rangeman.Views.Coordinates"
+             xmlns:time="clr-namespace:Rangeman.Views.Time"
              x:Class="Rangeman.AppShell"
-             Shell.FlyoutBehavior="Disabled"
-             Shell.NavBarIsVisible="False">
-    <TabBar>
-        <Tab Title="Main">
-            <ShellContent Title="Download" ContentTemplate="{e:MyDataTemplate local:DownloadPage}" Route="Download" IsVisible="{Binding DownloadPageIsEnabled}"  />
-            <ShellContent Title="Map" ContentTemplate="{e:MyDataTemplate local:MapPage}" Route="Map" IsVisible="{Binding MapPageIsEnabled}" />
-            <ShellContent Title="Coordinates" ContentTemplate="{e:MyDataTemplate coordinates:CoordinatesPage}" Route="Coordinates"></ShellContent>
-            <ShellContent Title="Config" ContentTemplate="{e:MyDataTemplate local:ConfigPage}" Route="Config" IsVisible="{Binding ConfigPageIsEnabled }"/>
+             Shell.TabBarIsVisible="False">
+    <FlyoutItem FlyoutDisplayOptions="AsMultipleItems" Title="Test" >
+        <ShellContent Title="Download" ContentTemplate="{e:MyDataTemplate local:DownloadPage}" Route="Download" IsVisible="{Binding DownloadPageIsEnabled}"  />
+        <ShellContent Title="Map" ContentTemplate="{e:MyDataTemplate local:MapPage}" Route="Map" IsVisible="{Binding MapPageIsEnabled}" />
+        <ShellContent Title="Coordinates" ContentTemplate="{e:MyDataTemplate coordinates:CoordinatesPage}" Route="Coordinates"></ShellContent>
+        <Tab Title="Time">
+            <ShellContent Title="Custom" ContentTemplate="{e:MyDataTemplate time:CustomTime}"></ShellContent>
+            <ShellContent Title="NTP" ContentTemplate="{e:MyDataTemplate time:NTPTime}"></ShellContent>
         </Tab>
-    </TabBar>
+        <ShellContent Title="Config" ContentTemplate="{e:MyDataTemplate local:ConfigPage}" Route="Config" IsVisible="{Binding ConfigPageIsEnabled }"/>
+    </FlyoutItem>
 </Shell>

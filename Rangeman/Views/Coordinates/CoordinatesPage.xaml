@@ -3,7 +3,8 @@
 xmlns:datagrid="clr-namespace:Syncfusion.SfDataGrid.XForms;assembly=Syncfusion.SfDataGrid.XForms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Rangeman.Views.Coordinates;assembly=Rangeman"
-             x:Class="Rangeman.Views.Coordinates.CoordinatesPage">
+             x:Class="Rangeman.Views.Coordinates.CoordinatesPage"
+             Title="Coordinates - Sending coordinates using a table">
     
     <ContentPage.Content>
         <StackLayout>

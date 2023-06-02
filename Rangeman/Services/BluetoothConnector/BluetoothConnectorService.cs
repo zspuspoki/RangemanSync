@@ -48,26 +48,39 @@ namespace Rangeman.Services.BluetoothConnector
 
             IBlePeripheral device = null;
 
-            await ble.ScanForBroadcasts((a) =>
+            logger.LogDebug($"--- BluetoothConnectorService - before ScanForBroadcasts, (scanCancellationTokenSource == null) = {scanCancellationTokenSource == null}");
+
+            try
             {
-                if (a.Advertisement != null)
+                await ble.ScanForBroadcasts((a) =>
                 {
-                    var advertisedName = a.Advertisement.DeviceName;
-
-                    logger.LogDebug($"--- BluetoothConnectorService Looking for connected watch, advertised device name: {advertisedName}");
-
-                    if (advertisedName != null &&
-                        advertisedName.Contains(WatchDeviceName))
+                    if (a.Advertisement != null)
                     {
-                        logger.LogDebug("--- BluetoothConnectorService - advertised name contains CASIO");
+                        var advertisedName = a.Advertisement.DeviceName;
 
-                        device = a;
+                        logger.LogDebug($"--- BluetoothConnectorService Looking for connected watch, advertised device name: {advertisedName}");
 
-                        scanCancellationTokenSource.Cancel();
+                        if (advertisedName != null &&
+                            advertisedName.Contains(WatchDeviceName))
+                        {
+                            logger.LogDebug("--- BluetoothConnectorService - advertised name contains CASIO");
+
+                            device = a;
+
+                            scanCancellationTokenSource.Cancel();
+                        }
                     }
-                }
-            }, scanCancellationTokenSource.Token);
+                }, scanCancellationTokenSource.Token);
+            }
+            catch(Exception ex)
+            {
+                logger.LogError(ex, "An unexpected error occured during scanning bluetooth devices");
 
+                if (watchCommandExecutionFailed != null)
+                {
+                    await watchCommandExecutionFailed();
+                }
+            }
 
             if (device != null)
             {

@@ -188,7 +188,8 @@ namespace RangemanSync.Android
         {
             try
             {
-                const string errorFileName = "Fatal.log";
+                var currentDate = DateTime.Now;
+                string errorFileName = $"Fatal-{currentDate.Year}-{currentDate.Month}-{currentDate.Day}-{currentDate.Hour}-{currentDate.Minute}-{currentDate.Second}.log";
                 var docsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
                 var logsPath = Path.Combine(docsPath, Constants.LogSubFolder);
 

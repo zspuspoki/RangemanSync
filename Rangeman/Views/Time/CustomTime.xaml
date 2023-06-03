@@ -10,18 +10,21 @@
     </ContentPage.BindingContext>
     
     <ContentPage.Content>
-        <Grid Margin="0">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="60"/>
-            </Grid.RowDefinitions>
-            <dataform:SfDataForm x:Name="dataForm" LayoutOptions="TextInputLayout" ValidationMode="Explicit" DataObject="{Binding CustomTimeInfo}">
-            </dataform:SfDataForm>
-            <Button x:Name="sendToWatch" Grid.Row="1"  Text="Send to watch" TextColor="#FFFFFF"
-                  WidthRequest="150" HeightRequest="40" BackgroundColor="#2196F3" HorizontalOptions="Center"
-                    VerticalOptions="Center"
-                  Command="{Binding Path=BindingContext.CommitCommand, Source={x:Reference Name=dataForm}}"                   
-                                                CommandParameter="{Binding Source={x:Reference Name=dataForm}}"   />
-        </Grid>
+        <StackLayout>
+            <Label Text="" TextColor="Red" x:Name="lblProgress" />
+            <Grid Margin="0" VerticalOptions="FillAndExpand">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="60"/>
+                </Grid.RowDefinitions>
+                <dataform:SfDataForm x:Name="dataForm" LayoutOptions="TextInputLayout" ValidationMode="Explicit" DataObject="{Binding CustomTimeInfo}">
+                </dataform:SfDataForm>
+                <Button x:Name="sendToWatch" Grid.Row="1"  Text="Send to watch" TextColor="#FFFFFF"
+                      WidthRequest="150" HeightRequest="40" BackgroundColor="#2196F3" HorizontalOptions="Center"
+                        VerticalOptions="Center"
+                      Command="{Binding Path=BindingContext.CommitCommand, Source={x:Reference Name=dataForm}}"                   
+                                                    CommandParameter="{Binding Source={x:Reference Name=dataForm}}"   />
+            </Grid>
+        </StackLayout>
     </ContentPage.Content>
 </ContentPage>

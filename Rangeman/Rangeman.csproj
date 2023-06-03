@@ -73,6 +73,7 @@
     <Compile Include="Services\SaveCoordinatesData\ISaveCoordinatesDataService.cs" />
     <Compile Include="Services\SaveGPX\ISaveGPXFileService.cs" />
     <Compile Include="Services\SharedPreferences\ISharedPreferencesService.cs" />
+    <Compile Include="Services\WatchDataSender\TimeSettingDataObserver.cs" />
     <Compile Include="Setup.cs" />
     <Compile Include="ShellExtension.cs" />
     <Compile Include="Validation\LatitudeLongitudeValidationBehavior.cs" />

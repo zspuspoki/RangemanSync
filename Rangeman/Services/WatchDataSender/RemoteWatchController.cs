@@ -2,7 +2,10 @@
 using nexus.protocols.ble;
 using Rangeman.Common;
 using Rangeman.Services.Common;
+using Rangeman.Services.WatchDataSender;
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -215,6 +218,39 @@ namespace Rangeman.WatchDataSender
 
             await Task.Delay(CommandDelay);
             logger.LogDebug("--- WriteFinalClosingData2 - End");
+        }
+
+        public async Task SetCurrentTime(ushort year, byte month, byte day, byte hour, byte minute, byte seconds, byte dayOfWeek, byte miliseconds)
+        {
+            var initPhaseIsReady = new TaskCompletionSource<bool>();
+            var timeSettingDataObserver = new TimeSettingDataObserver(gattServer, initPhaseIsReady);
+
+            gattServer.NotifyCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid), 
+                Guid.Parse(BLEConstants.CasioAllFeaturesCharacteristic), timeSettingDataObserver);
+
+            await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid), 
+                Guid.Parse(BLEConstants.CasioReadRequestForAllFeaturesCharacteristic), new byte[] { 0x1d });  // Read request for DstWatchState
+
+            await initPhaseIsReady.Task;
+
+            var bytesToSend = new List<byte[]>();
+            bytesToSend.Add(new byte[] { 0x09 });  // Start byte : this means we'd like to set the current time  
+            bytesToSend.Add(BitConverter.GetBytes(year));
+            bytesToSend.Add(new byte[] { month });
+            bytesToSend.Add(new byte[] { day });
+            bytesToSend.Add(new byte[] { hour });
+            bytesToSend.Add(new byte[] { minute });
+            bytesToSend.Add(new byte[] { seconds });
+            bytesToSend.Add(new byte[] { dayOfWeek });
+            bytesToSend.Add(new byte[] { miliseconds });
+            bytesToSend.Add(new byte[] { 0x01 });    // end byte
+
+            var sendArray = bytesToSend
+                .SelectMany(a => a)
+                .ToArray();
+
+            await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid), 
+                Guid.Parse(BLEConstants.CasioAllFeaturesCharacteristic),sendArray);
         }
 
         private static byte[] CreateConvoyData(long j, long j2, int i, int i2, int i3)

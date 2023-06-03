@@ -65,9 +65,11 @@
     <Compile Include="MyDataTemplateExtension.cs" />
     <Compile Include="RouteFactory.cs" />
     <Compile Include="Services\BluetoothConnector\BluetoothConnectorService.cs" />
+    <Compile Include="Services\Common\AsyncExtensions.cs" />
     <Compile Include="Services\Common\BLEConstants.cs" />
     <Compile Include="Services\Common\BleGattServerConnectionExtensions.cs" />
     <Compile Include="Services\LicenseDistributor\ILicenseDistributor.cs" />
+    <Compile Include="Services\NTP\NTPClient.cs" />
     <Compile Include="Services\PhoneLocation\ILocationService.cs" />
     <Compile Include="Services\PhoneLocation\LocationService.cs" />
     <Compile Include="Services\SaveCoordinatesData\ISaveCoordinatesDataService.cs" />
@@ -170,6 +172,9 @@
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>13.0.3</Version>
+    </PackageReference>
+    <PackageReference Include="rda.SocketsForPCL">
+      <Version>2.0.2</Version>
     </PackageReference>
     <PackageReference Include="Scrutor">
       <Version>4.2.0</Version>

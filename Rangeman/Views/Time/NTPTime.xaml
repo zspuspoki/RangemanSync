@@ -6,10 +6,6 @@
              xmlns:local="clr-namespace:Rangeman.Views.Time"
              Title="Time - sending using an NTP server">
 
-    <ContentPage.BindingContext>
-        <local:NTPTimeViewModel/>
-    </ContentPage.BindingContext>
-
     <ContentPage.Content>
         <StackLayout>
             <Label Text="" TextColor="Red" x:Name="lblProgress" />

@@ -233,17 +233,19 @@ namespace Rangeman.WatchDataSender
 
             await initPhaseIsReady.Task;
 
-            var bytesToSend = new List<byte[]>();
-            bytesToSend.Add(new byte[] { 0x09 });  // Start byte : this means we'd like to set the current time  
-            bytesToSend.Add(BitConverter.GetBytes(year));
-            bytesToSend.Add(new byte[] { month });
-            bytesToSend.Add(new byte[] { day });
-            bytesToSend.Add(new byte[] { hour });
-            bytesToSend.Add(new byte[] { minute });
-            bytesToSend.Add(new byte[] { seconds });
-            bytesToSend.Add(new byte[] { dayOfWeek });
-            bytesToSend.Add(new byte[] { miliseconds });
-            bytesToSend.Add(new byte[] { 0x01 });    // end byte
+            var bytesToSend = new List<byte[]>
+            {
+                new byte[] { 0x09 },  // Start byte : this means we'd like to set the current time  
+                BitConverter.GetBytes(year),
+                new byte[] { month },
+                new byte[] { day },
+                new byte[] { hour },
+                new byte[] { minute },
+                new byte[] { seconds },
+                new byte[] { dayOfWeek },
+                new byte[] { miliseconds },
+                new byte[] { 0x01 }    // end byte
+            };
 
             var sendArray = bytesToSend
                 .SelectMany(a => a)

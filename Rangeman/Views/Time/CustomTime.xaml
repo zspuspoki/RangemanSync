@@ -5,13 +5,10 @@
              x:Class="Rangeman.Views.Time.CustomTime"
              xmlns:local="clr-namespace:Rangeman.Views.Time"
              Title="Time - sending custom values">
-    <ContentPage.BindingContext>
-        <local:CustomTimeViewModel/>
-    </ContentPage.BindingContext>
     
     <ContentPage.Content>
         <StackLayout>
-            <Label Text="" TextColor="Red" x:Name="lblProgress" />
+            <Label Text="{Binding ProgressMessage}" TextColor="Red" x:Name="lblProgress" />
             <Grid Margin="0" VerticalOptions="FillAndExpand">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>

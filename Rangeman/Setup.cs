@@ -7,6 +7,7 @@ using Rangeman.Services.PhoneLocation;
 using Rangeman.Views.Coordinates;
 using Rangeman.Views.Download;
 using Rangeman.Views.Map;
+using Rangeman.Views.Time;
 using Serilog;
 using Serilog.Exceptions;
 using System;
@@ -36,6 +37,10 @@ namespace Rangeman
             serviceCollection.AddViewSingleton<ConfigPage, ConfigPageViewModel>();
 
             serviceCollection.AddViewSingleton<CoordinatesPage, CoordinatesViewModel>();
+
+            serviceCollection.AddViewSingleton<CustomTime, CustomTimeViewModel>();
+
+            serviceCollection.AddViewSingleton<NTPTime, NTPTimeViewModel>();
 
             serviceCollection.AddSingleton<IDownloadPageView, DownloadPage>();
             serviceCollection.AddViewSingleton<IDownloadPageView, DownloadPage, DownloadPageViewModel>();

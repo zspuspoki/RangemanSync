@@ -97,6 +97,7 @@ namespace Rangeman.Views.Time
             } 
         }
 
+        [Display(AutoGenerateField = false)]
         public bool HasErrors => throw new NotImplementedException();
 
         #endregion

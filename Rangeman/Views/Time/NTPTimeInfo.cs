@@ -10,6 +10,7 @@ namespace Rangeman.Views.Time
         private bool formIsInvalid = false;
         private string progressMessage;
 
+        [Required(AllowEmptyStrings = false, ErrorMessage = "Please enter a valid NTP server URL")]
         [Display(ShortName = "NTP server's URL")]
         public string NTPServer { get; set; }
 
@@ -34,7 +35,7 @@ namespace Rangeman.Views.Time
         {
             if(propertyName == nameof(NTPServer))
             {
-                if(this.NTPServer == null)
+                if(string.IsNullOrWhiteSpace(this.NTPServer))
                 {
                     formIsInvalid = true;
                     return string.Empty;
@@ -59,18 +60,6 @@ namespace Rangeman.Views.Time
             {
                 this.PropertyChanged(this, new PropertyChangedEventArgs(propName));
             }
-        }
-
-        /// <summary>
-        /// Occurs when error value is changed.
-        /// </summary>
-        /// <param name="propName">Property name</param>
-        private void RaiseErrorChanged(string propName)
-        {
-            if (this.ErrorsChanged != null)
-            {
-                this.ErrorsChanged(this, new DataErrorsChangedEventArgs(propName));
-            }
-        }
+        }     
     }
 }

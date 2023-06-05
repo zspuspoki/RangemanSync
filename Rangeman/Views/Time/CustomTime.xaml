@@ -8,7 +8,7 @@
     
     <ContentPage.Content>
         <StackLayout>
-            <Label Text="{Binding ProgressMessage}" TextColor="Red" x:Name="lblProgress" />
+            <Label Text="{Binding CustomTimeInfo.ProgressMessage}" TextColor="Red" x:Name="lblProgress" />
             <Grid Margin="0" VerticalOptions="FillAndExpand">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>

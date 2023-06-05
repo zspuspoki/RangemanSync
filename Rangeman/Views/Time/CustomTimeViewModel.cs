@@ -3,6 +3,7 @@ using Rangeman.Services.BluetoothConnector;
 using Rangeman.Services.WatchDataSender;
 using System;
 using System.ComponentModel;
+using System.Threading.Tasks;
 using Xamarin.Forms;
 
 namespace Rangeman.Views.Time
@@ -56,6 +57,20 @@ namespace Rangeman.Views.Time
 
         private async void OnCommit(object dataForm)
         {
+            var dataFormLayout = dataForm as Syncfusion.XForms.DataForm.SfDataForm;
+            var isValid = dataFormLayout.Validate();
+            dataFormLayout.Commit();
+            if (!isValid)
+            {
+                CustomTimeInfo.ProgressMessage = "Please enter valid time details.";
+                return;
+            }
+
+            await SendTimeToTheWatch();
+        }
+
+        private async Task SendTimeToTheWatch()
+        {
             CustomTimeInfo.ProgressMessage = "Looking for Casio GPR-B1000 device. Please connect your watch.";
             await bluetoothConnectorService.FindAndConnectToWatch((message) => CustomTimeInfo.ProgressMessage = message,
                 async (connection) =>
@@ -64,7 +79,7 @@ namespace Rangeman.Views.Time
                     CustomTimeInfo.ProgressMessage = "Connected to GPR-B1000 watch.";
 
                     var watchDataSettingSenderService = new WatchDataSettingSenderService(connection, loggerFactory);
-                    await watchDataSettingSenderService.SendTime((ushort)customTimeInfo.Year.Value, (byte)customTimeInfo.Month, (byte)customTimeInfo.Day.Value, 
+                    await watchDataSettingSenderService.SendTime((ushort)customTimeInfo.Year.Value, (byte)customTimeInfo.Month, (byte)customTimeInfo.Day.Value,
                         (byte)customTimeInfo.Hour.Value, (byte)customTimeInfo.Minute.Value, (byte)customTimeInfo.Second.Value,
                         (byte)customTimeInfo.DayOfWeek, 0);
 

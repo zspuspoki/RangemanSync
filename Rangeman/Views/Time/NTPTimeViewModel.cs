@@ -89,8 +89,12 @@ namespace Rangeman.Views.Time
 
         private async void OnDisconnect()
         {
+            logger.LogDebug("NTP time: Running OnDisconnect()");
+
             await bluetoothConnectorService.DisconnectFromWatch((msg) => NTPTimeInfo.ProgressMessage = msg);
             DisconnectButtonIsVisible = false;
+
+            NTPTimeInfo.ProgressMessage = "Cancel button: The diconnection was successful.";
         }
 
         private async Task SendTimeToTheWatch()

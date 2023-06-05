@@ -98,8 +98,12 @@ namespace Rangeman.Views.Time
 
         private async void OnDisconnect()
         {
+            logger.LogDebug("Custom time: Running OnDisconnect()");
+
             await bluetoothConnectorService.DisconnectFromWatch((msg) => CustomTimeInfo.ProgressMessage = msg);
             DisconnectButtonIsVisible = false;
+
+            CustomTimeInfo.ProgressMessage = "Cancel button: The diconnection was successful.";
         }
 
         private async Task SendTimeToTheWatch()
@@ -129,6 +133,7 @@ namespace Rangeman.Views.Time
                     }
                     catch(Exception ex)
                     {
+                        CustomTimeInfo.ProgressMessage = "An unexpected error occured during sending the time to the watch.";
                         logger.LogError(ex, "An unexpected error occured during sending the custom set time to the watch");
                         return false;
                     }

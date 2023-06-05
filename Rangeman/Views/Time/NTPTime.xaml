@@ -20,12 +20,12 @@
                       WidthRequest="150" HeightRequest="40" BackgroundColor="#2196F3" HorizontalOptions="Center"
                         VerticalOptions="Center"
                       Command="{Binding Path=BindingContext.CommitCommand, Source={x:Reference Name=dataForm}}"                   
-                                                    CommandParameter="{Binding Source={x:Reference Name=dataForm}}"   />
+                                                    CommandParameter="{Binding Source={x:Reference Name=dataForm}}" IsVisible="{Binding WatchCommandButtonsAreVisible}"  />
 
                 <Button x:Name="disconnectWatch" Grid.Row="1"  Text="Cancel" TextColor="#FFFFFF"
                       WidthRequest="150" HeightRequest="40" BackgroundColor="#2196F3" HorizontalOptions="Center"
                         VerticalOptions="Center"
-                      Command="{Binding Path=BindingContext.DisconnectCommand}" IsVisible="{Binding DisconnectButtonIsVisible}"/>
+                      Command="{Binding DisconnectCommand}" IsVisible="{Binding DisconnectButtonIsVisible}"/>
 
             </Grid>
         </StackLayout>

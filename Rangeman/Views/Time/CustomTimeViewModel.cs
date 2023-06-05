@@ -129,6 +129,8 @@ namespace Rangeman.Views.Time
 
                         logger.LogDebug("Custom Time tab - after awaiting SendTime()");
 
+                        DisconnectButtonIsVisible = false;
+
                         return true;
                     }
                     catch(Exception ex)
@@ -142,7 +144,8 @@ namespace Rangeman.Views.Time
                 {
                     CustomTimeInfo.ProgressMessage = "An error occured during sending watch commands. Please try to connect again";
                     return true;
-                });
+                },
+                () => DisconnectButtonIsVisible = true);
         }
 
         /// <summary>

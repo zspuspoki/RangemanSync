@@ -9,7 +9,7 @@ using Xamarin.Forms;
 
 namespace Rangeman.Views.Time
 {
-    public class NTPTimeViewModel
+    public class NTPTimeViewModel : INotifyPropertyChanged
     {
         private NTPTimeInfo ntpTimeInfo;
         private bool watchCommandButtonsAreVisible = true;
@@ -123,13 +123,16 @@ namespace Rangeman.Views.Time
 
                     logger.LogDebug("Custom Time tab - after awaiting SendTime()");
 
+                    DisconnectButtonIsVisible = false;
+
                     return true;
                 },
                 async () =>
                 {
                     NTPTimeInfo.ProgressMessage = "An error occured during sending watch commands. Please try to connect again";
                     return true;
-                });
+                },
+                () => DisconnectButtonIsVisible = true);
         }
 
         private async Task SendCommandsToTheWatch(WatchDataSettingSenderService watchDataSettingSenderService, DateTime? currentTime)

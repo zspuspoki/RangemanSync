@@ -15,6 +15,7 @@
                 </Grid.RowDefinitions>
                 <dataform:SfDataForm x:Name="dataForm" LayoutOptions="TextInputLayout" ValidationMode="Explicit" DataObject="{Binding CustomTimeInfo}">
                 </dataform:SfDataForm>
+                
                 <Button x:Name="sendToWatch" Grid.Row="1"  Text="Send to watch" TextColor="#FFFFFF"
                       WidthRequest="150" HeightRequest="40" BackgroundColor="#2196F3" HorizontalOptions="Center"
                         VerticalOptions="Center"
@@ -24,7 +25,7 @@
                 <Button x:Name="disconnectWatch" Grid.Row="1"  Text="Cancel" TextColor="#FFFFFF"
                       WidthRequest="150" HeightRequest="40" BackgroundColor="#2196F3" HorizontalOptions="Center"
                         VerticalOptions="Center"
-                      Command="{Binding Path=BindingContext.DisconnectCommand}" IsVisible="{Binding DisconnectButtonIsVisible}"/>
+                      Command="{Binding DisconnectCommand}" IsVisible="{Binding DisconnectButtonIsVisible}"/>
             </Grid>
         </StackLayout>
     </ContentPage.Content>

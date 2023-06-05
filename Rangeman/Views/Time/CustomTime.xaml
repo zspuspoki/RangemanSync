@@ -3,7 +3,6 @@
              xmlns:dataform="clr-namespace:Syncfusion.XForms.DataForm;assembly=Syncfusion.SfDataForm.XForms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Rangeman.Views.Time.CustomTime"
-             xmlns:local="clr-namespace:Rangeman.Views.Time"
              Title="Time - sending custom values">
     
     <ContentPage.Content>
@@ -20,7 +19,12 @@
                       WidthRequest="150" HeightRequest="40" BackgroundColor="#2196F3" HorizontalOptions="Center"
                         VerticalOptions="Center"
                       Command="{Binding Path=BindingContext.CommitCommand, Source={x:Reference Name=dataForm}}"                   
-                                                    CommandParameter="{Binding Source={x:Reference Name=dataForm}}"   />
+                                                    CommandParameter="{Binding Source={x:Reference Name=dataForm}}"  IsVisible="{Binding WatchCommandButtonsAreVisible}" />
+
+                <Button x:Name="disconnectWatch" Grid.Row="1"  Text="Cancel" TextColor="#FFFFFF"
+                      WidthRequest="150" HeightRequest="40" BackgroundColor="#2196F3" HorizontalOptions="Center"
+                        VerticalOptions="Center"
+                      Command="{Binding Path=BindingContext.DisconnectCommand}" IsVisible="{Binding DisconnectButtonIsVisible}"/>
             </Grid>
         </StackLayout>
     </ContentPage.Content>

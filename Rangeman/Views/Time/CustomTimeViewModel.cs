@@ -12,6 +12,8 @@ namespace Rangeman.Views.Time
     {
         private CustomTimeInfo customTimeInfo;
         private ILogger<CustomTimeViewModel> logger;
+        private bool watchCommandButtonsAreVisible = true;
+        private bool disconnectButtonIsVisible = false;
         private readonly BluetoothConnectorService bluetoothConnectorService;
         private readonly ILoggerFactory loggerFactory;
 
@@ -33,8 +35,10 @@ namespace Rangeman.Views.Time
                 Second = currentDate.Second,
                 DayOfWeek = Enum.Parse<DayOfWeekType>(currentDate.DayOfWeek.ToString())
             };
-
+            
             this.CommitCommand = new Command<object>(this.OnCommit);
+            this.DisconnectCommand = new Command(this.OnDisconnect);
+
             this.bluetoothConnectorService = bluetoothConnectorService;
             this.loggerFactory = loggerFactory;
         }
@@ -50,10 +54,33 @@ namespace Rangeman.Views.Time
             }
         }
 
+        public bool WatchCommandButtonsAreVisible 
+        { 
+            get => watchCommandButtonsAreVisible; 
+            set 
+            { 
+                watchCommandButtonsAreVisible = value; 
+                OnPropertyChanged("WatchCommandButtonsAreVisible"); 
+            } 
+        }
+
+        public bool DisconnectButtonIsVisible
+        {
+            get => disconnectButtonIsVisible;
+            set
+            {
+                disconnectButtonIsVisible = value;
+                OnPropertyChanged("DisconnectButtonIsVisible");
+                WatchCommandButtonsAreVisible = !value;
+            }
+        }
+
         /// <summary>
         /// Gets or sets an ICommand implementation wrapping a commit action.
         /// </summary>
         public Command<object> CommitCommand { get; set; }
+
+        public Command DisconnectCommand { get; set; }
 
         private async void OnCommit(object dataForm)
         {
@@ -69,34 +96,60 @@ namespace Rangeman.Views.Time
             await SendTimeToTheWatch();
         }
 
+        private async void OnDisconnect()
+        {
+            await bluetoothConnectorService.DisconnectFromWatch((msg) => CustomTimeInfo.ProgressMessage = msg);
+            DisconnectButtonIsVisible = false;
+        }
+
         private async Task SendTimeToTheWatch()
         {
             CustomTimeInfo.ProgressMessage = "Looking for Casio GPR-B1000 device. Please connect your watch.";
             await bluetoothConnectorService.FindAndConnectToWatch((message) => CustomTimeInfo.ProgressMessage = message,
                 async (connection) =>
                 {
-                    logger.LogDebug("Custom Time tab - Device Connection was successful");
-                    CustomTimeInfo.ProgressMessage = "Connected to GPR-B1000 watch.";
-                    
-                    var watchDataSettingSenderService = new WatchDataSettingSenderService(connection, loggerFactory);
+                    try
+                    {
+                        logger.LogDebug("Custom Time tab - Device Connection was successful");
+                        CustomTimeInfo.ProgressMessage = "Connected to GPR-B1000 watch.";
 
-                    CustomTimeInfo.ProgressMessage = "Sending custom time to the watch ...";
+                        var watchDataSettingSenderService = new WatchDataSettingSenderService(connection, loggerFactory);
 
-                    await watchDataSettingSenderService.SendTime((ushort)customTimeInfo.Year.Value, (byte)customTimeInfo.Month, (byte)customTimeInfo.Day.Value,
-                        (byte)customTimeInfo.Hour.Value, (byte)customTimeInfo.Minute.Value, (byte)customTimeInfo.Second.Value,
-                        (byte)customTimeInfo.DayOfWeek, 0);
+                        CustomTimeInfo.ProgressMessage = "Sending custom time to the watch ...";
 
-                    CustomTimeInfo.ProgressMessage = "Finished sending time to the watch.";
+                        await watchDataSettingSenderService.SendTime((ushort)customTimeInfo.Year.Value, (byte)customTimeInfo.Month, (byte)customTimeInfo.Day.Value,
+                            (byte)customTimeInfo.Hour.Value, (byte)customTimeInfo.Minute.Value, (byte)customTimeInfo.Second.Value,
+                            (byte)customTimeInfo.DayOfWeek, 0);
 
-                    logger.LogDebug("Custom Time tab - after awaiting SendTime()");
+                        CustomTimeInfo.ProgressMessage = "Finished sending time to the watch.";
 
-                    return true;
+                        logger.LogDebug("Custom Time tab - after awaiting SendTime()");
+
+                        return true;
+                    }
+                    catch(Exception ex)
+                    {
+                        logger.LogError(ex, "An unexpected error occured during sending the custom set time to the watch");
+                        return false;
+                    }
                 },
                 async () =>
                 {
                     CustomTimeInfo.ProgressMessage = "An error occured during sending watch commands. Please try to connect again";
                     return true;
                 });
+        }
+
+        /// <summary>
+        /// Occurs when propery value is changed.
+        /// </summary>
+        /// <param name="propName">Property name</param>
+        private void OnPropertyChanged(string propName)
+        {
+            if (this.PropertyChanged != null)
+            {
+                this.PropertyChanged(this, new PropertyChangedEventArgs(propName));
+            }
         }
     }
 }

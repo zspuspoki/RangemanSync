@@ -2,6 +2,7 @@
 using Rangeman.Services.BluetoothConnector;
 using Rangeman.Services.NTP;
 using Rangeman.Services.WatchDataSender;
+using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Xamarin.Forms;
@@ -11,6 +12,8 @@ namespace Rangeman.Views.Time
     public class NTPTimeViewModel
     {
         private NTPTimeInfo ntpTimeInfo;
+        private bool watchCommandButtonsAreVisible = true;
+        private bool disconnectButtonIsVisible = false;
         private readonly BluetoothConnectorService bluetoothConnectorService;
         private readonly ILoggerFactory loggerFactory;
         private ILogger<NTPTimeViewModel> logger;
@@ -23,7 +26,10 @@ namespace Rangeman.Views.Time
             logger.LogInformation("Inside NTPTimeViewModel ctor");
 
             this.ntpTimeInfo = new NTPTimeInfo();
+
             this.CommitCommand = new Command<object>(this.OnCommit);
+            this.DisconnectCommand = new Command(this.OnDisconnect);
+
             this.bluetoothConnectorService = bluetoothConnectorService;
             this.loggerFactory = loggerFactory;
         }
@@ -39,10 +45,33 @@ namespace Rangeman.Views.Time
             }
         }
 
+        public bool WatchCommandButtonsAreVisible
+        {
+            get => watchCommandButtonsAreVisible;
+            set
+            {
+                watchCommandButtonsAreVisible = value;
+                OnPropertyChanged("WatchCommandButtonsAreVisible");
+            }
+        }
+
+        public bool DisconnectButtonIsVisible
+        {
+            get => disconnectButtonIsVisible;
+            set
+            {
+                disconnectButtonIsVisible = value;
+                OnPropertyChanged("DisconnectButtonIsVisible");
+                WatchCommandButtonsAreVisible = !value;
+            }
+        }
+
         /// <summary>
         /// Gets or sets an ICommand implementation wrapping a commit action.
         /// </summary>
         public Command<object> CommitCommand { get; set; }
+
+        public Command DisconnectCommand { get; set; }
 
         private async void OnCommit(object dataForm)
         {
@@ -58,6 +87,12 @@ namespace Rangeman.Views.Time
             await SendTimeToTheWatch();
         }
 
+        private async void OnDisconnect()
+        {
+            await bluetoothConnectorService.DisconnectFromWatch((msg) => NTPTimeInfo.ProgressMessage = msg);
+            DisconnectButtonIsVisible = false;
+        }
+
         private async Task SendTimeToTheWatch()
         {
             NTPTimeInfo.ProgressMessage = "Looking for Casio GPR-B1000 device. Please connect your watch.";
@@ -71,15 +106,16 @@ namespace Rangeman.Views.Time
 
                     NTPTimeInfo.ProgressMessage = "Downloading exact time from the NTP server ...";
 
-                    var currentTime = await NtpClient.GetNetworkTimeAsync(ntpTimeInfo.NTPServer);
+                    DateTime? currentTime = null;
 
-                    NTPTimeInfo.ProgressMessage = "Sending current time to the watch ...";
+                    currentTime = await GetNtpServerTime(currentTime);
 
-                    await watchDataSettingSenderService.SendTime((ushort)currentTime.Year, (byte)currentTime.Month, (byte)currentTime.Day,
-                        (byte)currentTime.Hour, (byte)currentTime.Minute, (byte)currentTime.Second,
-                        (byte)currentTime.DayOfWeek, 0);
+                    if (currentTime != null)
+                    {
+                        logger.LogDebug("SendTimeToTheWatch() - currentTime is not null");
 
-                    NTPTimeInfo.ProgressMessage = $"Finished sending current time ( {currentTime} ) to the watch.";
+                        await SendCommandsToTheWatch(watchDataSettingSenderService, currentTime);
+                    }
 
                     logger.LogDebug("Custom Time tab - after awaiting SendTime()");
 
@@ -90,6 +126,52 @@ namespace Rangeman.Views.Time
                     NTPTimeInfo.ProgressMessage = "An error occured during sending watch commands. Please try to connect again";
                     return true;
                 });
+        }
+
+        private async Task SendCommandsToTheWatch(WatchDataSettingSenderService watchDataSettingSenderService, DateTime? currentTime)
+        {
+            try
+            {
+                await watchDataSettingSenderService.SendTime((ushort)currentTime.Value.Year, (byte)currentTime.Value.Month, (byte)currentTime.Value.Day,
+                    (byte)currentTime.Value.Hour, (byte)currentTime.Value.Minute, (byte)currentTime.Value.Second,
+                    (byte)currentTime.Value.DayOfWeek, 0);
+
+                NTPTimeInfo.ProgressMessage = $"Finished sending current time ( {currentTime} ) to the watch.";
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "NTP - An unexpected error occured during sending the watch commands to the watch");
+                NTPTimeInfo.ProgressMessage = "An unexpected error occured during sending the time to the watch.";
+            }
+        }
+
+        private async Task<DateTime?> GetNtpServerTime(DateTime? currentTime)
+        {
+            try
+            {
+                currentTime = await NtpClient.GetNetworkTimeAsync(ntpTimeInfo.NTPServer);
+
+                NTPTimeInfo.ProgressMessage = "Sending current time to the watch ...";
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "An unexpected error occured during getting the time from the NTP server");
+                NTPTimeInfo.ProgressMessage = "An unexpected error occured during getting the NTP server time";
+            }
+
+            return currentTime;
+        }
+
+        /// <summary>
+        /// Occurs when propery value is changed.
+        /// </summary>
+        /// <param name="propName">Property name</param>
+        private void OnPropertyChanged(string propName)
+        {
+            if (this.PropertyChanged != null)
+            {
+                this.PropertyChanged(this, new PropertyChangedEventArgs(propName));
+            }
         }
     }
 }

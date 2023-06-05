@@ -77,13 +77,18 @@ namespace Rangeman.Views.Time
                 {
                     logger.LogDebug("Custom Time tab - Device Connection was successful");
                     CustomTimeInfo.ProgressMessage = "Connected to GPR-B1000 watch.";
-
+                    
                     var watchDataSettingSenderService = new WatchDataSettingSenderService(connection, loggerFactory);
+
+                    CustomTimeInfo.ProgressMessage = "Sending custom time to the watch ...";
+
                     await watchDataSettingSenderService.SendTime((ushort)customTimeInfo.Year.Value, (byte)customTimeInfo.Month, (byte)customTimeInfo.Day.Value,
                         (byte)customTimeInfo.Hour.Value, (byte)customTimeInfo.Minute.Value, (byte)customTimeInfo.Second.Value,
                         (byte)customTimeInfo.DayOfWeek, 0);
 
-                    logger.LogDebug("Custom Time tab - after awaiting SendRoute()");
+                    CustomTimeInfo.ProgressMessage = "Finished sending time to the watch.";
+
+                    logger.LogDebug("Custom Time tab - after awaiting SendTime()");
 
                     return true;
                 },

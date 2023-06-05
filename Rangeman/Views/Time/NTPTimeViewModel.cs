@@ -1,6 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
 using Rangeman.Services.BluetoothConnector;
+using Rangeman.Services.NTP;
+using Rangeman.Services.WatchDataSender;
 using System.ComponentModel;
+using System.Threading.Tasks;
 using Xamarin.Forms;
 
 namespace Rangeman.Views.Time
@@ -41,7 +44,7 @@ namespace Rangeman.Views.Time
         /// </summary>
         public Command<object> CommitCommand { get; set; }
 
-        private void OnCommit(object dataForm)
+        private async void OnCommit(object dataForm)
         {
             var dataFormLayout = dataForm as Syncfusion.XForms.DataForm.SfDataForm;
             var isValid = dataFormLayout.Validate();
@@ -52,6 +55,41 @@ namespace Rangeman.Views.Time
                 return;
             }
 
+            await SendTimeToTheWatch();
+        }
+
+        private async Task SendTimeToTheWatch()
+        {
+            NTPTimeInfo.ProgressMessage = "Looking for Casio GPR-B1000 device. Please connect your watch.";
+            await bluetoothConnectorService.FindAndConnectToWatch((message) => NTPTimeInfo.ProgressMessage = message,
+                async (connection) =>
+                {
+                    logger.LogDebug("Custom Time tab - Device Connection was successful");
+                    NTPTimeInfo.ProgressMessage = "Connected to GPR-B1000 watch.";
+
+                    var watchDataSettingSenderService = new WatchDataSettingSenderService(connection, loggerFactory);
+
+                    NTPTimeInfo.ProgressMessage = "Downloading exact time from the NTP server ...";
+
+                    var currentTime = await NtpClient.GetNetworkTimeAsync(ntpTimeInfo.NTPServer);
+
+                    NTPTimeInfo.ProgressMessage = "Sending current time to the watch ...";
+
+                    await watchDataSettingSenderService.SendTime((ushort)currentTime.Year, (byte)currentTime.Month, (byte)currentTime.Day,
+                        (byte)currentTime.Hour, (byte)currentTime.Minute, (byte)currentTime.Second,
+                        (byte)currentTime.DayOfWeek, 0);
+
+                    NTPTimeInfo.ProgressMessage = $"Finished sending current time ( {currentTime} ) to the watch.";
+
+                    logger.LogDebug("Custom Time tab - after awaiting SendTime()");
+
+                    return true;
+                },
+                async () =>
+                {
+                    NTPTimeInfo.ProgressMessage = "An error occured during sending watch commands. Please try to connect again";
+                    return true;
+                });
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Mapsui.UI.Forms;
 using Rangeman.Services.PhoneLocation;
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -44,7 +45,7 @@ namespace Rangeman.Views.Map
 
                 await SetPosition();
                 mapPageView.PlaceOnMapClicked(position);
-                LatitudeLongitude = $"{position.Latitude}, {position.Longitude}";
+                LatitudeLongitude = $"{position.Latitude.ToString(CultureInfo.InvariantCulture)}, {position.Longitude.ToString(CultureInfo.InvariantCulture)}";
             }
             catch
             {
@@ -63,7 +64,7 @@ namespace Rangeman.Views.Map
 
                 await SetPosition();
                 mapPageView.ShowOnMap(position);
-                LatitudeLongitude = $"{position.Latitude}, {position.Longitude}";
+                LatitudeLongitude = $"{position.Latitude.ToString(CultureInfo.InvariantCulture)}, {position.Longitude.ToString(CultureInfo.InvariantCulture)}";
             }
             catch(Exception ex)
             {
@@ -79,7 +80,7 @@ namespace Rangeman.Views.Map
             {
                 position = new Position(location.Latitude, location.Longitude);
 
-                LatitudeLongitude = $"{position.Latitude}, {position.Longitude}";
+                LatitudeLongitude = $"{position.Latitude.ToString(CultureInfo.InvariantCulture)}, {position.Longitude.ToString(CultureInfo.InvariantCulture)}";
 
                 await SetAddressAsync(position);
             }

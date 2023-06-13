@@ -13,8 +13,8 @@
         <ShellContent Title="Map" ContentTemplate="{e:MyDataTemplate local:MapPage}" Route="Map" IsVisible="{Binding MapPageIsEnabled}" />
         <ShellContent Title="Coordinates" ContentTemplate="{e:MyDataTemplate coordinates:CoordinatesPage}" Route="Coordinates"></ShellContent>
         <Tab Title="Time">
-            <ShellContent Title="Custom" ContentTemplate="{e:MyDataTemplate time:CustomTime}"></ShellContent>
             <ShellContent Title="NTP" ContentTemplate="{e:MyDataTemplate time:NTPTime}"></ShellContent>
+            <ShellContent Title="Custom" ContentTemplate="{e:MyDataTemplate time:CustomTime}"></ShellContent>
         </Tab>
         <ShellContent Title="Tide" ContentTemplate="{e:MyDataTemplate tide:Tide}" Route="Tide"></ShellContent>
         <ShellContent Title="Config" ContentTemplate="{e:MyDataTemplate local:ConfigPage}" Route="Config" IsVisible="{Binding ConfigPageIsEnabled }"/>

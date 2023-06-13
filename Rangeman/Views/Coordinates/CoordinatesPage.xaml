@@ -23,9 +23,9 @@ xmlns:datagrid="clr-namespace:Syncfusion.SfDataGrid.XForms;assembly=Syncfusion.S
                 <datagrid:SfDataGrid.Columns>
                     <datagrid:GridTextColumn HeaderText="Node Name" 
                                    MappingName="NodeName" AllowEditing="False" />
-                    <datagrid:GridTextColumn HeaderText="GPS Coordinates ( latitude, longitude )"
+                    <datagrid:GridTextColumn HeaderText="GPS Coordinates ( lat, lon )"
                                    MappingName="Coordinates" AllowEditing="True" />
-                    <datagrid:GridTextColumn HeaderText="Coordinate's name"
+                    <datagrid:GridTextColumn HeaderText="Description"
                                    MappingName="CoordinateName" AllowEditing="True" />
                 </datagrid:SfDataGrid.Columns>
                 

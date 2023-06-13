@@ -7,7 +7,7 @@
              xmlns:local2="clr-namespace:Rangeman"
              xmlns:xct="http://xamarin.com/schemas/2020/toolkit"
              x:Class="Rangeman.MapPage"
-             Title="Map - Sending coordinates">
+             Title="Map Send Route">
     <ContentPage.Resources>
         <Style x:Key="InvalidEntryStyle" TargetType="Entry">
             <Setter Property="TextColor" Value="Red" />

@@ -23,6 +23,8 @@ namespace Rangeman.Views.Tide
 
         private string gpsCoordinates;
 
+        private string cityName;
+
         private readonly ITimeInfoValidator timeInfoValidator;
         #endregion
 
@@ -32,6 +34,33 @@ namespace Rangeman.Views.Tide
         }
 
         #region Public properties
+
+        [Required(AllowEmptyStrings = false, ErrorMessage = "Plase enter a valid city name. (max. 15 chars)")]
+        [Display(ShortName = "City Name")]
+        public string CityName
+        {
+            get => cityName;
+            set 
+            {
+                this.cityName = value;
+                this.RaisePropertyChanged(nameof(CityName));
+                this.RaiseErrorChanged(nameof(CityName));
+            }
+        }
+
+        [Required(AllowEmptyStrings = false, ErrorMessage = "Please enter valid GPS coordinates (latitude, longitude)")]
+        [Display(ShortName = "GPS Coordintes")]
+        public string GPSCoordinates
+        {
+            get => gpsCoordinates;
+            set
+            {
+                this.gpsCoordinates = value;
+                this.RaisePropertyChanged(nameof(GPSCoordinates));
+                this.RaiseErrorChanged(nameof(GPSCoordinates));
+            }
+        }
+
         [Required(AllowEmptyStrings = false, ErrorMessage = "Please enter a valid year between 2000 and 2200.")]
         public int? Year
         {
@@ -97,18 +126,6 @@ namespace Rangeman.Views.Tide
                 this.minute = value;
                 this.RaisePropertyChanged(nameof(Minute));
                 this.RaiseErrorChanged(nameof(Minute));
-            }
-        }
-
-        [Required(AllowEmptyStrings = false, ErrorMessage = "Please enter valid GPS coordinates (latitude, longitude)")]
-        public string GPSCoordinates
-        {
-            get => gpsCoordinates;
-            set
-            {
-                this.gpsCoordinates = value;
-                this.RaisePropertyChanged(nameof(GPSCoordinates));
-                this.RaiseErrorChanged(nameof(GPSCoordinates));
             }
         }
 

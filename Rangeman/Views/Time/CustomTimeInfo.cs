@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Rangeman.Views.Common;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -7,35 +8,9 @@ using System.Linq;
 
 namespace Rangeman.Views.Time
 {
-    public enum MonthType
+    public class CustomTimeInfo : BaseDomainInfo, INotifyDataErrorInfo
     {
-        January = 1,
-        February,
-        March,
-        April,
-        May,
-        June,
-        July,
-        August,
-        September,
-        October,
-        November,
-        December
-    }
-
-    public enum DayOfWeekType
-    {
-        Monday = 1,
-        Tuesday,
-        Wednesday,
-        Thursday,
-        Friday,
-        Saturday,
-        Sunday
-    }
-
-    public class CustomTimeInfo : INotifyPropertyChanged, INotifyDataErrorInfo
-    {
+        private readonly ITimeInfoValidator timeInfoValidator;
         #region Fields
         private int? year;
 
@@ -53,8 +28,12 @@ namespace Rangeman.Views.Time
 
         private string progressMessage;
 
-        private Dictionary<string, List<string>> propErrors = new Dictionary<string, List<string>>();
         #endregion
+
+        public CustomTimeInfo(ITimeInfoValidator timeInfoValidator)
+        {
+            this.timeInfoValidator = timeInfoValidator;
+        }
 
         #region Public properties
 
@@ -166,7 +145,7 @@ namespace Rangeman.Views.Time
         {
             get
             {
-                var propErrorsCount = this.propErrors.Values.FirstOrDefault(r => r.Count > 0);
+                var propErrorsCount = this.timeInfoValidator.PropErrors.Values.FirstOrDefault(r => r.Count > 0);
                 if (propErrorsCount != null)
                 {
                     return true;
@@ -180,7 +159,6 @@ namespace Rangeman.Views.Time
 
         #endregion
 
-        public event PropertyChangedEventHandler PropertyChanged;
         public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged;
 
         public IEnumerable GetErrors(string propertyName)
@@ -194,25 +172,12 @@ namespace Rangeman.Views.Time
 
             if(propertyName == nameof(Year))
             {
-                if(this.Year == null)
+                if (this.Year == null)
                 {
                     return string.Empty;
                 }
 
-                if(!(this.Year >= 2000 && this.Year <= 2200))
-                {
-                    if (!this.propErrors.TryGetValue(propertyName, out errors))
-                    {
-                        errors = new List<string>();
-                        errors.Add("Year should be between 2000 and 2200");
-                        this.propErrors.Add(nameof(Year), errors);
-                    }
-                }
-                else if (this.propErrors.TryGetValue(propertyName, out errors))
-                {
-                    errors.Clear();
-                    this.propErrors.Remove(propertyName);
-                }
+                errors = timeInfoValidator.ValidateYear(propertyName, this.Year);
             }
             else if(propertyName == nameof(Hour))
             {
@@ -221,20 +186,7 @@ namespace Rangeman.Views.Time
                     return string.Empty;
                 }
 
-                if (!(this.Hour >= 0 && this.Hour <= 23))
-                {
-                    if (!this.propErrors.TryGetValue(propertyName, out errors))
-                    {
-                        errors = new List<string>();
-                        errors.Add("Hour should be between 0 and 23");
-                        this.propErrors.Add(nameof(Hour), errors);
-                    }
-                }
-                else if (this.propErrors.TryGetValue(propertyName, out errors))
-                {
-                    errors.Clear();
-                    this.propErrors.Remove(propertyName);
-                }
+                errors = timeInfoValidator.ValidateHour(propertyName, this.Hour);
             }
             else if (propertyName == nameof(Minute))
             {
@@ -243,20 +195,7 @@ namespace Rangeman.Views.Time
                     return string.Empty;
                 }
 
-                if (!(this.Minute >= 0 && this.Minute <= 59))
-                {
-                    if (!this.propErrors.TryGetValue(propertyName, out errors))
-                    {
-                        errors = new List<string>();
-                        errors.Add("Minute should be between 0 and 59");
-                        this.propErrors.Add(nameof(Minute), errors);
-                    }
-                }
-                else if (this.propErrors.TryGetValue(propertyName, out errors))
-                {
-                    errors.Clear();
-                    this.propErrors.Remove(propertyName);
-                }
+                errors = timeInfoValidator.ValidateMinute(propertyName, this.Minute);
             }
             else if (propertyName == nameof(Second))
             {
@@ -265,20 +204,7 @@ namespace Rangeman.Views.Time
                     return string.Empty;
                 }
 
-                if (!(this.Second >= 0 && this.Second <= 59))
-                {
-                    if (!this.propErrors.TryGetValue(propertyName, out errors))
-                    {
-                        errors = new List<string>();
-                        errors.Add("Second should be between 0 and 59");
-                        this.propErrors.Add(nameof(Second), errors);
-                    }
-                }
-                else if (this.propErrors.TryGetValue(propertyName, out errors))
-                {
-                    errors.Clear();
-                    this.propErrors.Remove(propertyName);
-                }
+                errors = timeInfoValidator.ValidateSecond(propertyName, this.Second);
             }
             else if (propertyName == nameof(Day))
             {
@@ -287,42 +213,17 @@ namespace Rangeman.Views.Time
                     return string.Empty;
                 }
 
-                if (!(this.Day >= 1 && this.Day <= 31))
-                {
-                    if (!this.propErrors.TryGetValue(propertyName, out errors))
-                    {
-                        errors = new List<string>();
-                        errors.Add("Day should be between 1 and 31");
-                        this.propErrors.Add(nameof(Day), errors);
-                    }
-                }
-                else if (this.propErrors.TryGetValue(propertyName, out errors))
-                {
-                    errors.Clear();
-                    this.propErrors.Remove(propertyName);
-                }
+                errors = timeInfoValidator.ValidateDay(propertyName, this.Day);
             }
 
 
 
-            if (this.propErrors.TryGetValue(propertyName, out errors))
+            if (this.timeInfoValidator.PropErrors.TryGetValue(propertyName, out errors))
             {
                 return errors;
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Occurs when propery value is changed.
-        /// </summary>
-        /// <param name="propName">Property name</param>
-        private void RaisePropertyChanged(string propName)
-        {
-            if (this.PropertyChanged != null)
-            {
-                this.PropertyChanged(this, new PropertyChangedEventArgs(propName));
-            }
         }
 
         /// <summary>

@@ -80,6 +80,11 @@
     <Compile Include="Setup.cs" />
     <Compile Include="ShellExtension.cs" />
     <Compile Include="Validation\LatitudeLongitudeValidationBehavior.cs" />
+    <Compile Include="Views\Common\BaseDomainInfo.cs" />
+    <Compile Include="Views\Common\DayOfWeekType.cs" />
+    <Compile Include="Views\Common\ITimeInfoValidator.cs" />
+    <Compile Include="Views\Common\MonthType.cs" />
+    <Compile Include="Views\Common\TimeInfoValidator.cs" />
     <Compile Include="Views\Config\ConfigPage.xaml.cs">
       <DependentUpon>ConfigPage.xaml</DependentUpon>
     </Compile>
@@ -100,6 +105,11 @@
     <Compile Include="Views\Map\MissingNodeToAddViewModel.cs" />
     <Compile Include="Views\Map\NodesViewModel.cs" />
     <Compile Include="Views\Map\NodeViewModel.cs" />
+    <Compile Include="Views\Tide\Tide.xaml.cs">
+      <DependentUpon>Tide.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Tide\TideInfo.cs" />
+    <Compile Include="Views\Tide\TideViewModel.cs" />
     <Compile Include="Views\Time\CustomTime.xaml.cs">
       <DependentUpon>CustomTime.xaml</DependentUpon>
     </Compile>
@@ -270,6 +280,11 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Views\Time\NTPTime.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\Tide\Tide.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>

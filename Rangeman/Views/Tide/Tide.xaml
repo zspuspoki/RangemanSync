@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:dataform="clr-namespace:Syncfusion.XForms.DataForm;assembly=Syncfusion.SfDataForm.XForms"             
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Rangeman.Views.Tide.Tide">
+    <ContentPage.Content>
+        <StackLayout>
+            <Label Text="{Binding CustomTimeInfo.ProgressMessage}" TextColor="Red" x:Name="lblProgress" />
+            <Grid Margin="0" VerticalOptions="FillAndExpand">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="60"/>
+                </Grid.RowDefinitions>
+                <dataform:SfDataForm x:Name="dataForm" LayoutOptions="TextInputLayout" 
+                                     ValidationMode="Explicit" DataObject="{Binding CustomTimeInfo}"
+                                     >
+                </dataform:SfDataForm>
+
+                <Button x:Name="sendToWatch" Grid.Row="1"  Text="Send to watch" 
+                      WidthRequest="150" HorizontalOptions="Center"
+                        VerticalOptions="Center"
+                      Command="{Binding Path=BindingContext.CommitCommand, Source={x:Reference Name=dataForm}}"                   
+                                                    CommandParameter="{Binding Source={x:Reference Name=dataForm}}"  IsVisible="{Binding WatchCommandButtonsAreVisible}" />
+
+                <Button x:Name="disconnectWatch" Grid.Row="1"  Text="Cancel" 
+                      WidthRequest="150" HorizontalOptions="Center"
+                        VerticalOptions="Center"
+                      Command="{Binding DisconnectCommand}" IsVisible="{Binding DisconnectButtonIsVisible}"/>
+            </Grid>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

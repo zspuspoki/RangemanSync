@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Rangeman.Services.BluetoothConnector;
 using Rangeman.Services.WatchDataSender;
+using Rangeman.Views.Common;
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
@@ -18,14 +19,14 @@ namespace Rangeman.Views.Time
         private readonly ILoggerFactory loggerFactory;
 
         public CustomTimeViewModel(BluetoothConnectorService bluetoothConnectorService,
-            ILoggerFactory loggerFactory)
+            ILoggerFactory loggerFactory, ITimeInfoValidator timeInfoValidator)
         {
             this.logger = loggerFactory.CreateLogger<CustomTimeViewModel>();
 
             logger.LogInformation("Inside CustomTimeViewModel ctor");
 
             var currentDate = DateTime.Now;
-            this.customTimeInfo = new CustomTimeInfo
+            this.customTimeInfo = new CustomTimeInfo(timeInfoValidator)
             {
                 Year = currentDate.Year,
                 Month = (MonthType)currentDate.Month,

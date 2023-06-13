@@ -225,10 +225,10 @@ namespace Rangeman.WatchDataSender
             var initPhaseIsReady = new TaskCompletionSource<bool>();
             var timeSettingDataObserver = new TimeSettingDataObserver(gattServer, initPhaseIsReady);
 
-            gattServer.NotifyCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid), 
+            gattServer.NotifyCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
                 Guid.Parse(BLEConstants.CasioAllFeaturesCharacteristic), timeSettingDataObserver);
 
-            await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid), 
+            await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
                 Guid.Parse(BLEConstants.CasioReadRequestForAllFeaturesCharacteristic), new byte[] { 0x1d });  // Read request for DstWatchState
 
             await initPhaseIsReady.Task;
@@ -251,8 +251,23 @@ namespace Rangeman.WatchDataSender
                 .SelectMany(a => a)
                 .ToArray();
 
-            await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid), 
-                Guid.Parse(BLEConstants.CasioAllFeaturesCharacteristic),sendArray);
+            await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
+                Guid.Parse(BLEConstants.CasioAllFeaturesCharacteristic), sendArray);
+        }
+
+        public async Task SetTide()
+        {
+            await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
+                Guid.Parse(BLEConstants.CasioAllFeaturesCharacteristic),
+                new byte[] { 0x1F, 0x10, 0x47, 0x52, 0x41, 0x44, 0x4F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });  //city
+
+            await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
+                Guid.Parse(BLEConstants.CasioAllFeaturesCharacteristic),
+                new byte[] { 0x2E, 0x00, 0x40, 0x46, 0xD7, 0x77, 0x77, 0x70, 0x4E, 0xF3, 0x40, 0x2A, 0xC4, 0x44, 0x44, 0x27, 0xA2, 0x30 });  //tide 1
+
+            await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
+                Guid.Parse(BLEConstants.CasioAllFeaturesCharacteristic),
+                new byte[] { 0x2E, 0x01, 0x01, 0x28, 0x03, 0x10, 0x18, 0x00, 0x04, 0x01, 0x02, 0xE7, 0x07, 0x06, 0x0C });  //tide 2
         }
 
         private static byte[] CreateConvoyData(long j, long j2, int i, int i2, int i3)

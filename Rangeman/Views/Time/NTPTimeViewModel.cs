@@ -26,7 +26,7 @@ namespace Rangeman.Views.Time
 
             logger.LogInformation("Inside NTPTimeViewModel ctor");
 
-            this.ntpTimeInfo = new NTPTimeInfo { SecondsCompensation = 0 };
+            this.ntpTimeInfo = new NTPTimeInfo { SecondsCompensation = 5 };
 
             this.CommitCommand = new Command<object>(this.OnCommit);
             this.DisconnectCommand = new Command(this.OnDisconnect);
@@ -123,7 +123,7 @@ namespace Rangeman.Views.Time
                         {
                             logger.LogDebug("Seconds compensation has a value, adding it to the time value.");
 
-                            currentTime.Value.AddSeconds(NTPTimeInfo.SecondsCompensation.Value);
+                            currentTime = currentTime.Value.AddSeconds(NTPTimeInfo.SecondsCompensation.Value);
                         }
 
                         await SendCommandsToTheWatch(watchDataSettingSenderService, currentTime);

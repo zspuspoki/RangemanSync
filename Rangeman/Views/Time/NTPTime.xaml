@@ -3,7 +3,7 @@
              xmlns:dataform="clr-namespace:Syncfusion.XForms.DataForm;assembly=Syncfusion.SfDataForm.XForms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Rangeman.Views.Time.NTPTime"
-             Title="Time - sending using an NTP server">
+             Title="Time">
 
     <ContentPage.Content>
         <StackLayout>

@@ -116,7 +116,7 @@ namespace Rangeman.Views.Time
         private List<string> ValidateSecondsCompensation(string propertyName, int? secondsCompensation)
         {
             List<string> errors;
-            if (secondsCompensation < 20 || secondsCompensation > 20)
+            if (secondsCompensation < -20 || secondsCompensation > 20)
             {
                 if (!this.propErrors.TryGetValue(propertyName, out errors))
                 {

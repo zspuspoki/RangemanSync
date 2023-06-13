@@ -5,14 +5,14 @@
              x:Class="Rangeman.Views.Tide.Tide">
     <ContentPage.Content>
         <StackLayout>
-            <Label Text="{Binding CustomTimeInfo.ProgressMessage}" TextColor="Red" x:Name="lblProgress" />
+            <Label Text="{Binding TideInfo.ProgressMessage}" TextColor="Red" x:Name="lblProgress" />
             <Grid Margin="0" VerticalOptions="FillAndExpand">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="60"/>
                 </Grid.RowDefinitions>
                 <dataform:SfDataForm x:Name="dataForm" LayoutOptions="TextInputLayout" 
-                                     ValidationMode="Explicit" DataObject="{Binding CustomTimeInfo}"
+                                     ValidationMode="Explicit" DataObject="{Binding TideInfo}"
                                      >
                 </dataform:SfDataForm>
 

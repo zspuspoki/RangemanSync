@@ -244,7 +244,7 @@ namespace Rangeman.Views.Tide
                 {
                     errors = new List<string>
                     {
-                        "GPS Coordinates should contain valid non-whitespace characters."
+                        "This should contain valid non-whitespace characters."
                     };
                     this.timeInfoValidator.PropErrors.Add(propertyName, errors);
                 }
@@ -255,7 +255,7 @@ namespace Rangeman.Views.Tide
                 {
                     errors = new List<string>
                     {
-                        "GPS Coordinates should contain a separator character (,) to separate latitide and longitude."
+                        "This should contain a separator character (,)"
                     };
                     this.timeInfoValidator.PropErrors.Add(propertyName, errors);
                 }
@@ -266,7 +266,7 @@ namespace Rangeman.Views.Tide
                 {
                     errors = new List<string>
                     {
-                        "GPS Coordinates should contain latitude and longitude separated by a , character."
+                        "This should contain the coordinates separated by a , character."
                     };
                     this.timeInfoValidator.PropErrors.Add(propertyName, errors);
                 }
@@ -277,7 +277,7 @@ namespace Rangeman.Views.Tide
                 {
                     errors = new List<string>
                     {
-                        "Latitude (first number) should be a valid floating point number."
+                        "Latitude should be a valid number."
                     };
                     this.timeInfoValidator.PropErrors.Add(propertyName, errors);
                 }
@@ -288,7 +288,7 @@ namespace Rangeman.Views.Tide
                 {
                     errors = new List<string>
                     {
-                        "Longitude (second number) should be a valid floating point number."
+                        "Longitude should be a valid number."
                     };
                     this.timeInfoValidator.PropErrors.Add(propertyName, errors);
                 }

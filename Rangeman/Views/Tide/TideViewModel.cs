@@ -24,7 +24,7 @@ namespace Rangeman.Views.Tide
         {
             this.logger = loggerFactory.CreateLogger<TideViewModel>();
 
-            logger.LogInformation("Inside CustomTimeViewModel ctor");
+            logger.LogInformation("Inside TideViewModel ctor");
 
             var currentDate = DateTime.Now;
             this.TideInfo = new TideInfo(timeInfoValidator)
@@ -37,6 +37,12 @@ namespace Rangeman.Views.Tide
                 CityName = "DEFAULTCITY",
                 GPSCoordinates = "45.68333333, 13.38333333"
             };
+
+            this.CommitCommand = new Command<object>(this.OnCommit);
+            this.DisconnectCommand = new Command(this.OnDisconnect);
+
+            this.bluetoothConnectorService = bluetoothConnectorService;
+            this.loggerFactory = loggerFactory;
         }
 
         public TideInfo TideInfo
@@ -88,6 +94,16 @@ namespace Rangeman.Views.Tide
             }
 
             await SendTideToTheWatch();
+        }
+
+        private async void OnDisconnect()
+        {
+            logger.LogDebug("Tide: Running OnDisconnect()");
+
+            await bluetoothConnectorService.DisconnectFromWatch((msg) => TideInfo.ProgressMessage = msg);
+            DisconnectButtonIsVisible = false;
+
+            TideInfo.ProgressMessage = "Cancel button: The diconnection was successful.";
         }
 
         private async Task SendTideToTheWatch()

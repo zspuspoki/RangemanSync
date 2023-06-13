@@ -26,5 +26,14 @@ namespace Rangeman.Services.WatchDataSender
 
             await remoteWatchController.SetCurrentTime(year, month, day, hour, minute, seconds, dayOfWeek, miliseconds);
         }
+
+        public async Task SendTide(string cityName, double latitude, double longitude, ushort year, byte month, byte day, byte hour, byte minute)
+        {
+            logger.LogInformation("--- Starting SendTide()");
+
+            var remoteWatchController = new RemoteWatchController(this.connection.GattServer, loggerFactory);
+
+            await remoteWatchController.SetTide(cityName, latitude, longitude, year, month, day, hour, minute);
+        }
     }
 }

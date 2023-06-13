@@ -4,9 +4,11 @@ using Microsoft.Extensions.FileProviders;
 using nexus.protocols.ble;
 using Rangeman.Services.BluetoothConnector;
 using Rangeman.Services.PhoneLocation;
+using Rangeman.Views.Common;
 using Rangeman.Views.Coordinates;
 using Rangeman.Views.Download;
 using Rangeman.Views.Map;
+using Rangeman.Views.Tide;
 using Rangeman.Views.Time;
 using Serilog;
 using Serilog.Exceptions;
@@ -41,6 +43,8 @@ namespace Rangeman
             serviceCollection.AddViewSingleton<CustomTime, CustomTimeViewModel>();
 
             serviceCollection.AddViewSingleton<NTPTime, NTPTimeViewModel>();
+
+            serviceCollection.AddViewSingleton<Tide, TideViewModel>();
 
             serviceCollection.AddSingleton<IDownloadPageView, DownloadPage>();
             serviceCollection.AddViewSingleton<IDownloadPageView, DownloadPage, DownloadPageViewModel>();
@@ -91,6 +95,8 @@ namespace Rangeman
             serviceCollection.AddViewModels<NodesViewModel>();
             serviceCollection.AddViewModels<AddressPanelViewModel>();
             serviceCollection.AddSingleton<ConfigPageViewModel>();
+
+            serviceCollection.AddSingleton<ITimeInfoValidator, TimeInfoValidator>();
 
             serviceCollection.AddSingleton<BluetoothConnectorService>((ctx) => 
             {

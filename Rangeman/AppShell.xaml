@@ -5,6 +5,7 @@
              xmlns:local="clr-namespace:Rangeman"
              xmlns:coordinates="clr-namespace:Rangeman.Views.Coordinates"
              xmlns:time="clr-namespace:Rangeman.Views.Time"
+             xmlns:tide="clr-namespace:Rangeman.Views.Tide"
              x:Class="Rangeman.AppShell"
              Shell.TabBarIsVisible="False">
     <FlyoutItem FlyoutDisplayOptions="AsMultipleItems" Title="Test" >
@@ -15,6 +16,7 @@
             <ShellContent Title="Custom" ContentTemplate="{e:MyDataTemplate time:CustomTime}"></ShellContent>
             <ShellContent Title="NTP" ContentTemplate="{e:MyDataTemplate time:NTPTime}"></ShellContent>
         </Tab>
+        <ShellContent Title="Tide" ContentTemplate="{e:MyDataTemplate tide:Tide}" Route="Tide"></ShellContent>
         <ShellContent Title="Config" ContentTemplate="{e:MyDataTemplate local:ConfigPage}" Route="Config" IsVisible="{Binding ConfigPageIsEnabled }"/>
     </FlyoutItem>
 </Shell>

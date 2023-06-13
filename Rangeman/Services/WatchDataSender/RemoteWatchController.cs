@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Rangeman.WatchDataSender
@@ -255,19 +256,48 @@ namespace Rangeman.WatchDataSender
                 Guid.Parse(BLEConstants.CasioAllFeaturesCharacteristic), sendArray);
         }
 
-        public async Task SetTide()
+        public async Task SetTide(string cityName, double latitude, double longitude, ushort year, byte month, byte day, byte hour, byte minute)
         {
-            await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
-                Guid.Parse(BLEConstants.CasioAllFeaturesCharacteristic),
-                new byte[] { 0x1F, 0x10, 0x47, 0x52, 0x41, 0x44, 0x4F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });  //city
+            var cityArrayToSend = new List<byte[]>
+            {
+                new byte[] { 0x1F, 0x10 },
+                Encoding.ASCII.GetBytes(cityName.ToUpper())
+            };
+
+            for (var i=0; i< 20;i++)
+            {
+                cityArrayToSend.Add(new byte[] { 0x00 });
+            }
 
             await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
-                Guid.Parse(BLEConstants.CasioAllFeaturesCharacteristic),
-                new byte[] { 0x2E, 0x00, 0x40, 0x46, 0xD7, 0x77, 0x77, 0x70, 0x4E, 0xF3, 0x40, 0x2A, 0xC4, 0x44, 0x44, 0x27, 0xA2, 0x30 });  //tide 1
+                Guid.Parse(BLEConstants.CasioAllFeaturesCharacteristic), cityArrayToSend.SelectMany(a => a).ToArray());  //city
+
+            var tide1ArrayToSend = new List<byte[]>
+            {
+                new byte[] { 0x2E, 0x00 },
+                BitConverter.GetBytes(latitude),
+                BitConverter.GetBytes(longitude)
+            };
 
             await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
-                Guid.Parse(BLEConstants.CasioAllFeaturesCharacteristic),
-                new byte[] { 0x2E, 0x01, 0x01, 0x28, 0x03, 0x10, 0x18, 0x00, 0x04, 0x01, 0x02, 0xE7, 0x07, 0x06, 0x0C });  //tide 2
+                Guid.Parse(BLEConstants.CasioAllFeaturesCharacteristic), tide1ArrayToSend.SelectMany(a => a).ToArray());  //tide 1
+
+            var tide2ArrayToSend = new List<byte[]>
+            {
+                new byte[] { 0x2E, 0x01 }, // opcode
+                new byte[] { 0x01 },  // harbour list id
+                new byte[] { 0x28, 0x03 }, // harbour id
+                new byte [] { hour },
+                new byte [] { minute },
+                new byte [] { 0x00, 0x04 }, // ??
+                new byte [] { 0x00, 0x00 }, // First number is IsDST (boolean), the second one is DST rule                
+                BitConverter.GetBytes(year),
+                new byte [] { month },
+                new byte [] { day },
+            };
+
+            await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
+                Guid.Parse(BLEConstants.CasioAllFeaturesCharacteristic), tide2ArrayToSend.SelectMany(a => a).ToArray());  //tide 2
         }
 
         private static byte[] CreateConvoyData(long j, long j2, int i, int i2, int i3)

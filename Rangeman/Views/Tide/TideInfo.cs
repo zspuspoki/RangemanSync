@@ -26,6 +26,8 @@ namespace Rangeman.Views.Tide
         private string cityName;
 
         private readonly ITimeInfoValidator timeInfoValidator;
+
+        private string progressMessage;
         #endregion
 
         public TideInfo(ITimeInfoValidator timeInfoValidator)
@@ -130,6 +132,17 @@ namespace Rangeman.Views.Tide
         }
 
         [Display(AutoGenerateField = false)]
+        public string ProgressMessage
+        {
+            get => this.progressMessage;
+            set
+            {
+                this.progressMessage = value;
+                this.RaisePropertyChanged("ProgressMessage");
+            }
+        }
+
+        [Display(AutoGenerateField = false)]
         public bool HasErrors
         {
             get
@@ -194,7 +207,24 @@ namespace Rangeman.Views.Tide
 
                 errors = timeInfoValidator.ValidateDay(propertyName, this.Day);
             }
+            else if(propertyName == nameof(CityName))
+            {
+                if(this.CityName == null)
+                {
+                    return string.Empty;
+                }
 
+                ValidateCity(propertyName, this.CityName);
+            }
+            else if(propertyName == nameof(GPSCoordinates))
+            {
+                if (this.GPSCoordinates == null)
+                {
+                    return string.Empty;
+                }
+
+                ValidateGPSCoordinates(propertyName, this.GPSCoordinates);
+            }
 
 
             if (this.timeInfoValidator.PropErrors.TryGetValue(propertyName, out errors))
@@ -203,6 +233,129 @@ namespace Rangeman.Views.Tide
             }
 
             return null;
+        }
+
+        public List<string> ValidateGPSCoordinates(string propertyName, string gpsCoordinates)
+        {
+            List<string> errors;
+            if (string.IsNullOrWhiteSpace(gpsCoordinates))
+            {
+                if (!this.timeInfoValidator.PropErrors.TryGetValue(propertyName, out errors))
+                {
+                    errors = new List<string>
+                    {
+                        "GPS Coordinates should contain valid non-whitespace characters."
+                    };
+                    this.timeInfoValidator.PropErrors.Add(propertyName, errors);
+                }
+            }
+            else if(!gpsCoordinates.Contains(","))
+            {
+                if (!this.timeInfoValidator.PropErrors.TryGetValue(propertyName, out errors))
+                {
+                    errors = new List<string>
+                    {
+                        "GPS Coordinates should contain a separator character (,) to separate latitide and longitude."
+                    };
+                    this.timeInfoValidator.PropErrors.Add(propertyName, errors);
+                }
+            }
+            else if (gpsCoordinates.Split(",").Length != 2)
+            {
+                if (!this.timeInfoValidator.PropErrors.TryGetValue(propertyName, out errors))
+                {
+                    errors = new List<string>
+                    {
+                        "GPS Coordinates should contain latitude and longitude separated by a , character."
+                    };
+                    this.timeInfoValidator.PropErrors.Add(propertyName, errors);
+                }
+            }
+            else if (!double.TryParse(gpsCoordinates.Split(",")[0], out var _))
+            {
+                if (!this.timeInfoValidator.PropErrors.TryGetValue(propertyName, out errors))
+                {
+                    errors = new List<string>
+                    {
+                        "Latitude (first number) should be a valid floating point number."
+                    };
+                    this.timeInfoValidator.PropErrors.Add(propertyName, errors);
+                }
+            }
+            else if (!double.TryParse(gpsCoordinates.Split(",")[1], out var _))
+            {
+                if (!this.timeInfoValidator.PropErrors.TryGetValue(propertyName, out errors))
+                {
+                    errors = new List<string>
+                    {
+                        "Longitude (second number) should be a valid floating point number."
+                    };
+                    this.timeInfoValidator.PropErrors.Add(propertyName, errors);
+                }
+            }
+            else if (double.TryParse(gpsCoordinates.Split(",")[0], out var latitude) && (latitude<-90 || latitude > 90))
+            {
+                if (!this.timeInfoValidator.PropErrors.TryGetValue(propertyName, out errors))
+                {
+                    errors = new List<string>
+                    {
+                        "Latitude (first number) should be between -90 and 90"
+                    };
+                    this.timeInfoValidator.PropErrors.Add(propertyName, errors);
+                }
+            }
+            else if (double.TryParse(gpsCoordinates.Split(",")[1], out var longitude) && (longitude < -180 || longitude > 180))
+            {
+                if (!this.timeInfoValidator.PropErrors.TryGetValue(propertyName, out errors))
+                {
+                    errors = new List<string>
+                    {
+                        "Longitude (first number) should be between -180 and 180"
+                    };
+                    this.timeInfoValidator.PropErrors.Add(propertyName, errors);
+                }
+            }
+            else if (this.timeInfoValidator.PropErrors.TryGetValue(propertyName, out errors))
+            {
+                errors.Clear();
+                this.timeInfoValidator.PropErrors.Remove(propertyName);
+            }
+
+            return errors;
+        }
+
+        public List<string> ValidateCity(string propertyName, string cityname)
+        {
+            List<string> errors;
+            if(string.IsNullOrWhiteSpace(cityname))
+            {
+                if (!this.timeInfoValidator.PropErrors.TryGetValue(propertyName, out errors))
+                {
+                    errors = new List<string>
+                    {
+                        "City name should contain valid non-whitespace characters."
+                    };
+                    this.timeInfoValidator.PropErrors.Add(propertyName, errors);
+                }
+            }
+            else if (cityname.Length >15)
+            {
+                if (!this.timeInfoValidator.PropErrors.TryGetValue(propertyName, out errors))
+                {
+                    errors = new List<string>
+                    {
+                        "City name's max length should exceed 15 characters."
+                    };
+                    this.timeInfoValidator.PropErrors.Add(propertyName, errors);
+                }
+            }
+            else if (this.timeInfoValidator.PropErrors.TryGetValue(propertyName, out errors))
+            {
+                errors.Clear();
+                this.timeInfoValidator.PropErrors.Remove(propertyName);
+            }
+
+            return errors;
         }
 
         /// <summary>

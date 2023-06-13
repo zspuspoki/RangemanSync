@@ -1,6 +1,7 @@
 ﻿using Rangeman.Views.Common;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -133,13 +134,64 @@ namespace Rangeman.Views.Tide
 
         public IEnumerable GetErrors(string propertyName)
         {
-            throw new NotImplementedException();
+            if (propertyName == null)
+            {
+                return null;
+            }
+
+            var errors = new List<string>();
+
+            if (propertyName == nameof(Year))
+            {
+                if (this.Year == null)
+                {
+                    return string.Empty;
+                }
+
+                errors = timeInfoValidator.ValidateYear(propertyName, this.Year);
+            }
+            else if (propertyName == nameof(Hour))
+            {
+                if (this.Hour == null)
+                {
+                    return string.Empty;
+                }
+
+                errors = timeInfoValidator.ValidateHour(propertyName, this.Hour);
+            }
+            else if (propertyName == nameof(Minute))
+            {
+                if (this.Minute == null)
+                {
+                    return string.Empty;
+                }
+
+                errors = timeInfoValidator.ValidateMinute(propertyName, this.Minute);
+            }
+            else if (propertyName == nameof(Day))
+            {
+                if (this.Day == null)
+                {
+                    return string.Empty;
+                }
+
+                errors = timeInfoValidator.ValidateDay(propertyName, this.Day);
+            }
+
+
+
+            if (this.timeInfoValidator.PropErrors.TryGetValue(propertyName, out errors))
+            {
+                return errors;
+            }
+
+            return null;
         }
 
-            /// <summary>
-            /// Occurs when error value is changed.
-            /// </summary>
-            /// <param name="propName">Property name</param>
+        /// <summary>
+        /// Occurs when error value is changed.
+        /// </summary>
+        /// <param name="propName">Property name</param>
         private void RaiseErrorChanged(string propName)
         {
             if (this.ErrorsChanged != null)

@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:rangeman="clr-namespace:Rangeman" x:DataType="rangeman:ConfigPageViewModel"
              x:Class="Rangeman.ConfigPage"
-             Title="Config - Changing app config values">
+             Title="Configuration">
     
     <ContentPage.Content>
         <StackLayout>

@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Globalization;
+using System.Threading;
 using System.Threading.Tasks;
 using Xamarin.CommunityToolkit.Behaviors.Internals;
 
@@ -26,12 +27,12 @@ namespace Rangeman
                 return new ValueTask<bool>(result: false);
             }
 
-            if (!double.TryParse(splittedText[0], out double latitude))
+            if (!double.TryParse(splittedText[0], NumberStyles.Any, CultureInfo.InvariantCulture, out double latitude))
             {
                 return new ValueTask<bool>(result: false);
             }
 
-            if(!double.TryParse(splittedText[1], out double longitude))
+            if(!double.TryParse(splittedText[1], NumberStyles.Any, CultureInfo.InvariantCulture, out double longitude))
             {
                 return new ValueTask<bool>(result: false);
             }

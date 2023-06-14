@@ -103,8 +103,8 @@ namespace Rangeman.Views.Map
 
                     if (latitudelongitudeSplitted.Length == 2)
                     {
-                        if (double.TryParse(latitudelongitudeSplitted[0], out var latitudeEntered) &&
-                            double.TryParse(latitudelongitudeSplitted[1], out var longitudeEntered))
+                        if (double.TryParse(latitudelongitudeSplitted[0], NumberStyles.Any, CultureInfo.InvariantCulture, out var latitudeEntered) &&
+                            double.TryParse(latitudelongitudeSplitted[1], NumberStyles.Any, CultureInfo.InvariantCulture, out var longitudeEntered))
                         {
                             latitude = latitudeEntered;
                             longitude = longitudeEntered;

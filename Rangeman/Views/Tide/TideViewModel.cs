@@ -5,6 +5,7 @@ using Rangeman.Services.WatchDataSender;
 using Rangeman.Views.Common;
 using Rangeman.Views.Time;
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using Xamarin.Forms;
 
@@ -127,8 +128,8 @@ namespace Rangeman.Views.Tide
 
                             if (splittedGPSCoords.Length == 2)
                             {
-                                if (double.TryParse(splittedGPSCoords[0], out var latitude) && 
-                                double.TryParse(splittedGPSCoords[1], out var longitude))
+                                if (double.TryParse(splittedGPSCoords[0], NumberStyles.Any, CultureInfo.InvariantCulture, out var latitude) && 
+                                double.TryParse(splittedGPSCoords[1], NumberStyles.Any, CultureInfo.InvariantCulture, out var longitude))
                                 {
                                     await watchDataSettingSenderService.SendTide(this.tideInfo.CityName, latitude, longitude,
                                         (ushort)this.tideInfo.Year, (byte)tideInfo.Month, (byte)tideInfo.Day.Value,

@@ -7,6 +7,7 @@ using Rangeman.WatchDataSender;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Windows.Input;
 using Xamarin.Forms;
 
@@ -213,7 +214,8 @@ namespace Rangeman.Views.Coordinates
                         var splittedValue = enteredCoordinate.Coordinates.Split(',');
                         if (splittedValue.Length == 2)
                         {
-                            if (double.TryParse(splittedValue[0], out double latitude) && double.TryParse(splittedValue[1], out double longitude))
+                            if (double.TryParse(splittedValue[0], NumberStyles.Any, CultureInfo.InvariantCulture, out double latitude) && 
+                                double.TryParse(splittedValue[1], NumberStyles.Any, CultureInfo.InvariantCulture, out double longitude))
                             {
                                 result.Add(new GpsCoordinatesViewModel { Latitude = latitude, Longitude = longitude });
                             }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Globalization;
 
 namespace Rangeman.Views.Coordinates
 {
@@ -66,12 +67,12 @@ namespace Rangeman.Views.Coordinates
                         return false;
                     }
 
-                    if (!double.TryParse(splittedValue[0], out var _))
+                    if (!double.TryParse(splittedValue[0], NumberStyles.Any, CultureInfo.InvariantCulture, out var _))
                     {
                         return false;
                     }
 
-                    if (!double.TryParse(splittedValue[0], out var _))
+                    if (!double.TryParse(splittedValue[0], NumberStyles.Any, CultureInfo.InvariantCulture, out var _))
                     {
                         return false;
                     }
@@ -98,12 +99,12 @@ namespace Rangeman.Views.Coordinates
                         return false;
                     }
 
-                    if (!double.TryParse(splittedValue[0], out var _))
+                    if (!double.TryParse(splittedValue[0], NumberStyles.Any, CultureInfo.InvariantCulture, out var _))
                     {
                         return false;
                     }
 
-                    if (!double.TryParse(splittedValue[0], out var _))
+                    if (!double.TryParse(splittedValue[0], NumberStyles.Any, CultureInfo.InvariantCulture, out var _))
                     {
                         return false;
                     }

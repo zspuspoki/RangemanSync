@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Linq;
 
 namespace Rangeman.Views.Tide
@@ -271,7 +272,7 @@ namespace Rangeman.Views.Tide
                     this.timeInfoValidator.PropErrors.Add(propertyName, errors);
                 }
             }
-            else if (!double.TryParse(gpsCoordinates.Split(",")[0], out var _))
+            else if (!double.TryParse(gpsCoordinates.Split(",")[0], NumberStyles.Any, CultureInfo.InvariantCulture, out var _))
             {
                 if (!this.timeInfoValidator.PropErrors.TryGetValue(propertyName, out errors))
                 {
@@ -282,7 +283,7 @@ namespace Rangeman.Views.Tide
                     this.timeInfoValidator.PropErrors.Add(propertyName, errors);
                 }
             }
-            else if (!double.TryParse(gpsCoordinates.Split(",")[1], out var _))
+            else if (!double.TryParse(gpsCoordinates.Split(",")[1], NumberStyles.Any, CultureInfo.InvariantCulture, out var _))
             {
                 if (!this.timeInfoValidator.PropErrors.TryGetValue(propertyName, out errors))
                 {
@@ -293,7 +294,8 @@ namespace Rangeman.Views.Tide
                     this.timeInfoValidator.PropErrors.Add(propertyName, errors);
                 }
             }
-            else if (double.TryParse(gpsCoordinates.Split(",")[0], out var latitude) && (latitude<-90 || latitude > 90))
+            else if (double.TryParse(gpsCoordinates.Split(",")[0], NumberStyles.Any, CultureInfo.InvariantCulture, out var latitude) 
+                && (latitude<-90 || latitude > 90))
             {
                 if (!this.timeInfoValidator.PropErrors.TryGetValue(propertyName, out errors))
                 {
@@ -304,7 +306,8 @@ namespace Rangeman.Views.Tide
                     this.timeInfoValidator.PropErrors.Add(propertyName, errors);
                 }
             }
-            else if (double.TryParse(gpsCoordinates.Split(",")[1], out var longitude) && (longitude < -180 || longitude > 180))
+            else if (double.TryParse(gpsCoordinates.Split(",")[1], NumberStyles.Any, CultureInfo.InvariantCulture, out var longitude) && 
+                (longitude < -180 || longitude > 180))
             {
                 if (!this.timeInfoValidator.PropErrors.TryGetValue(propertyName, out errors))
                 {

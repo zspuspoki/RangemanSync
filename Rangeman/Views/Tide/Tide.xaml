@@ -2,7 +2,8 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:dataform="clr-namespace:Syncfusion.XForms.DataForm;assembly=Syncfusion.SfDataForm.XForms"             
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Rangeman.Views.Tide.Tide">
+             x:Class="Rangeman.Views.Tide.Tide"
+             Title="Send High Tide">
     <ContentPage.Content>
         <StackLayout>
             <Label Text="{Binding TideInfo.ProgressMessage}" TextColor="Red" x:Name="lblProgress" />

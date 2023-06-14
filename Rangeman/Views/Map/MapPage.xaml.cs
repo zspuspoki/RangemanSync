@@ -99,6 +99,7 @@ namespace Rangeman
             }
 
             mapView.Map = map;
+            mapView.Map.RotationLock = true;
             return true;
         }
 

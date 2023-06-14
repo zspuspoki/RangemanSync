@@ -39,7 +39,7 @@ namespace Rangeman.Views.Tide
         #region Public properties
 
         [Required(AllowEmptyStrings = false, ErrorMessage = "Plase enter a valid city name. (max. 15 chars)")]
-        [Display(ShortName = "City Name")]
+        [Display(ShortName = "City / Harbour's Name")]
         public string CityName
         {
             get => cityName;
@@ -52,7 +52,7 @@ namespace Rangeman.Views.Tide
         }
 
         [Required(AllowEmptyStrings = false, ErrorMessage = "Please enter valid GPS coordinates (latitude, longitude)")]
-        [Display(ShortName = "GPS Coordintes")]
+        [Display(ShortName = "City / Harbour's GPS Coordinates")]
         public string GPSCoordinates
         {
             get => gpsCoordinates;
@@ -65,6 +65,7 @@ namespace Rangeman.Views.Tide
         }
 
         [Required(AllowEmptyStrings = false, ErrorMessage = "Please enter a valid year between 2000 and 2200.")]
+        [Display(ShortName = "High tide's year")]
         public int? Year
         {
             get => year;
@@ -79,6 +80,7 @@ namespace Rangeman.Views.Tide
             }
         }
 
+        [Display(ShortName = "High tide's month")]
         public MonthType Month
         {
             get => month;
@@ -94,6 +96,7 @@ namespace Rangeman.Views.Tide
         }
 
         [Required(AllowEmptyStrings = false, ErrorMessage = "Please enter a valid day of month (1-31)")]
+        [Display(ShortName = "High tide's day")]
         public int? Day
         {
             get => day;
@@ -109,6 +112,7 @@ namespace Rangeman.Views.Tide
         }
 
         [Required(AllowEmptyStrings = false, ErrorMessage = "Please enter a valid hour (0-23)")]
+        [Display(ShortName = "High tide's hour")]
         public int? Hour
         {
             get => hour;
@@ -121,6 +125,7 @@ namespace Rangeman.Views.Tide
         }
 
         [Required(AllowEmptyStrings = false, ErrorMessage = "Please enter a valid minute (0-59)")]
+        [Display(ShortName = "High tide's minute")]
         public int? Minute
         {
             get => minute;

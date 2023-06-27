@@ -13,7 +13,6 @@ using Environment = System.Environment;
 using System.IO;
 using Rangeman.Services.LicenseDistributor;
 using RangemanSync.Android.Services;
-using Constants = Rangeman.Constants;
 using Android;
 using AndroidX.Core.Content;
 using AndroidX.Core.App;
@@ -191,7 +190,7 @@ namespace RangemanSync.Android
                 var currentDate = DateTime.Now;
                 string errorFileName = $"Fatal-{currentDate.Year}-{currentDate.Month}-{currentDate.Day}-{currentDate.Hour}-{currentDate.Minute}-{currentDate.Second}.log";
                 var docsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                var logsPath = Path.Combine(docsPath, Constants.LogSubFolder);
+                var logsPath = Path.Combine(docsPath, Rangeman.Constants.LogSubFolder);
 
                 var errorFilePath = Path.Combine(logsPath, errorFileName);
                 var errorMessage = String.Format("Time: {0}\r\nError: Unhandled Exception\r\n{1}",
@@ -305,11 +304,11 @@ namespace RangemanSync.Android
                 switch(requestCode)
                 {
                     case ActivityRequestCode.SaveGPXFile:
-                        SaveFile(data, Constants.PrefKeyGPX);
+                        SaveFile(data, Rangeman.Constants.PrefKeyGPX);
                         break;
 
                     case ActivityRequestCode.SaveCoordinatesData:
-                        SaveFile(data, Constants.PrefSaveCoordinatesData);
+                        SaveFile(data, Rangeman.Constants.PrefSaveCoordinatesData);
                         break;
                 }
             }

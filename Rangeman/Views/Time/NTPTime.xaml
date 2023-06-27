@@ -16,18 +16,19 @@
                 <dataform:SfDataForm x:Name="dataForm" LayoutOptions="TextInputLayout" ValidationMode="Explicit" DataObject="{Binding NTPTimeInfo}">
                 </dataform:SfDataForm>
                 
-                <Button x:Name="sendToWatch" Grid.Row="1"  Text="Send to watch"
-                      WidthRequest="150" HorizontalOptions="Center"
-                        VerticalOptions="Center"
+                <StackLayout Grid.Row="1" Orientation="Horizontal" HorizontalOptions="CenterAndExpand" >
+                    <Button x:Name="sendToWatch" Text="Send to watch" WidthRequest="150"
                       Command="{Binding Path=BindingContext.CommitCommand, Source={x:Reference Name=dataForm}}"                   
                                                     CommandParameter="{Binding Source={x:Reference Name=dataForm}}" IsVisible="{Binding WatchCommandButtonsAreVisible}"  />
 
-                <Button x:Name="disconnectWatch" Grid.Row="1"  Text="Cancel" TextColor="#FFFFFF"
-                      WidthRequest="150" HorizontalOptions="Center"
-                        VerticalOptions="Center"
+                    <Button x:Name="disconnectWatch"  Text="Cancel" TextColor="#FFFFFF"
                       Command="{Binding DisconnectCommand}" IsVisible="{Binding DisconnectButtonIsVisible}"/>
 
-            </Grid>
+                    <Button x:Name="startService" Text="Start SRVC" WidthRequest="100"/>
+
+                    <Button x:Name="stopService" Text="Stop SRVC" WidthRequest="100"/>
+                </StackLayout>
+             </Grid>
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>

@@ -8,7 +8,12 @@ using Microsoft.Extensions.Logging;
 using nexus.protocols.ble;
 using Rangeman;
 using Rangeman.Services.BluetoothConnector;
+using Rangeman.Services.NTP;
+using Rangeman.Services.WatchDataSender;
+using Rangeman.Views.Time;
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Handler = Android.OS.Handler;
 
 namespace RangemanSync.Android.Services
@@ -26,6 +31,12 @@ namespace RangemanSync.Android.Services
         
         private BluetoothConnectorService bluetoothConnectorService;
 
+        private ILoggerFactory loggerFactory;
+
+        private ILogger<BackgroundTimeSyncService> logger;
+
+        private bool timeSyncIsRunning;
+
         bool isStarted;
         Handler handler;
         Action runnable;
@@ -35,13 +46,14 @@ namespace RangemanSync.Android.Services
             base.OnCreate();
 
             var appShell = ((AppShell)App.Current.MainPage);
-            var bluetoothLowEnergyAdapter =
-                (IBluetoothLowEnergyAdapter) appShell.ServiceProvider.GetService(typeof(IBluetoothLowEnergyAdapter));
 
-            var loggerBluetoothConnectorService =
-                (ILogger<BluetoothConnectorService>) appShell.ServiceProvider.GetService(typeof(ILogger<BluetoothConnectorService>));
+            this.loggerFactory =
+                (ILoggerFactory)appShell.ServiceProvider.GetService(typeof(ILoggerFactory));
 
-            bluetoothConnectorService = new BluetoothConnectorService(bluetoothLowEnergyAdapter, loggerBluetoothConnectorService);
+            this.logger = loggerFactory.CreateLogger<BackgroundTimeSyncService>();
+
+            bluetoothConnectorService =
+                (BluetoothConnectorService)appShell.ServiceProvider.GetService(typeof(BluetoothConnectorService));
 
             var handlerThread = new HandlerThread(TAG);
             handlerThread.Start();
@@ -70,6 +82,28 @@ namespace RangemanSync.Android.Services
                 }
                 else
                 {
+
+                    var syncTimes = new List<DateTime>
+                    {
+                        new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 6, 30, 0),
+                        new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 12, 30, 0),
+                        new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 18, 30, 0),
+                        new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 0, 30, 0)
+                    };
+
+                    foreach(var syncTime in syncTimes)
+                    {
+                        var timeDiff = syncTime - DateTime.Now;
+                        if( timeDiff.TotalSeconds > 0 && timeDiff.TotalSeconds <= 60)
+                        {
+                            if (!timeSyncIsRunning)
+                            {
+                                timeSyncIsRunning = true;
+                                SendTime();
+                            }
+                        }
+                    }
+
                     handler.PostDelayed(runnable, Constants.DELAY_BETWEEN_LOG_MESSAGES);
                 }
             });
@@ -104,9 +138,68 @@ namespace RangemanSync.Android.Services
             // This tells Android not to restart the service if it is killed to reclaim resources.
             return StartCommandResult.Sticky;
         }
-        private void SendTime()
+        private async void SendTime()
         {
+            await bluetoothConnectorService.FindAndConnectToWatch((message) =>_ = message,
+                async (connection) =>
+                {
+                    logger.LogDebug("BackgroundTimeService - Device Connection was successful");
 
+                    var watchDataSettingSenderService = new WatchDataSettingSenderService(connection, loggerFactory);
+
+
+                    DateTime? currentTime = null;
+
+                    currentTime = await GetNtpServerTime(currentTime);
+
+                    if (currentTime != null)
+                    {
+                        logger.LogDebug("SendTimeToTheWatch() - currentTime is not null");
+
+                        currentTime = currentTime.Value.AddSeconds(5000);
+
+                        await SendCommandsToTheWatch(watchDataSettingSenderService, currentTime);
+                    }
+
+                    logger.LogDebug("BackgroundTimeService - after awaiting SendTime()");
+
+                    timeSyncIsRunning = false;
+
+                    return true;
+                },
+                async () =>
+                {
+                    return true;
+                },
+                null);
+        }
+
+        private async Task<DateTime?> GetNtpServerTime(DateTime? currentTime)
+        {
+            try
+            {
+                currentTime = await NtpClient.GetNetworkTimeAsync("time.google.com");
+            }
+            catch (System.Exception ex)
+            {
+                logger.LogError(ex, "An unexpected error occured during getting the time from the NTP server");
+            }
+
+            return currentTime;
+        }
+
+        private async Task SendCommandsToTheWatch(WatchDataSettingSenderService watchDataSettingSenderService, DateTime? currentTime)
+        {
+            try
+            {
+                await watchDataSettingSenderService.SendTime((ushort)currentTime.Value.Year, (byte)currentTime.Value.Month, (byte)currentTime.Value.Day,
+                    (byte)currentTime.Value.Hour, (byte)currentTime.Value.Minute, (byte)currentTime.Value.Second,
+                    (byte)currentTime.Value.DayOfWeek, 0);
+            }
+            catch (System.Exception ex)
+            {
+                logger.LogError(ex, "NTP - An unexpected error occured during sending the watch commands to the watch");
+            }
         }
 
         private void RegisterForegroundService()

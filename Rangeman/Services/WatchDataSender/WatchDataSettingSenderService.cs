@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Rangeman.Services.WatchDataSender
 {
-    internal class WatchDataSettingSenderService
+    public class WatchDataSettingSenderService
     {
         private readonly BlePeripheralConnectionRequest connection;
         private readonly ILoggerFactory loggerFactory;

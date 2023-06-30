@@ -10,6 +10,7 @@
 	<!-- Request Bluetooth permissions on Android 12 and above (location not necessary). -->
 	<uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" />
 	<uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+	<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 	<queries>
 		<intent>
 			<action android:name="android.intent.action.SENDTO" />

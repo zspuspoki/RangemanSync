@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Rangeman.Services.BackgroundTimeSyncService;
 using Rangeman.Services.BluetoothConnector;
 using Rangeman.Services.NTP;
 using Rangeman.Services.WatchDataSender;
@@ -17,10 +18,11 @@ namespace Rangeman.Views.Time
         private bool disconnectButtonIsVisible = false;
         private readonly BluetoothConnectorService bluetoothConnectorService;
         private readonly ILoggerFactory loggerFactory;
+        private readonly ITimeSyncServiceStarter timeSyncServiceStarter;
         private ILogger<NTPTimeViewModel> logger;
 
         public NTPTimeViewModel(BluetoothConnectorService bluetoothConnectorService,
-            ILoggerFactory loggerFactory)
+            ILoggerFactory loggerFactory, ITimeSyncServiceStarter timeSyncServiceStarter)
         {
             this.logger = loggerFactory.CreateLogger<NTPTimeViewModel>();
 
@@ -30,9 +32,12 @@ namespace Rangeman.Views.Time
 
             this.CommitCommand = new Command<object>(this.OnCommit);
             this.DisconnectCommand = new Command(this.OnDisconnect);
+            this.StartServiceCommad = new Command(this.OnStartService);
+            this.StopServiceCommand = new Command(this.OnStopService);
 
             this.bluetoothConnectorService = bluetoothConnectorService;
             this.loggerFactory = loggerFactory;
+            this.timeSyncServiceStarter = timeSyncServiceStarter;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -74,6 +79,10 @@ namespace Rangeman.Views.Time
 
         public Command DisconnectCommand { get; set; }
 
+        public Command StartServiceCommad { get; set; }
+
+        public Command StopServiceCommand { get; set; }
+
         private async void OnCommit(object dataForm)
         {
             var dataFormLayout = dataForm as Syncfusion.XForms.DataForm.SfDataForm;
@@ -96,6 +105,16 @@ namespace Rangeman.Views.Time
             DisconnectButtonIsVisible = false;
 
             NTPTimeInfo.ProgressMessage = "Cancel button: The diconnection was successful.";
+        }
+
+        private async void OnStartService()
+        {
+            timeSyncServiceStarter.Start();
+        }
+
+        private async void OnStopService()
+        {
+            timeSyncServiceStarter.Stop();
         }
 
         private async Task SendTimeToTheWatch()

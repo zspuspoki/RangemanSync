@@ -3,9 +3,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Rangeman;
+using Rangeman.Services.BackgroundTimeSyncService;
 using Rangeman.Services.LicenseDistributor;
 using Rangeman.Services.SharedPreferences;
 using RangemanSync.Android.Services;
+using RangemanSync.Android.Services.BackgroundTimeSync;
 using System;
 using Xamarin.Forms.Platform.Android;
 
@@ -44,6 +46,7 @@ namespace RangemanSync.Android
                 serviceCollection.AddSingleton<ISaveCoordinatesDataService, SaveCoordinatesDataService>();
                 serviceCollection.AddSingleton<ISharedPreferencesService>(sharedPreferencesService);
                 serviceCollection.AddSingleton<ILicenseDistributor>(licenseDistributor);
+                serviceCollection.AddSingleton<ITimeSyncServiceStarter, TimeSyncServiceStarter>();
             };
     }
 }

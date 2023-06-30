@@ -24,9 +24,9 @@
                     <Button x:Name="disconnectWatch"  Text="Cancel" TextColor="#FFFFFF"
                       Command="{Binding DisconnectCommand}" IsVisible="{Binding DisconnectButtonIsVisible}"/>
 
-                    <Button x:Name="startService" Text="Start SRVC" WidthRequest="100"/>
+                    <Button x:Name="startService" Text="Start SRVC" WidthRequest="100" Command="{Binding StartServiceCommad}"/>
 
-                    <Button x:Name="stopService" Text="Stop SRVC" WidthRequest="100"/>
+                    <Button x:Name="stopService" Text="Stop SRVC" WidthRequest="100" Command="{Binding StopServiceCommand}"/>
                 </StackLayout>
              </Grid>
         </StackLayout>

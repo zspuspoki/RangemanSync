@@ -1,15 +1,16 @@
 ﻿using Android.Content;
 using Rangeman.Services.BackgroundTimeSyncService;
+using Xamarin.Forms.Platform.Android;
 
 namespace RangemanSync.Android.Services.BackgroundTimeSync
 {
     public class TimeSyncServiceStarter : ITimeSyncServiceStarter
     {
-        private readonly MainActivity mainActivity;
+        private readonly FormsAppCompatActivity mainActivity;
         private Intent startServiceIntent;
         private Intent stopServiceIntent;
 
-        public TimeSyncServiceStarter(MainActivity mainActivity)
+        public TimeSyncServiceStarter(FormsAppCompatActivity mainActivity)
         {
             this.mainActivity = mainActivity;
 

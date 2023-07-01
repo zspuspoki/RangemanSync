@@ -3,17 +3,15 @@ using Android.Content;
 using Android.OS;
 using AndroidX.Core.App;
 using Java.Lang;
-using Java.Util.Logging;
 using Microsoft.Extensions.Logging;
-using nexus.protocols.ble;
 using Rangeman;
 using Rangeman.Services.BluetoothConnector;
 using Rangeman.Services.NTP;
 using Rangeman.Services.WatchDataSender;
-using Rangeman.Views.Time;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using static Android.OS.PowerManager;
 using Handler = Android.OS.Handler;
 
 namespace RangemanSync.Android.Services
@@ -37,13 +35,25 @@ namespace RangemanSync.Android.Services
 
         private bool timeSyncIsRunning;
 
+        private WakeLock wakeLock;
+
         bool isStarted;
         Handler handler;
         Action runnable;
 
+        public BackgroundTimeSyncService()
+        {
+            PowerManager powerManager = Application.Context.GetSystemService(Context.PowerService) as PowerManager;
+            wakeLock = powerManager.NewWakeLock(WakeLockFlags.Partial, "ServiceWakeLock");
+            wakeLock.SetReferenceCounted(false);
+        }
+
         public override void OnCreate()
         {
             base.OnCreate();
+
+            if (wakeLock != null)
+                wakeLock.Acquire();
 
             var appShell = ((AppShell)App.Current.MainPage);
 
@@ -87,7 +97,7 @@ namespace RangemanSync.Android.Services
                     {
                         new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 6, 30, 0),
                         new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 12, 30, 0),
-                        new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 18, 30, 0),
+                        new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 18,30 , 0),
                         new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 0, 30, 0)
                     };
 
@@ -107,6 +117,17 @@ namespace RangemanSync.Android.Services
                     handler.PostDelayed(runnable, Constants.DELAY_BETWEEN_LOG_MESSAGES);
                 }
             });
+        }
+
+        public override void OnDestroy()
+        {
+            if (wakeLock != null)
+            {
+                wakeLock.Release();
+                wakeLock = null;
+            }
+
+            base.OnDestroy();
         }
 
         public override StartCommandResult OnStartCommand(Intent intent, StartCommandFlags flags, int startId)
@@ -156,7 +177,7 @@ namespace RangemanSync.Android.Services
                     {
                         logger.LogDebug("SendTimeToTheWatch() - currentTime is not null");
 
-                        currentTime = currentTime.Value.AddSeconds(5000);
+                        currentTime = currentTime.Value.AddSeconds(5);
 
                         await SendCommandsToTheWatch(watchDataSettingSenderService, currentTime);
                     }

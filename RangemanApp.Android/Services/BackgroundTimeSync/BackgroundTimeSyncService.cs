@@ -8,6 +8,7 @@ using Rangeman;
 using Rangeman.Services.BluetoothConnector;
 using Rangeman.Services.NTP;
 using Rangeman.Services.WatchDataSender;
+using Serilog.Context;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -161,38 +162,42 @@ namespace RangemanSync.Android.Services
         }
         private async void SendTime()
         {
-            await bluetoothConnectorService.FindAndConnectToWatch((message) =>_ = message,
-                async (connection) =>
-                {
-                    logger.LogDebug("BackgroundTimeService - Device Connection was successful");
-
-                    var watchDataSettingSenderService = new WatchDataSettingSenderService(connection, loggerFactory);
-
-
-                    DateTime? currentTime = null;
-
-                    currentTime = await GetNtpServerTime(currentTime);
-
-                    if (currentTime != null)
+            using (LogContext.PushProperty("BackgroundTimeSyncService", 1))
+            {
+                await bluetoothConnectorService.FindAndConnectToWatch((message) => _ = message,
+                    async (connection) =>
                     {
-                        logger.LogDebug("SendTimeToTheWatch() - currentTime is not null");
+                        logger.LogDebug("BackgroundTimeService - Device Connection was successful");
 
-                        currentTime = currentTime.Value.AddSeconds(5);
+                        var watchDataSettingSenderService = new WatchDataSettingSenderService(connection, loggerFactory);
 
-                        await SendCommandsToTheWatch(watchDataSettingSenderService, currentTime);
-                    }
 
-                    logger.LogDebug("BackgroundTimeService - after awaiting SendTime()");
+                        DateTime? currentTime = null;
 
-                    timeSyncIsRunning = false;
+                        currentTime = await GetNtpServerTime(currentTime);
 
-                    return true;
-                },
-                async () =>
-                {
-                    return true;
-                },
-                null);
+                        if (currentTime != null)
+                        {
+                            logger.LogDebug("SendTimeToTheWatch() - currentTime is not null");
+
+                            currentTime = currentTime.Value.AddSeconds(5);
+
+                            await SendCommandsToTheWatch(watchDataSettingSenderService, currentTime);
+                        }
+
+                        logger.LogDebug("BackgroundTimeService - after awaiting SendTime()");
+
+                        timeSyncIsRunning = false;
+
+                        return true;
+                    },
+                    async () =>
+                    {
+                        return true;
+                    },
+                    beforeStartScanningMethod: null,
+                    timeout: 120);
+            }
         }
 
         private async Task<DateTime?> GetNtpServerTime(DateTime? currentTime)

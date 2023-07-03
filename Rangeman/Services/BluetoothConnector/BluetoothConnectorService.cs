@@ -3,7 +3,6 @@ using nexus.core;
 using nexus.protocols.ble;
 using nexus.protocols.ble.scan;
 using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,6 +11,8 @@ namespace Rangeman.Services.BluetoothConnector
     public class BluetoothConnectorService
     {
         private const string WatchDeviceName = "CASIO GPR-B1000";
+        private const string WellKnownServiceGuidOfCasio = "00001804-0000-1000-8000-00805f9b34fb";
+
         private readonly IBluetoothLowEnergyAdapter ble;
         private readonly ILogger<BluetoothConnectorService> logger;
 
@@ -24,10 +25,11 @@ namespace Rangeman.Services.BluetoothConnector
             this.logger = logger;
         }
 
-        public async Task FindAndConnectToWatch(Action<string> progressMessageMethod, 
-                Func<BlePeripheralConnectionRequest,Task<bool>> successfullyConnectedMethod,
+        public async Task FindAndConnectToWatch(Action<string> progressMessageMethod,
+                Func<BlePeripheralConnectionRequest, Task<bool>> successfullyConnectedMethod,
                 Func<Task<bool>> watchCommandExecutionFailed = null,
-                Action beforeStartScanningMethod = null)
+                Action beforeStartScanningMethod = null,
+                double? timeout = null)
         {
             if (progressMessageMethod is null)
             {
@@ -41,79 +43,60 @@ namespace Rangeman.Services.BluetoothConnector
 
             scanCancellationTokenSource = new CancellationTokenSource();
 
-            if(beforeStartScanningMethod!= null)
+            if (beforeStartScanningMethod != null)
             {
                 beforeStartScanningMethod();
             }
 
-            IBlePeripheral device = null;
-
             logger.LogDebug($"--- BluetoothConnectorService - before ScanForBroadcasts, (scanCancellationTokenSource == null) = {scanCancellationTokenSource == null}");
 
-            try
+            progressMessageMethod("Trying to connect to Casio device ...");
+
+            if (timeout != null)
             {
-                await ble.ScanForBroadcasts((a) =>
-                {
-                    if (a.Advertisement != null)
-                    {
-                        var advertisedName = a.Advertisement.DeviceName;
-
-                        logger.LogDebug($"--- BluetoothConnectorService Looking for connected watch, advertised device name: {advertisedName}");
-
-                        if (advertisedName != null &&
-                            advertisedName.Contains(WatchDeviceName))
-                        {
-                            logger.LogDebug("--- BluetoothConnectorService - advertised name contains CASIO");
-
-                            device = a;
-
-                            scanCancellationTokenSource.Cancel();
-                        }
-                    }
-                }, scanCancellationTokenSource.Token);
+                currentConnection = await ble.FindAndConnectToDevice(
+                    new ScanFilter().AddAdvertisedService(new Guid(WellKnownServiceGuidOfCasio)),
+                    TimeSpan.FromSeconds(timeout.Value));
             }
-            catch(Exception ex)
+            else
             {
-                logger.LogError(ex, "An unexpected error occured during scanning bluetooth devices");
-
-                if (watchCommandExecutionFailed != null)
-                {
-                    await watchCommandExecutionFailed();
-                }
+                currentConnection = await ble.FindAndConnectToDevice(
+                    new ScanFilter().AddAdvertisedService(new Guid(WellKnownServiceGuidOfCasio)),
+                    scanCancellationTokenSource.Token);
             }
 
-            if (device != null)
+            if (currentConnection.IsSuccessful())
             {
-                progressMessageMethod("Found Casio device. Trying to connect ...");
-                currentConnection = await ble.ConnectToDevice(device); 
+                logger.LogDebug("--- BluetoothConnectorService - successfully connected device");
 
-                if (currentConnection.IsSuccessful())
+                try
                 {
-                    try
-                    {
-                        using var state = ble.CurrentState.Subscribe((state) => 
-                            logger.LogDebug($"Bluetooth state changed! State: {state}"),
-                            ()=> logger.LogDebug("Bluetooth state checker ended!"),
-                            (exception) => logger.LogError(exception,"An unexpected error occured during checking the state."));
+                    using var state = ble.CurrentState.Subscribe((state) =>
+                        logger.LogDebug($"Bluetooth state changed! State: {state}"),
+                        () => logger.LogDebug("Bluetooth state checker ended!"),
+                        (exception) => logger.LogError(exception, "An unexpected error occured during checking the state."));
 
-                        progressMessageMethod("Successfully connected to the watch.");
+                    progressMessageMethod("Successfully connected to the watch.");
 
-                        await successfullyConnectedMethod(currentConnection);
-                    }
-                    catch(Exception ex)
-                    {
-                        logger.LogError(ex, "An unexpected error occured during running watch commands");
+                    await successfullyConnectedMethod(currentConnection);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "An unexpected error occured during running watch commands");
 
-                        if(watchCommandExecutionFailed != null)
-                        {
-                            await watchCommandExecutionFailed();
-                        }
-                    }
-                    finally
+                    if (watchCommandExecutionFailed != null)
                     {
-                        await currentConnection.GattServer.Disconnect();
+                        await watchCommandExecutionFailed();
                     }
                 }
+                finally
+                {
+                    await currentConnection.GattServer.Disconnect();
+                }
+            }
+            else
+            {
+                logger.LogDebug("--- BluetoothConnectorService - failed to connect");
             }
         }
 

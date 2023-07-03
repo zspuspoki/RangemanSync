@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Java.IO;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using nexus.protocols.ble;
@@ -57,6 +58,8 @@ namespace Rangeman
 
         public static IServiceCollection ConfigureLogging(this IServiceCollection serviceCollection, IConfigurationRoot configurationRoot)
         {
+            const string TimeSyncServicePropertyName = "BackgroundTimeSyncService";
+
             return serviceCollection.AddLogging(builder =>
             {
                 var path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
@@ -64,15 +67,33 @@ namespace Rangeman
                 var loggerConfiguration = new LoggerConfiguration()
                     .ReadFrom.Configuration(configurationRoot)
                     .Enrich.WithExceptionDetails()
+                    .Enrich.FromLogContext()
 #if DEBUG
                     .WriteTo.Debug()
 #endif
-                    .WriteTo.File(Path.Combine(path, Constants.LogSubFolder, "Log.log"), 
-                        rollingInterval: RollingInterval.Day,
-                        fileSizeLimitBytes: 5242880,
-                        rollOnFileSizeLimit : true,
-                        retainedFileCountLimit: 3,
-                        outputTemplate: "{Timestamp:HH:mm:ss} [{Level:u3}] {Message:lj} ({SourceContext}) {Exception}{NewLine}");
+                    .WriteTo.Logger(l =>
+                    {
+                        l.WriteTo.File(Path.Combine(path, Constants.LogSubFolder, "Log.log"),
+                            rollingInterval: RollingInterval.Day,
+                            fileSizeLimitBytes: 5242880,
+                            rollOnFileSizeLimit: true,
+                            retainedFileCountLimit: 3,
+                            outputTemplate: "{Timestamp:HH:mm:ss} [{Level:u3}] {Message:lj} ({SourceContext}) {Exception}{NewLine}");
+
+                        l.Filter.ByExcluding(e => e.Properties.ContainsKey(TimeSyncServicePropertyName));
+                    })
+                    .WriteTo.Logger(l =>
+                    {
+                        l.WriteTo.File(Path.Combine(path, Constants.LogSubFolder, "TimeSyncService.log"),
+                            rollingInterval: RollingInterval.Day,
+                            fileSizeLimitBytes: 5242880,
+                            rollOnFileSizeLimit: true,
+                            retainedFileCountLimit: 3,
+                            outputTemplate: "{Timestamp:HH:mm:ss} [{Level:u3}] {Message:lj} ({SourceContext}) {Exception}{NewLine}");
+
+                        l.Filter.ByIncludingOnly(e => e.Properties.ContainsKey(TimeSyncServicePropertyName));
+                    });
+
 
                 builder.AddSerilog(loggerConfiguration.CreateLogger());
             });

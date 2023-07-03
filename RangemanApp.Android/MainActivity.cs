@@ -209,8 +209,6 @@ namespace RangemanSync.Android
 
         private void CheckPermissions_Compat()
         {
-            var locationPermissions = new string[] { Manifest.Permission.AccessCoarseLocation, Manifest.Permission.AccessFineLocation };
-
             if (DeviceInfo.Version.Major > 11)
             {
                 var bluetoothPermissions = new string[] { "android.permission.BLUETOOTH_SCAN", "android.permission.BLUETOOTH_CONNECT" };
@@ -221,6 +219,9 @@ namespace RangemanSync.Android
                     ActivityCompat.RequestPermissions(this, bluetoothPermissions, BLUETOOTH_PERMISSION_REQUEST);
                 }
             }
+
+            var locationPermissions = new string[] { Manifest.Permission.AccessCoarseLocation,  Manifest.Permission.AccessBackgroundLocation,
+                Manifest.Permission.AccessFineLocation };
 
             if (ContextCompat.CheckSelfPermission(this, locationPermissions[0]) != (int)Permission.Granted ||
                 ContextCompat.CheckSelfPermission(this, locationPermissions[1]) != (int)Permission.Granted)

@@ -87,9 +87,9 @@ namespace Rangeman
                     {
                         l.WriteTo.File(Path.Combine(path, Constants.LogSubFolder, "TimeSyncService.log"),
                             rollingInterval: RollingInterval.Day,
-                            fileSizeLimitBytes: 5242880,
+                            fileSizeLimitBytes: 8192,
                             rollOnFileSizeLimit: true,
-                            retainedFileCountLimit: 3,
+                            retainedFileCountLimit: 1,
                             outputTemplate: "{Timestamp:HH:mm:ss} [{Level:u3}] {Message:lj} ({SourceContext}) {Exception}{NewLine}");
 
                         l.Filter.ByIncludingOnly(e => e.Properties.ContainsKey(TimeSyncServicePropertyName));

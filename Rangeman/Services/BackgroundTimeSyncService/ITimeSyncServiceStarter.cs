@@ -2,7 +2,7 @@
 {
     public interface ITimeSyncServiceStarter
     {
-        void Start();
+        void Start(string ntpServer, double compensationSeconds);
         void Stop();
     }
 }

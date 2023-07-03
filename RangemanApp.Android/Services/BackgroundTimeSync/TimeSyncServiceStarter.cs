@@ -21,8 +21,10 @@ namespace RangemanSync.Android.Services.BackgroundTimeSync
             stopServiceIntent.SetAction(Constants.ACTION_STOP_SERVICE);
         }
 
-        public void Start()
+        public void Start(string ntpServer, double compensationSeconds)
         {
+            startServiceIntent.PutExtra(Constants.START_SERVICE_COMPENSATION_SECONDS,compensationSeconds);
+            startServiceIntent.PutExtra(Constants.START_SERVICE_NTP_SERVER, ntpServer);
             mainActivity.StartService(startServiceIntent);
         }
 

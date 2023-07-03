@@ -5,6 +5,7 @@ using AndroidX.Core.App;
 using Java.Lang;
 using Microsoft.Extensions.Logging;
 using Rangeman;
+using Rangeman.Services.BackgroundTimeSyncService;
 using Rangeman.Services.BluetoothConnector;
 using Rangeman.Services.NTP;
 using Rangeman.Services.WatchDataSender;
@@ -38,7 +39,12 @@ namespace RangemanSync.Android.Services
 
         private WakeLock wakeLock;
 
-        bool isStarted;
+        private string ntpServer;
+
+        private double compensationSeconds;
+
+        private ITimeSyncServiceStatus timeSyncServiceStatus;
+
         Handler handler;
         Action runnable;
 
@@ -65,6 +71,9 @@ namespace RangemanSync.Android.Services
 
             bluetoothConnectorService =
                 (BluetoothConnectorService)appShell.ServiceProvider.GetService(typeof(BluetoothConnectorService));
+
+            timeSyncServiceStatus =
+                (ITimeSyncServiceStatus)appShell.ServiceProvider.GetService(typeof(ITimeSyncServiceStatus));
 
             var handlerThread = new HandlerThread(TAG);
             handlerThread.Start();
@@ -122,11 +131,23 @@ namespace RangemanSync.Android.Services
 
         public override void OnDestroy()
         {
+            logger.LogDebug("OnDestroy: The started service is shutting down.");
+
+            // Stop the handler.
+            handler.RemoveCallbacks(runnable);
+
+            // Remove the notification from the status bar.
+            var notificationManager = (NotificationManager)GetSystemService(NotificationService);
+            notificationManager.Cancel(Constants.SERVICE_RUNNING_NOTIFICATION_ID);
+
             if (wakeLock != null)
             {
                 wakeLock.Release();
                 wakeLock = null;
             }
+
+            bluetoothConnectorService = null;
+            timeSyncServiceStatus.IsStarted = false;
 
             base.OnDestroy();
         }
@@ -137,16 +158,20 @@ namespace RangemanSync.Android.Services
             {
                 if (intent.Action.Equals(Constants.ACTION_START_SERVICE))
                 {
-                    if (isStarted)
+                    if (timeSyncServiceStatus.IsStarted)
                     {
                         logger.LogDebug("The background time sync service is alrady running.");
                     }
                     else
                     {
                         logger.LogDebug("OnStartCommand: The background time sync service is starting");
+
+                        ntpServer = intent.GetStringExtra(Constants.START_SERVICE_NTP_SERVER);
+                        compensationSeconds = intent.Extras.GetDouble(Constants.START_SERVICE_COMPENSATION_SECONDS);
+
                         RegisterForegroundService();
                         handler.PostDelayed(runnable, Constants.DELAY_BETWEEN_LOG_MESSAGES);
-                        isStarted = true;
+                        timeSyncServiceStatus.IsStarted = true;
                     }
                 }
                 else if (intent.Action.Equals(Constants.ACTION_STOP_SERVICE))
@@ -155,7 +180,7 @@ namespace RangemanSync.Android.Services
                     bluetoothConnectorService = null;
                     StopForeground(true);
                     StopSelf();
-                    isStarted = false;
+                    timeSyncServiceStatus.IsStarted = false;
 
                 }
             }
@@ -183,7 +208,9 @@ namespace RangemanSync.Android.Services
                         {
                             logger.LogDebug("SendTimeToTheWatch() - currentTime is not null");
 
-                            currentTime = currentTime.Value.AddSeconds(5);
+                            logger.LogDebug($"Compensation seconds = {compensationSeconds}");
+
+                            currentTime = currentTime.Value.AddSeconds(compensationSeconds);
 
                             await SendCommandsToTheWatch(watchDataSettingSenderService, currentTime);
                         }
@@ -207,7 +234,9 @@ namespace RangemanSync.Android.Services
         {
             try
             {
-                currentTime = await NtpClient.GetNetworkTimeAsync("time.google.com");
+                logger.LogDebug($"Getting NTP server time from {ntpServer}");
+
+                currentTime = await NtpClient.GetNetworkTimeAsync(ntpServer);
             }
             catch (System.Exception ex)
             {

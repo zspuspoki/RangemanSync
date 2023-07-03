@@ -16,13 +16,17 @@ namespace Rangeman.Views.Time
 
         private bool watchCommandButtonsAreVisible = true;
         private bool disconnectButtonIsVisible = false;
+        private bool startServiceButtonIsEnabled = true;
+        private bool stopServiceButtonIsEnabled = false;
+
         private readonly BluetoothConnectorService bluetoothConnectorService;
         private readonly ILoggerFactory loggerFactory;
         private readonly ITimeSyncServiceStarter timeSyncServiceStarter;
+        private readonly ITimeSyncServiceStatus timeSyncServiceStatus;
         private ILogger<NTPTimeViewModel> logger;
 
         public NTPTimeViewModel(BluetoothConnectorService bluetoothConnectorService,
-            ILoggerFactory loggerFactory, ITimeSyncServiceStarter timeSyncServiceStarter)
+            ILoggerFactory loggerFactory, ITimeSyncServiceStarter timeSyncServiceStarter, ITimeSyncServiceStatus timeSyncServiceStatus)
         {
             this.logger = loggerFactory.CreateLogger<NTPTimeViewModel>();
 
@@ -32,12 +36,13 @@ namespace Rangeman.Views.Time
 
             this.CommitCommand = new Command<object>(this.OnCommit);
             this.DisconnectCommand = new Command(this.OnDisconnect);
-            this.StartServiceCommad = new Command(this.OnStartService);
+            this.StartServiceCommad = new Command<object>(this.OnStartService);
             this.StopServiceCommand = new Command(this.OnStopService);
 
             this.bluetoothConnectorService = bluetoothConnectorService;
             this.loggerFactory = loggerFactory;
             this.timeSyncServiceStarter = timeSyncServiceStarter;
+            this.timeSyncServiceStatus = timeSyncServiceStatus;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -72,6 +77,26 @@ namespace Rangeman.Views.Time
             }
         }
 
+        public bool StartServiceButtonIsEnabled
+        {
+            get => startServiceButtonIsEnabled;
+            set
+            {
+                startServiceButtonIsEnabled = value;
+                OnPropertyChanged(nameof(StartServiceButtonIsEnabled));
+            }
+        }
+
+        public bool StopServiceButtonIsEnabled
+        {
+            get => stopServiceButtonIsEnabled;
+            set
+            {
+                stopServiceButtonIsEnabled = value;
+                OnPropertyChanged(nameof(StopServiceButtonIsEnabled));
+            }
+        }
+
         /// <summary>
         /// Gets or sets an ICommand implementation wrapping a commit action.
         /// </summary>
@@ -79,15 +104,19 @@ namespace Rangeman.Views.Time
 
         public Command DisconnectCommand { get; set; }
 
-        public Command StartServiceCommad { get; set; }
+        public Command<object> StartServiceCommad { get; set; }
 
         public Command StopServiceCommand { get; set; }
 
+        public void RefreshServiceButtonStates()
+        {
+            StartServiceButtonIsEnabled = !timeSyncServiceStatus.IsStarted;
+            StopServiceButtonIsEnabled = timeSyncServiceStatus.IsStarted;
+        }
+
         private async void OnCommit(object dataForm)
         {
-            var dataFormLayout = dataForm as Syncfusion.XForms.DataForm.SfDataForm;
-            var isValid = dataFormLayout.Validate();
-            dataFormLayout.Commit();
+            bool isValid = ValidateForm(dataForm);
             if (!isValid)
             {
                 NTPTimeInfo.ProgressMessage = "Please enter valid time details.";
@@ -95,6 +124,14 @@ namespace Rangeman.Views.Time
             }
 
             await SendTimeToTheWatch();
+        }
+
+        private static bool ValidateForm(object dataForm)
+        {
+            var dataFormLayout = dataForm as Syncfusion.XForms.DataForm.SfDataForm;
+            var isValid = dataFormLayout.Validate();
+            dataFormLayout.Commit();
+            return isValid;
         }
 
         private async void OnDisconnect()
@@ -107,14 +144,23 @@ namespace Rangeman.Views.Time
             NTPTimeInfo.ProgressMessage = "Cancel button: The diconnection was successful.";
         }
 
-        private async void OnStartService()
+        private async void OnStartService(object dataForm)
         {
-            timeSyncServiceStarter.Start();
+            bool isValid = ValidateForm(dataForm);
+            if (!isValid)
+            {
+                NTPTimeInfo.ProgressMessage = "Please enter valid time details.";
+                return;
+            }
+
+            timeSyncServiceStarter.Start(ntpTimeInfo.NTPServer, ntpTimeInfo.SecondsCompensation.Value);
+            StartServiceButtonIsEnabled = false;
         }
 
         private async void OnStopService()
         {
             timeSyncServiceStarter.Stop();
+            RefreshServiceButtonStates();
         }
 
         private async Task SendTimeToTheWatch()

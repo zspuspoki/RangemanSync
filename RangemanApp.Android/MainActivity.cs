@@ -17,6 +17,9 @@ using Android;
 using AndroidX.Core.Content;
 using AndroidX.Core.App;
 using Google.Android.Vending.Licensing;
+using Rangeman.Services.BackgroundTimeSyncService;
+using AndroidProvider = Android.Provider;
+using AndroidNet = Android.Net;
 
 namespace RangemanSync.Android
 {
@@ -71,6 +74,9 @@ namespace RangemanSync.Android
             {
                 ConfigureLicenseChecking();
             }
+
+            CheckIfTimeSyncServiceIsRunning(savedInstanceState);
+            CheckBatteryOptimization();
         }
 
         #region EULA checking
@@ -220,13 +226,27 @@ namespace RangemanSync.Android
                 }
             }
 
-            var locationPermissions = new string[] { Manifest.Permission.AccessCoarseLocation,  Manifest.Permission.AccessBackgroundLocation,
-                Manifest.Permission.AccessFineLocation };
+            var backgroundLocationPermission = new string[] { Manifest.Permission.AccessBackgroundLocation };
 
-            if (ContextCompat.CheckSelfPermission(this, locationPermissions[0]) != (int)Permission.Granted ||
-                ContextCompat.CheckSelfPermission(this, locationPermissions[1]) != (int)Permission.Granted)
+            if(ContextCompat.CheckSelfPermission(this, backgroundLocationPermission[0]) != (int)Permission.Granted)
             {
-                ActivityCompat.RequestPermissions(this, locationPermissions, LOCATION_PERMISSION_REQUEST);
+                DisplayYesNoDialog($"This app need access background location permission to connect to your Casio GPR-B1000 in the background for syncing time 4 times a day. Do you accept it ?",
+                    () =>
+                    {
+                        ActivityCompat.RequestPermissions(this, backgroundLocationPermission, LOCATION_PERMISSION_REQUEST);
+                    },
+                    () =>
+                    {
+                        Process.KillProcess(Process.MyPid());
+                    });
+            }
+
+            var basiclocationPermissions = new string[] { Manifest.Permission.AccessCoarseLocation, Manifest.Permission.AccessFineLocation };
+
+            if (ContextCompat.CheckSelfPermission(this, basiclocationPermissions[0]) != (int)Permission.Granted ||
+                ContextCompat.CheckSelfPermission(this, basiclocationPermissions[1]) != (int)Permission.Granted)
+            {
+                ActivityCompat.RequestPermissions(this, basiclocationPermissions, LOCATION_PERMISSION_REQUEST);
             }
         }
 
@@ -296,6 +316,51 @@ namespace RangemanSync.Android
         }
         #endregion
 
+        #region Check if background time sync service is running
+        private void CheckIfTimeSyncServiceIsRunning(Bundle savedInstanceState)
+        {
+            var appShell = ((AppShell)App.Current.MainPage);
+
+            var timeSyncServiceStatus =
+                (ITimeSyncServiceStatus)appShell.ServiceProvider.GetService(typeof(ITimeSyncServiceStatus));
+
+            if (savedInstanceState != null)
+            {
+                timeSyncServiceStatus.IsStarted = savedInstanceState.GetBoolean(Constants.SERVICE_STARTED_KEY, false);
+            }
+            else
+            {
+                timeSyncServiceStatus.IsStarted = false;
+            }
+        }
+        #endregion
+
+        #region Check battery optimization setting
+        private void CheckBatteryOptimization()
+        {
+            Intent intent = new Intent();
+            string packageName = PackageName;
+            PowerManager pm = (PowerManager)GetSystemService(Context.PowerService);
+
+            if (!pm.IsIgnoringBatteryOptimizations(packageName))
+            {
+                DisplayYesNoDialog($"Battery optimization should be set to not optimized to keep the time sync service running in the background. Would you like to change this setting now ?",
+                    () =>
+                    {
+                        intent.SetAction(AndroidProvider.Settings.ActionRequestIgnoreBatteryOptimizations);
+                        intent.SetData(AndroidNet.Uri.Parse("package:" + packageName));
+
+                        StartActivity(intent);
+                    },
+                    () =>
+                    {
+                        Process.KillProcess(Process.MyPid());
+                    });
+
+            }
+        }
+        #endregion
+
         protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
         {
             base.OnActivityResult(requestCode, resultCode, data);
@@ -313,6 +378,17 @@ namespace RangemanSync.Android
                         break;
                 }
             }
+        }
+
+        protected override void OnSaveInstanceState(Bundle outState)
+        {
+            var appShell = ((AppShell)App.Current.MainPage);
+
+            var timeSyncServiceStatus =
+                (ITimeSyncServiceStatus)appShell.ServiceProvider.GetService(typeof(ITimeSyncServiceStatus));
+
+            outState.PutBoolean(Constants.SERVICE_STARTED_KEY, timeSyncServiceStatus.IsStarted);
+            base.OnSaveInstanceState(outState);
         }
 
         private void SaveFile(Intent data, string preferencesKey)

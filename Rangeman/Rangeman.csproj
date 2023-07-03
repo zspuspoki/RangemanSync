@@ -65,6 +65,7 @@
     <Compile Include="MyDataTemplateExtension.cs" />
     <Compile Include="RouteFactory.cs" />
     <Compile Include="Services\BackgroundTimeSyncService\ITimeSyncServiceStarter.cs" />
+    <Compile Include="Services\BackgroundTimeSyncService\ITimeSyncServiceStatus.cs" />
     <Compile Include="Services\BluetoothConnector\BluetoothConnectorService.cs" />
     <Compile Include="Services\Common\AsyncExtensions.cs" />
     <Compile Include="Services\Common\BLEConstants.cs" />

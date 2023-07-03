@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Xamarin.Forms;
+﻿using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
 namespace Rangeman.Views.Time
@@ -15,6 +9,25 @@ namespace Rangeman.Views.Time
         public NTPTime()
         {
             InitializeComponent();
+        }
+
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+
+            if (ViewModel != null)
+            {
+                ViewModel.RefreshServiceButtonStates();
+            }
+        }
+
+        public NTPTimeViewModel ViewModel
+        {
+            get
+            {
+                var vm = BindingContext as NTPTimeViewModel;
+                return vm;
+            }
         }
     }
 }

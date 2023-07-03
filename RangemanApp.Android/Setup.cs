@@ -47,6 +47,7 @@ namespace RangemanSync.Android
                 serviceCollection.AddSingleton<ISharedPreferencesService>(sharedPreferencesService);
                 serviceCollection.AddSingleton<ILicenseDistributor>(licenseDistributor);
                 serviceCollection.AddSingleton<ITimeSyncServiceStarter, TimeSyncServiceStarter>();
+                serviceCollection.AddSingleton<ITimeSyncServiceStatus, TimeSyncServiceStatus>();
             };
     }
 }

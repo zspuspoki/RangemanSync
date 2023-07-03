@@ -15,6 +15,7 @@
         <Tab Title="Time">
             <ShellContent Title="NTP" ContentTemplate="{e:MyDataTemplate time:NTPTime}"></ShellContent>
             <ShellContent Title="Custom" ContentTemplate="{e:MyDataTemplate time:CustomTime}"></ShellContent>
+            <ShellContent Title="Log" ContentTemplate="{e:MyDataTemplate time:BackgroundTimeSyncLog}"></ShellContent>
         </Tab>
         <ShellContent Title="Tide" ContentTemplate="{e:MyDataTemplate tide:Tide}" Route="Tide"></ShellContent>
         <ShellContent Title="Config" ContentTemplate="{e:MyDataTemplate local:ConfigPage}" Route="Config" IsVisible="{Binding ConfigPageIsEnabled }"/>

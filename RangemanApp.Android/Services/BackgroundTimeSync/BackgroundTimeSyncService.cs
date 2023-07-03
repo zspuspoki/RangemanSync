@@ -133,28 +133,31 @@ namespace RangemanSync.Android.Services
 
         public override StartCommandResult OnStartCommand(Intent intent, StartCommandFlags flags, int startId)
         {
-            if (intent.Action.Equals(Constants.ACTION_START_SERVICE))
+            using (LogContext.PushProperty("BackgroundTimeSyncService", 1))
             {
-                if (isStarted)
+                if (intent.Action.Equals(Constants.ACTION_START_SERVICE))
                 {
-                    //Log.Info(TAG, "OnStartCommand: The service is already running.");
+                    if (isStarted)
+                    {
+                        logger.LogDebug("The background time sync service is alrady running.");
+                    }
+                    else
+                    {
+                        logger.LogDebug("OnStartCommand: The background time sync service is starting");
+                        RegisterForegroundService();
+                        handler.PostDelayed(runnable, Constants.DELAY_BETWEEN_LOG_MESSAGES);
+                        isStarted = true;
+                    }
                 }
-                else
+                else if (intent.Action.Equals(Constants.ACTION_STOP_SERVICE))
                 {
-                    //Log.Info(TAG, "OnStartCommand: The service is starting.");
-                    RegisterForegroundService();
-                    handler.PostDelayed(runnable, Constants.DELAY_BETWEEN_LOG_MESSAGES);
-                    isStarted = true;
-                }
-            }
-            else if (intent.Action.Equals(Constants.ACTION_STOP_SERVICE))
-            {
-                //Log.Info(TAG, "OnStartCommand: The service is stopping.");
-                bluetoothConnectorService = null;
-                StopForeground(true);
-                StopSelf();
-                isStarted = false;
+                    logger.LogDebug("OnStartCommand: The background time sync service is stopping");
+                    bluetoothConnectorService = null;
+                    StopForeground(true);
+                    StopSelf();
+                    isStarted = false;
 
+                }
             }
 
             // This tells Android not to restart the service if it is killed to reclaim resources.

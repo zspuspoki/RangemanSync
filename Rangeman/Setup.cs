@@ -1,5 +1,4 @@
-﻿using Java.IO;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using nexus.protocols.ble;
@@ -44,6 +43,8 @@ namespace Rangeman
             serviceCollection.AddViewSingleton<CustomTime, CustomTimeViewModel>();
 
             serviceCollection.AddViewSingleton<NTPTime, NTPTimeViewModel>();
+
+            serviceCollection.AddViewSingleton<BackgroundTimeSyncLog, BackgroundTimeSyncLogViewModel>();
 
             serviceCollection.AddViewSingleton<Tide, TideViewModel>();
 

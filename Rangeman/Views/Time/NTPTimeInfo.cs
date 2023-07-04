@@ -9,7 +9,7 @@ namespace Rangeman.Views.Time
 {
     public class NTPTimeInfo : INotifyPropertyChanged, INotifyDataErrorInfo
     {
-        private string progressMessage;
+        private string progressMessage = "Press the Start SRVC button to start the background time synchronizer for setting the time on your watch four times a day. ( 6:30 , 12:30, 18:30, 0:30 )";
         private string ntpServer;
         private int? secondsCompensation;
         private Dictionary<string, List<string>> propErrors = new Dictionary<string, List<string>>();

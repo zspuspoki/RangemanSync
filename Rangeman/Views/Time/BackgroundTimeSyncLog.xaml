@@ -4,14 +4,20 @@
              x:Class="Rangeman.Views.Time.BackgroundTimeSyncLog"
              Title="Background time sync log">
     <ContentPage.Content>
-        <StackLayout>
-            <ScrollView>
+        <Grid Margin="0" VerticalOptions="FillAndExpand">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="60"/>
+            </Grid.RowDefinitions>
+            <ScrollView Grid.Row="0">
                 <Label Text="{Binding LogMessages}"
                     VerticalOptions="CenterAndExpand" 
                     HorizontalOptions="CenterAndExpand" />
             </ScrollView>
 
-            <Button Text="Refresh" WidthRequest="150"></Button>
-        </StackLayout>
+            <StackLayout Grid.Row="1" Orientation="Horizontal" HorizontalOptions="CenterAndExpand">
+                <Button Text="Refresh" WidthRequest="150" ></Button>
+            </StackLayout>
+        </Grid>
     </ContentPage.Content>
 </ContentPage>

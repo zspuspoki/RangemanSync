@@ -41,6 +41,15 @@ namespace Rangeman.Services.BluetoothConnector
                 throw new ArgumentNullException(nameof(successfullyConnectedMethod));
             }
 
+            if(scanCancellationTokenSource != null)
+            {
+                if(!scanCancellationTokenSource.IsCancellationRequested)
+                {
+                    logger.LogDebug("Bluetooth connector: Existing cancellation token detected. Requesting cancellation ...");
+                    scanCancellationTokenSource.Cancel();
+                }
+            }
+
             scanCancellationTokenSource = new CancellationTokenSource();
 
             if (beforeStartScanningMethod != null)

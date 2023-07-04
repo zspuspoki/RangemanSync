@@ -131,7 +131,10 @@ namespace RangemanSync.Android.Services
 
         public override void OnDestroy()
         {
-            logger.LogDebug("OnDestroy: The started service is shutting down.");
+            using (LogContext.PushProperty("BackgroundTimeSyncService", 1))
+            {
+                logger.LogDebug("OnDestroy: The started service is shutting down.");
+            }
 
             // Stop the handler.
             handler.RemoveCallbacks(runnable);
@@ -225,8 +228,7 @@ namespace RangemanSync.Android.Services
                     {
                         return true;
                     },
-                    beforeStartScanningMethod: null,
-                    timeout: 120);
+                    beforeStartScanningMethod: null);
             }
         }
 

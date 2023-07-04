@@ -87,7 +87,7 @@ namespace Rangeman
                     {
                         l.WriteTo.File(Path.Combine(path, Constants.LogSubFolder, "TimeSyncService.log"),
                             rollingInterval: RollingInterval.Day,
-                            fileSizeLimitBytes: 8192,
+                            fileSizeLimitBytes: 16384,
                             rollOnFileSizeLimit: true,
                             retainedFileCountLimit: 1,
                             outputTemplate: "{Timestamp:HH:mm:ss} [{Level:u3}] {Message:lj} ({SourceContext}) {Exception}{NewLine}");

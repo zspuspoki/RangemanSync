@@ -155,12 +155,14 @@ namespace Rangeman.Views.Time
 
             timeSyncServiceStarter.Start(ntpTimeInfo.NTPServer, ntpTimeInfo.SecondsCompensation.Value);
             StartServiceButtonIsEnabled = false;
+            StopServiceButtonIsEnabled = true;
         }
 
         private async void OnStopService()
         {
             timeSyncServiceStarter.Stop();
-            RefreshServiceButtonStates();
+            StartServiceButtonIsEnabled = true;
+            StopServiceButtonIsEnabled = false;
         }
 
         private async Task SendTimeToTheWatch()

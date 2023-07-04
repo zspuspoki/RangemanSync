@@ -258,7 +258,7 @@ namespace RangemanSync.Android.Services
             }
             catch (System.Exception ex)
             {
-                logger.LogError(ex, "NTP - An unexpected error occured during sending the watch commands to the watch");
+                logger.LogDebug("The watch forced closing SendTime");
             }
         }
 

@@ -98,7 +98,10 @@ namespace RangemanSync.Android.Services
             {
                 if (bluetoothConnectorService == null)
                 {
-                    //TODO: Log
+                    using (LogContext.PushProperty("BackgroundTimeSyncService", 1))
+                    {
+                        logger.LogDebug("Error ! The bluetooth connector service is unavailable. ");
+                    }
                 }
                 else
                 {
@@ -137,6 +140,11 @@ namespace RangemanSync.Android.Services
                     }
                     else
                     {
+                        using (LogContext.PushProperty("BackgroundTimeSyncService", 1))
+                        {
+                            logger.LogDebug("Every sync time will be more than 1 hour later, I'll check again in 1 hour ... ");
+                        }
+
                         handler.PostDelayed(runnable, Constants.LONG_DELAY_BETWEEN_CHECKSYNCTIME);
                     }
                 }

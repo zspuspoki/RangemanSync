@@ -111,9 +111,16 @@ namespace RangemanSync.Android.Services
                         new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 0, 30, 0)
                     };
 
+                    bool hasAtLeastOneSyncTimeCLoserThanOneHour = false;
+
                     foreach(var syncTime in syncTimes)
                     {
                         var timeDiff = syncTime - DateTime.Now;
+                        if (timeDiff.TotalMinutes > 0 && timeDiff.TotalMinutes <= 60)
+                        {
+                            hasAtLeastOneSyncTimeCLoserThanOneHour = true;
+                        }
+
                         if( timeDiff.TotalSeconds > 0 && timeDiff.TotalSeconds <= 60)
                         {
                             if (!timeSyncIsRunning)
@@ -124,7 +131,14 @@ namespace RangemanSync.Android.Services
                         }
                     }
 
-                    handler.PostDelayed(runnable, Constants.DELAY_BETWEEN_LOG_MESSAGES);
+                    if (hasAtLeastOneSyncTimeCLoserThanOneHour)
+                    {
+                        handler.PostDelayed(runnable, Constants.SHORT_DELAY_BETWEEN_CHECKSYNCTIME);
+                    }
+                    else
+                    {
+                        handler.PostDelayed(runnable, Constants.LONG_DELAY_BETWEEN_CHECKSYNCTIME);
+                    }
                 }
             });
         }
@@ -173,7 +187,7 @@ namespace RangemanSync.Android.Services
                         compensationSeconds = intent.Extras.GetDouble(Constants.START_SERVICE_COMPENSATION_SECONDS);
 
                         RegisterForegroundService();
-                        handler.PostDelayed(runnable, Constants.DELAY_BETWEEN_LOG_MESSAGES);
+                        handler.PostDelayed(runnable, Constants.SHORT_DELAY_BETWEEN_CHECKSYNCTIME);
                         timeSyncServiceStatus.IsStarted = true;
                     }
                 }
@@ -224,8 +238,11 @@ namespace RangemanSync.Android.Services
 
                         return true;
                     },
-                    async () =>
+                    watchCommandExecutionFailed: async () =>
                     {
+                        logger.LogDebug("BackgroundTimeService - Watch command execution wasn't successfull this time, so setting back timeSyncIsRunning flag to false");
+
+                        timeSyncIsRunning = false;
                         return true;
                     },
                     beforeStartScanningMethod: null);

@@ -106,6 +106,11 @@ namespace Rangeman.Services.BluetoothConnector
             else
             {
                 logger.LogDebug("--- BluetoothConnectorService - failed to connect");
+
+                if (watchCommandExecutionFailed != null)
+                {
+                    await watchCommandExecutionFailed();
+                }
             }
         }
 

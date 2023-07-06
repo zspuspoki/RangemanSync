@@ -2,7 +2,9 @@
 {
     public static class Constants
     {
-        public const int DELAY_BETWEEN_LOG_MESSAGES = 15000;
+        public const int SHORT_DELAY_BETWEEN_CHECKSYNCTIME = 15000;
+        public const long LONG_DELAY_BETWEEN_CHECKSYNCTIME = 3600000;
+
         public const int SERVICE_RUNNING_NOTIFICATION_ID = 10000;
         public const string SERVICE_STARTED_KEY = "has_service_been_started";
         public const string ACTION_START_SERVICE = "RangemanApp.Android.action.START_SERVICE";

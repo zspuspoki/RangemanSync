@@ -9,6 +9,7 @@ using Rangeman.Services.BackgroundTimeSyncService;
 using Rangeman.Services.BluetoothConnector;
 using Rangeman.Services.NTP;
 using Rangeman.Services.WatchDataSender;
+using RangemanSync.Android.Services.BackgroundTimeSync;
 using Serilog.Context;
 using System;
 using System.Collections.Generic;
@@ -35,32 +36,20 @@ namespace RangemanSync.Android.Services
 
         private ILogger<BackgroundTimeSyncService> logger;
 
-        private bool timeSyncIsRunning;
-
-        private WakeLock wakeLock;
-
         private string ntpServer;
 
         private double compensationSeconds;
 
         private ITimeSyncServiceStatus timeSyncServiceStatus;
 
+        private ITimeSyncServiceStarter timeSyncServiceStarter;
+
         Handler handler;
         Action runnable;
-
-        public BackgroundTimeSyncService()
-        {
-            PowerManager powerManager = Application.Context.GetSystemService(Context.PowerService) as PowerManager;
-            wakeLock = powerManager.NewWakeLock(WakeLockFlags.Partial, "ServiceWakeLock");
-            wakeLock.SetReferenceCounted(false);
-        }
 
         public override void OnCreate()
         {
             base.OnCreate();
-
-            if (wakeLock != null)
-                wakeLock.Acquire();
 
             var appShell = ((AppShell)App.Current.MainPage);
 
@@ -74,6 +63,9 @@ namespace RangemanSync.Android.Services
 
             timeSyncServiceStatus =
                 (ITimeSyncServiceStatus)appShell.ServiceProvider.GetService(typeof(ITimeSyncServiceStatus));
+
+            timeSyncServiceStarter =
+                (ITimeSyncServiceStarter)appShell.ServiceProvider.GetService(typeof(ITimeSyncServiceStarter));
 
             var handlerThread = new HandlerThread(TAG);
             handlerThread.Start();
@@ -105,50 +97,22 @@ namespace RangemanSync.Android.Services
                 }
                 else
                 {
+                    SendTime();
 
-                    var syncTimes = new List<DateTime>
-                    {
-                        new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 6, 30, 0),
-                        new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 12, 30, 0),
-                        new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 18,30 , 0),
-                        new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 0, 30, 0)
-                    };
+                    timeSyncServiceStarter.Start(ntpServer, compensationSeconds);
 
-                    bool hasAtLeastOneSyncTimeCLoserThanOneHour = false;
-
-                    foreach(var syncTime in syncTimes)
-                    {
-                        var timeDiff = syncTime - DateTime.Now;
-                        if (timeDiff.TotalMinutes > 0 && timeDiff.TotalMinutes <= 60)
-                        {
-                            hasAtLeastOneSyncTimeCLoserThanOneHour = true;
-                        }
-
-                        if( timeDiff.TotalSeconds > 0 && timeDiff.TotalSeconds <= 60)
-                        {
-                            if (!timeSyncIsRunning)
-                            {
-                                timeSyncIsRunning = true;
-                                SendTime();
-                            }
-                        }
-                    }
-
-                    if (hasAtLeastOneSyncTimeCLoserThanOneHour)
-                    {
-                        handler.PostDelayed(runnable, Constants.SHORT_DELAY_BETWEEN_CHECKSYNCTIME);
-                    }
-                    else
-                    {
-                        using (LogContext.PushProperty("BackgroundTimeSyncService", 1))
-                        {
-                            logger.LogDebug("Every sync time will be more than 1 hour later, I'll check again in 1 hour ... ");
-                        }
-
-                        handler.PostDelayed(runnable, Constants.LONG_DELAY_BETWEEN_CHECKSYNCTIME);
-                    }
+                    StopCurrentService();
                 }
             });
+        }
+
+        private void StopCurrentService()
+        {
+            logger.LogDebug("OnStartCommand: The background time sync service is stopping");
+            bluetoothConnectorService = null;
+            StopForeground(true);
+            StopSelf();
+            timeSyncServiceStatus.IsStarted = false;
         }
 
         public override void OnDestroy()
@@ -165,11 +129,7 @@ namespace RangemanSync.Android.Services
             var notificationManager = (NotificationManager)GetSystemService(NotificationService);
             notificationManager.Cancel(Constants.SERVICE_RUNNING_NOTIFICATION_ID);
 
-            if (wakeLock != null)
-            {
-                wakeLock.Release();
-                wakeLock = null;
-            }
+            AlarmReceiver.ReleaseWakeLock();
 
             bluetoothConnectorService = null;
             timeSyncServiceStatus.IsStarted = false;
@@ -198,15 +158,6 @@ namespace RangemanSync.Android.Services
                         handler.PostDelayed(runnable, Constants.SHORT_DELAY_BETWEEN_CHECKSYNCTIME);
                         timeSyncServiceStatus.IsStarted = true;
                     }
-                }
-                else if (intent.Action.Equals(Constants.ACTION_STOP_SERVICE))
-                {
-                    logger.LogDebug("OnStartCommand: The background time sync service is stopping");
-                    bluetoothConnectorService = null;
-                    StopForeground(true);
-                    StopSelf();
-                    timeSyncServiceStatus.IsStarted = false;
-
                 }
             }
 
@@ -242,15 +193,11 @@ namespace RangemanSync.Android.Services
 
                         logger.LogDebug("BackgroundTimeService - after awaiting SendTime()");
 
-                        timeSyncIsRunning = false;
-
                         return true;
                     },
                     watchCommandExecutionFailed: async () =>
                     {
                         logger.LogDebug("BackgroundTimeService - Watch command execution wasn't successfull this time, so setting back timeSyncIsRunning flag to false");
-
-                        timeSyncIsRunning = false;
                         return true;
                     },
                     beforeStartScanningMethod: null);

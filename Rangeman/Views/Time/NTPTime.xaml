@@ -27,8 +27,6 @@
                     <Button x:Name="startService" Text="Start SRVC" WidthRequest="100" 
                       Command="{Binding Path=BindingContext.StartServiceCommad, Source={x:Reference Name=dataForm}}"                   
                                                     CommandParameter="{Binding Source={x:Reference Name=dataForm}}"  IsEnabled="{Binding StartServiceButtonIsEnabled}"/>
-
-                    <Button x:Name="stopService" Text="Stop SRVC" WidthRequest="100" Command="{Binding StopServiceCommand}" IsEnabled="{Binding StopServiceButtonIsEnabled}"/>
                 </StackLayout>
              </Grid>
         </StackLayout>

@@ -3,6 +3,5 @@
     public interface ITimeSyncServiceStarter
     {
         void Start(string ntpServer, double compensationSeconds);
-        void Stop();
     }
 }

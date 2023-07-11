@@ -37,7 +37,6 @@ namespace Rangeman.Views.Time
             this.CommitCommand = new Command<object>(this.OnCommit);
             this.DisconnectCommand = new Command(this.OnDisconnect);
             this.StartServiceCommad = new Command<object>(this.OnStartService);
-            this.StopServiceCommand = new Command(this.OnStopService);
 
             this.bluetoothConnectorService = bluetoothConnectorService;
             this.loggerFactory = loggerFactory;
@@ -156,13 +155,6 @@ namespace Rangeman.Views.Time
             timeSyncServiceStarter.Start(ntpTimeInfo.NTPServer, ntpTimeInfo.SecondsCompensation.Value);
             StartServiceButtonIsEnabled = false;
             StopServiceButtonIsEnabled = true;
-        }
-
-        private async void OnStopService()
-        {
-            timeSyncServiceStarter.Stop();
-            StartServiceButtonIsEnabled = true;
-            StopServiceButtonIsEnabled = false;
         }
 
         private async Task SendTimeToTheWatch()

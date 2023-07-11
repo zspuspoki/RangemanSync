@@ -18,13 +18,14 @@ namespace Rangeman.Services.WatchDataSender
             this.logger = loggerFactory.CreateLogger<WatchDataSettingSenderService>();
         }
 
-        public async Task SendTime(ushort year, byte month, byte day, byte hour, byte minute, byte seconds, byte dayOfWeek, byte miliseconds)
+        public async Task SendTime(ushort year, byte month, byte day, byte hour, byte minute, byte seconds, byte dayOfWeek, byte miliseconds,
+            double? latitude, double? longitude)
         {
             logger.LogInformation("--- Starting SendTime()");
 
             var remoteWatchController = new RemoteWatchController(this.connection.GattServer, loggerFactory);
 
-            await remoteWatchController.SetCurrentTime(year, month, day, hour, minute, seconds, dayOfWeek, miliseconds);
+            await remoteWatchController.SetCurrentTime(year, month, day, hour, minute, seconds, dayOfWeek, miliseconds, latitude, longitude);
         }
 
         public async Task SendTide(string cityName, double latitude, double longitude, ushort year, byte month, byte day, byte hour, byte minute)

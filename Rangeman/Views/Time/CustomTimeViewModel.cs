@@ -5,6 +5,7 @@ using Rangeman.Views.Common;
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 
 namespace Rangeman.Views.Time
@@ -120,11 +121,22 @@ namespace Rangeman.Views.Time
 
                         var watchDataSettingSenderService = new WatchDataSettingSenderService(connection, loggerFactory);
 
+                        Location location = null;
+
+                        try
+                        {
+                            location = await Geolocation.GetLastKnownLocationAsync();
+                        }
+                        catch(Exception ex)
+                        {
+                            logger.LogDebug("Current location is unknown");
+                        }
+
                         CustomTimeInfo.ProgressMessage = "Sending custom time to the watch ...";
 
                         await watchDataSettingSenderService.SendTime((ushort)customTimeInfo.Year.Value, (byte)customTimeInfo.Month, (byte)customTimeInfo.Day.Value,
                             (byte)customTimeInfo.Hour.Value, (byte)customTimeInfo.Minute.Value, (byte)customTimeInfo.Second.Value,
-                            (byte)customTimeInfo.DayOfWeek, 0);
+                            (byte)customTimeInfo.DayOfWeek, 0, location?.Latitude, location?.Longitude);
 
                         CustomTimeInfo.ProgressMessage = "Finished sending time to the watch.";
 

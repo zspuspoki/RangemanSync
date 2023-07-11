@@ -2,6 +2,6 @@
 {
     public interface ITimeSyncServiceStatus
     {
-        bool IsStarted { get; set; }
+        bool IsRunning();
     }
 }

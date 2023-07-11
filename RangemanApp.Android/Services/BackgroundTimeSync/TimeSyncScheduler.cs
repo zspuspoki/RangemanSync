@@ -27,10 +27,11 @@ namespace RangemanSync.Android.Services.BackgroundTimeSync
         {
             var syncTimes = new List<DateTime>
                     {
+                        new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 0, 30, 0),
                         new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 6, 30, 0),
                         new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 12, 30, 0),
                         new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 18,30 , 0),
-                        new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 0, 30, 0)
+                        new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day + 1, 0, 30, 0)
                     };
 
             foreach (var syncTime in syncTimes)

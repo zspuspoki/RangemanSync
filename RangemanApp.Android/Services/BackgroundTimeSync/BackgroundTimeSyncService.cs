@@ -14,6 +14,7 @@ using Serilog.Context;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Xamarin.Essentials;
 using static Android.OS.PowerManager;
 using Handler = Android.OS.Handler;
 
@@ -40,8 +41,6 @@ namespace RangemanSync.Android.Services
 
         private double compensationSeconds;
 
-        private ITimeSyncServiceStatus timeSyncServiceStatus;
-
         private ITimeSyncServiceStarter timeSyncServiceStarter;
 
         Handler handler;
@@ -60,9 +59,6 @@ namespace RangemanSync.Android.Services
 
             bluetoothConnectorService =
                 (BluetoothConnectorService)appShell.ServiceProvider.GetService(typeof(BluetoothConnectorService));
-
-            timeSyncServiceStatus =
-                (ITimeSyncServiceStatus)appShell.ServiceProvider.GetService(typeof(ITimeSyncServiceStatus));
 
             timeSyncServiceStarter =
                 (ITimeSyncServiceStarter)appShell.ServiceProvider.GetService(typeof(ITimeSyncServiceStarter));
@@ -112,7 +108,6 @@ namespace RangemanSync.Android.Services
             bluetoothConnectorService = null;
             StopForeground(true);
             StopSelf();
-            timeSyncServiceStatus.IsStarted = false;
         }
 
         public override void OnDestroy()
@@ -132,7 +127,6 @@ namespace RangemanSync.Android.Services
             AlarmReceiver.ReleaseWakeLock();
 
             bluetoothConnectorService = null;
-            timeSyncServiceStatus.IsStarted = false;
 
             base.OnDestroy();
         }
@@ -143,21 +137,13 @@ namespace RangemanSync.Android.Services
             {
                 if (intent.Action.Equals(Constants.ACTION_START_SERVICE))
                 {
-                    if (timeSyncServiceStatus.IsStarted)
-                    {
-                        logger.LogDebug("The background time sync service is alrady running.");
-                    }
-                    else
-                    {
-                        logger.LogDebug("OnStartCommand: The background time sync service is starting");
+                    logger.LogDebug("OnStartCommand: The background time sync service is starting");
 
-                        ntpServer = intent.GetStringExtra(Constants.START_SERVICE_NTP_SERVER);
-                        compensationSeconds = intent.Extras.GetDouble(Constants.START_SERVICE_COMPENSATION_SECONDS);
+                    ntpServer = intent.GetStringExtra(Constants.START_SERVICE_NTP_SERVER);
+                    compensationSeconds = intent.Extras.GetDouble(Constants.START_SERVICE_COMPENSATION_SECONDS);
 
-                        RegisterForegroundService();
-                        handler.PostDelayed(runnable, Constants.SHORT_DELAY_BETWEEN_CHECKSYNCTIME);
-                        timeSyncServiceStatus.IsStarted = true;
-                    }
+                    RegisterForegroundService();
+                    handler.PostDelayed(runnable, Constants.SHORT_DELAY_BETWEEN_CHECKSYNCTIME);
                 }
             }
 
@@ -224,9 +210,20 @@ namespace RangemanSync.Android.Services
         {
             try
             {
+                Location location = null;
+
+                try
+                {
+                    location = await Geolocation.GetLastKnownLocationAsync();
+                }
+                catch (System.Exception ex)
+                {
+                    logger.LogDebug("Current location is unknown");
+                }
+
                 await watchDataSettingSenderService.SendTime((ushort)currentTime.Value.Year, (byte)currentTime.Value.Month, (byte)currentTime.Value.Day,
                     (byte)currentTime.Value.Hour, (byte)currentTime.Value.Minute, (byte)currentTime.Value.Second,
-                    (byte)currentTime.Value.DayOfWeek, 0);
+                    (byte)currentTime.Value.DayOfWeek, 0, location?.Latitude, location?.Longitude);
             }
             catch (System.Exception ex)
             {

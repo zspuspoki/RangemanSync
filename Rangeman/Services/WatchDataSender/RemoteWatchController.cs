@@ -221,7 +221,8 @@ namespace Rangeman.WatchDataSender
             logger.LogDebug("--- WriteFinalClosingData2 - End");
         }
 
-        public async Task SetCurrentTime(ushort year, byte month, byte day, byte hour, byte minute, byte seconds, byte dayOfWeek, byte miliseconds)
+        public async Task SetCurrentTime(ushort year, byte month, byte day, byte hour, byte minute, byte seconds, byte dayOfWeek, byte miliseconds,
+            double? latitude, double? longitude)
         {
             var initPhaseIsReady = new TaskCompletionSource<bool>();
             var timeSettingDataObserver = new TimeSettingDataObserver(gattServer, initPhaseIsReady);
@@ -233,6 +234,26 @@ namespace Rangeman.WatchDataSender
                 Guid.Parse(BLEConstants.CasioReadRequestForAllFeaturesCharacteristic), new byte[] { 0x1d });  // Read request for DstWatchState
 
             await initPhaseIsReady.Task;
+
+            if (latitude.HasValue && longitude.HasValue)
+            {
+                var casioRadioAndLocationToSend = new List<byte[]>
+                {
+                    new byte[] { 0x24 }, //CASIO_LOCATION_AND_RADIO_INFORMATION
+                    new byte[] { 0x00}, // home city
+                    new byte[] { 0x01 }, //always 1
+                    BitConverter.GetBytes(latitude.Value).Reverse().ToArray(),
+                    BitConverter.GetBytes(longitude.Value).Reverse().ToArray(),
+                    new byte[] { 0x04 } //radio id ?
+                };
+
+                var locationSendArray = casioRadioAndLocationToSend
+                    .SelectMany(a => a)
+                    .ToArray();
+
+                await gattServer.WriteCharacteristicValue(Guid.Parse(BLEConstants.CasioFeaturesServiceGuid),
+                    Guid.Parse(BLEConstants.CasioAllFeaturesCharacteristic), locationSendArray);
+            }
 
             var bytesToSend = new List<byte[]>
             {

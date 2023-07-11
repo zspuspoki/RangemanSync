@@ -6,6 +6,7 @@ using Rangeman.Services.WatchDataSender;
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 
 namespace Rangeman.Views.Time
@@ -86,16 +87,6 @@ namespace Rangeman.Views.Time
             }
         }
 
-        public bool StopServiceButtonIsEnabled
-        {
-            get => stopServiceButtonIsEnabled;
-            set
-            {
-                stopServiceButtonIsEnabled = value;
-                OnPropertyChanged(nameof(StopServiceButtonIsEnabled));
-            }
-        }
-
         /// <summary>
         /// Gets or sets an ICommand implementation wrapping a commit action.
         /// </summary>
@@ -105,12 +96,9 @@ namespace Rangeman.Views.Time
 
         public Command<object> StartServiceCommad { get; set; }
 
-        public Command StopServiceCommand { get; set; }
-
         public void RefreshServiceButtonStates()
         {
-            StartServiceButtonIsEnabled = !timeSyncServiceStatus.IsStarted;
-            StopServiceButtonIsEnabled = timeSyncServiceStatus.IsStarted;
+            StartServiceButtonIsEnabled = !timeSyncServiceStatus.IsRunning();
         }
 
         private async void OnCommit(object dataForm)
@@ -154,7 +142,6 @@ namespace Rangeman.Views.Time
 
             timeSyncServiceStarter.Start(ntpTimeInfo.NTPServer, ntpTimeInfo.SecondsCompensation.Value);
             StartServiceButtonIsEnabled = false;
-            StopServiceButtonIsEnabled = true;
         }
 
         private async Task SendTimeToTheWatch()
@@ -206,9 +193,20 @@ namespace Rangeman.Views.Time
         {
             try
             {
+                Location location = null;
+
+                try
+                {
+                    location = await Geolocation.GetLastKnownLocationAsync();
+                }
+                catch (Exception ex)
+                {
+                    logger.LogDebug("Current location is unknown");
+                }
+
                 await watchDataSettingSenderService.SendTime((ushort)currentTime.Value.Year, (byte)currentTime.Value.Month, (byte)currentTime.Value.Day,
                     (byte)currentTime.Value.Hour, (byte)currentTime.Value.Minute, (byte)currentTime.Value.Second,
-                    (byte)currentTime.Value.DayOfWeek, 0);
+                    (byte)currentTime.Value.DayOfWeek, 0, location?.Latitude, location?.Longitude);
 
                 NTPTimeInfo.ProgressMessage = $"Finished sending current time ( {currentTime} ) to the watch.";
             }

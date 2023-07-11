@@ -75,7 +75,6 @@ namespace RangemanSync.Android
                 ConfigureLicenseChecking();
             }
 
-            CheckIfTimeSyncServiceIsRunning(savedInstanceState);
             CheckBatteryOptimization();
         }
 
@@ -316,25 +315,6 @@ namespace RangemanSync.Android
         }
         #endregion
 
-        #region Check if background time sync service is running
-        private void CheckIfTimeSyncServiceIsRunning(Bundle savedInstanceState)
-        {
-            var appShell = ((AppShell)App.Current.MainPage);
-
-            var timeSyncServiceStatus =
-                (ITimeSyncServiceStatus)appShell.ServiceProvider.GetService(typeof(ITimeSyncServiceStatus));
-
-            if (savedInstanceState != null)
-            {
-                timeSyncServiceStatus.IsStarted = savedInstanceState.GetBoolean(Constants.SERVICE_STARTED_KEY, false);
-            }
-            else
-            {
-                timeSyncServiceStatus.IsStarted = false;
-            }
-        }
-        #endregion
-
         #region Check battery optimization setting
         private void CheckBatteryOptimization()
         {
@@ -382,12 +362,6 @@ namespace RangemanSync.Android
 
         protected override void OnSaveInstanceState(Bundle outState)
         {
-            var appShell = ((AppShell)App.Current.MainPage);
-
-            var timeSyncServiceStatus =
-                (ITimeSyncServiceStatus)appShell.ServiceProvider.GetService(typeof(ITimeSyncServiceStatus));
-
-            outState.PutBoolean(Constants.SERVICE_STARTED_KEY, timeSyncServiceStatus.IsStarted);
             base.OnSaveInstanceState(outState);
         }
 

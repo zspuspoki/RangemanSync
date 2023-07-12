@@ -50,10 +50,10 @@ namespace RangemanSync.Android.Services.BackgroundTimeSync
             {
                 try
                 {
-                    logger.LogDebug("Scheduling next time sync ...");
+                    logger.LogDebug("Scheduling next time sync ... ( the device will be woken up if necessary )");
 
                     var timeSyncScheduler = new TimeSyncScheduler();
-                    alarmManager.SetExactAndAllowWhileIdle(AlarmType.ElapsedRealtime, timeSyncScheduler.GetTriggerMilis(), pending);
+                    alarmManager.SetExactAndAllowWhileIdle(AlarmType.ElapsedRealtimeWakeup, timeSyncScheduler.GetTriggerMilis(), pending);
                 }
                 catch
                 {

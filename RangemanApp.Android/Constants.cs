@@ -6,6 +6,7 @@
 
         public const int SERVICE_RUNNING_NOTIFICATION_ID = 10000;
         public const string ACTION_START_SERVICE = "RangemanApp.Android.action.START_SERVICE";
+        public const string ACTION_STOP_SERVICE = "RangemanApp.Android.action.STOP_SERVICE";
         public const string START_SERVICE_COMPENSATION_SECONDS = "StartServiceCompensationValue";
         public const string START_SERVICE_NTP_SERVER = "NTPServer";
     }

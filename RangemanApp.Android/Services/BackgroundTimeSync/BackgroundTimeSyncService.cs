@@ -126,6 +126,8 @@ namespace RangemanSync.Android.Services
 
             bluetoothConnectorService = null;
 
+            CancelAlreadyScheduledAlarm();
+
             base.OnDestroy();
         }
 
@@ -186,6 +188,12 @@ namespace RangemanSync.Android.Services
                     logger.LogDebug("An unexpected error occured during scheduling next sync");
                 }
             }
+        }
+
+        private void CancelAlreadyScheduledAlarm()
+        {
+            var alarmManager = (AlarmManager)Application.Context.GetSystemService(Context.AlarmService);
+            CancelAlreadyScheduledAlarm(new Intent(AlarmIntentName), alarmManager);
         }
 
         private void CancelAlreadyScheduledAlarm(Intent alarmIntent, AlarmManager alarmManager)

@@ -1,4 +1,6 @@
-﻿using Android.Content;
+﻿using Android.App;
+using Android.Content;
+using Android.OS;
 using Microsoft.Extensions.Logging;
 using Rangeman;
 using Rangeman.Services.BackgroundTimeSyncService;
@@ -11,6 +13,7 @@ namespace RangemanSync.Android.Services.BackgroundTimeSync
     {
         private readonly FormsAppCompatActivity mainActivity;
         private Intent startServiceIntent;
+        private Intent stopServiceIntent;
         private ILoggerFactory loggerFactory;
         private ILogger<TimeSyncServiceStarter> logger;
 
@@ -31,6 +34,9 @@ namespace RangemanSync.Android.Services.BackgroundTimeSync
 
             startServiceIntent = new Intent(mainActivity, typeof(BackgroundTimeSyncService));
             startServiceIntent.SetAction(Constants.ACTION_START_SERVICE);
+
+            stopServiceIntent = new Intent(mainActivity, typeof(BackgroundTimeSyncService));
+            stopServiceIntent.SetAction(Constants.ACTION_STOP_SERVICE);
         }
 
         public void StartWithLastUsedParameters()
@@ -61,6 +67,23 @@ namespace RangemanSync.Android.Services.BackgroundTimeSync
                 mainActivity.StartForegroundService(startServiceIntent);
 
                 logger.LogDebug("After starting foreground service");
+            }
+        }
+
+        public void Stop()
+        {
+            try
+            {
+                using (LogContext.PushProperty("BackgroundTimeSyncService", 1))
+                {
+                    logger.LogDebug("Stopping service and the alarm associated with it ...");
+
+                    mainActivity.StopService(stopServiceIntent);
+                }
+            }
+            catch(System.Exception ex)
+            {
+                logger.LogError(ex, "Error occured during stopping service and AlarmManager");
             }
         }
 

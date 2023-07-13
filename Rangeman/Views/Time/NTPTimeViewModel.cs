@@ -38,6 +38,7 @@ namespace Rangeman.Views.Time
             this.CommitCommand = new Command<object>(this.OnCommit);
             this.DisconnectCommand = new Command(this.OnDisconnect);
             this.StartServiceCommad = new Command<object>(this.OnStartService);
+            this.StopServiceCommand = new Command(this.OnStopService);
 
             this.bluetoothConnectorService = bluetoothConnectorService;
             this.loggerFactory = loggerFactory;
@@ -87,6 +88,16 @@ namespace Rangeman.Views.Time
             }
         }
 
+        public bool StopServiceButtonIsEnabled
+        {
+            get => stopServiceButtonIsEnabled;
+            set
+            {
+                stopServiceButtonIsEnabled = value;
+                OnPropertyChanged(nameof(StopServiceButtonIsEnabled));
+            }
+        }
+
         /// <summary>
         /// Gets or sets an ICommand implementation wrapping a commit action.
         /// </summary>
@@ -96,9 +107,12 @@ namespace Rangeman.Views.Time
 
         public Command<object> StartServiceCommad { get; set; }
 
+        public Command StopServiceCommand { get; set; }
+
         public void RefreshServiceButtonStates()
         {
             StartServiceButtonIsEnabled = !timeSyncServiceStatus.IsRunning();
+            StopServiceButtonIsEnabled = !StartServiceButtonIsEnabled;
         }
 
         private async void OnCommit(object dataForm)
@@ -141,7 +155,16 @@ namespace Rangeman.Views.Time
             }
 
             timeSyncServiceStarter.Start(ntpTimeInfo.NTPServer, ntpTimeInfo.SecondsCompensation.Value);
+
             StartServiceButtonIsEnabled = false;
+            StopServiceButtonIsEnabled = true;
+        }
+
+        private async void OnStopService()
+        {
+            timeSyncServiceStarter.Stop();
+            StartServiceButtonIsEnabled = true;
+            StopServiceButtonIsEnabled = false;
         }
 
         private async Task SendTimeToTheWatch()

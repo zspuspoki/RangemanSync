@@ -79,11 +79,28 @@ namespace RangemanSync.Android.Services.BackgroundTimeSync
                     logger.LogDebug("Stopping service and the alarm associated with it ...");
 
                     mainActivity.StopService(stopServiceIntent);
+
+                    CancelPendingAlarm();
                 }
             }
             catch(System.Exception ex)
             {
                 logger.LogError(ex, "Error occured during stopping service and AlarmManager");
+            }
+        }
+
+        private void CancelPendingAlarm()
+        {
+            var alarmIntent = new Intent(BackgroundTimeSyncService.AlarmIntentName);
+
+            var alreadyUsedPendingIntent = (Build.VERSION.SdkInt >= BuildVersionCodes.M) ?
+                PendingIntent.GetBroadcast(mainActivity, 0, alarmIntent, PendingIntentFlags.NoCreate | PendingIntentFlags.Immutable) :
+                PendingIntent.GetBroadcast(mainActivity, 0, alarmIntent, PendingIntentFlags.NoCreate);
+
+            if (alreadyUsedPendingIntent != null)
+            {
+                var alarmManager = (AlarmManager)Application.Context.GetSystemService(Context.AlarmService);
+                alarmManager.Cancel(alreadyUsedPendingIntent);
             }
         }
 

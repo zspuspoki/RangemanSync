@@ -2,9 +2,11 @@
 using Rangeman.Services.BackgroundTimeSyncService;
 using Rangeman.Services.BluetoothConnector;
 using Rangeman.Services.NTP;
+using Rangeman.Services.SharedPreferences;
 using Rangeman.Services.WatchDataSender;
 using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.Threading.Tasks;
 using Xamarin.Essentials;
 using Xamarin.Forms;
@@ -24,16 +26,22 @@ namespace Rangeman.Views.Time
         private readonly ILoggerFactory loggerFactory;
         private readonly ITimeSyncServiceStarter timeSyncServiceStarter;
         private readonly ITimeSyncServiceStatus timeSyncServiceStatus;
+        private readonly ISharedPreferencesService sharedPreferencesService;
         private ILogger<NTPTimeViewModel> logger;
 
         public NTPTimeViewModel(BluetoothConnectorService bluetoothConnectorService,
-            ILoggerFactory loggerFactory, ITimeSyncServiceStarter timeSyncServiceStarter, ITimeSyncServiceStatus timeSyncServiceStatus)
+            ILoggerFactory loggerFactory, ITimeSyncServiceStarter timeSyncServiceStarter, 
+            ITimeSyncServiceStatus timeSyncServiceStatus, ISharedPreferencesService sharedPreferencesService)
         {
             this.logger = loggerFactory.CreateLogger<NTPTimeViewModel>();
 
             logger.LogInformation("Inside NTPTimeViewModel ctor");
 
-            this.ntpTimeInfo = new NTPTimeInfo { SecondsCompensation = 5 };
+            this.ntpTimeInfo = new NTPTimeInfo
+            {
+                NTPServer = sharedPreferencesService.GetValue(Constants.NTPServer, null),
+                SecondsCompensation = int.Parse(sharedPreferencesService.GetValue(Constants.SecondsCompensation, "5")) 
+            };
 
             this.CommitCommand = new Command<object>(this.OnCommit);
             this.DisconnectCommand = new Command(this.OnDisconnect);
@@ -44,6 +52,7 @@ namespace Rangeman.Views.Time
             this.loggerFactory = loggerFactory;
             this.timeSyncServiceStarter = timeSyncServiceStarter;
             this.timeSyncServiceStatus = timeSyncServiceStatus;
+            this.sharedPreferencesService = sharedPreferencesService;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -124,7 +133,15 @@ namespace Rangeman.Views.Time
                 return;
             }
 
+            SaveUserSetValues();
+
             await SendTimeToTheWatch();
+        }
+
+        private void SaveUserSetValues()
+        {
+            sharedPreferencesService.SetValue(Constants.NTPServer, NTPTimeInfo.NTPServer);
+            sharedPreferencesService.SetValue(Constants.SecondsCompensation, NTPTimeInfo.SecondsCompensation.ToString());
         }
 
         private static bool ValidateForm(object dataForm)
@@ -153,6 +170,8 @@ namespace Rangeman.Views.Time
                 NTPTimeInfo.ProgressMessage = "Please enter valid time details.";
                 return;
             }
+
+            SaveUserSetValues();
 
             timeSyncServiceStarter.Start(ntpTimeInfo.NTPServer, ntpTimeInfo.SecondsCompensation.Value);
 

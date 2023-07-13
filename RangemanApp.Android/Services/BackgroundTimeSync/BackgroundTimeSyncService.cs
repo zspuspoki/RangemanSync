@@ -6,6 +6,7 @@ using AndroidX.Core.App;
 using Java.Lang;
 using Microsoft.Extensions.Logging;
 using Rangeman;
+using Rangeman.Services.BackgroundTimeSyncService;
 using Rangeman.Services.BluetoothConnector;
 using Rangeman.Services.NTP;
 using Rangeman.Services.WatchDataSender;
@@ -145,6 +146,13 @@ namespace RangemanSync.Android.Services
                     RegisterForegroundService();
 
                     ScheduleSystemAlarm(cancelAlreadyScheduledAlarm: true);
+                }
+                else if (intent.Action.Equals(Constants.ACTION_STOP_SERVICE))
+                {
+                    logger.LogDebug("OnStartCommand: The background time sync service is stopping");
+                    bluetoothConnectorService = null;
+                    StopForeground(true);
+                    StopSelf();
                 }
             }
 

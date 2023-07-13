@@ -102,8 +102,8 @@
     <Compile Include="Renderer\AndroidCustomEntryRenderer.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\BackgroundTimeSync\AlarmReceiver.cs" />
     <Compile Include="Services\BackgroundTimeSync\BackgroundTimeSyncService.cs" />
+    <Compile Include="Services\BackgroundTimeSync\BackgroundTimeSyncServiceBinder.cs" />
     <Compile Include="Services\BackgroundTimeSync\TimeSyncScheduler.cs" />
     <Compile Include="Services\BackgroundTimeSync\TimeSyncServiceStarter.cs" />
     <Compile Include="Services\BackgroundTimeSync\TimeSyncServiceStatus.cs" />

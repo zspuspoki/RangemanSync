@@ -14,14 +14,22 @@ namespace Rangeman
         {
             ServiceProvider = serviceProvider;
 
-            Routing.RegisterRoute("Download", ServiceProvider.GetRequiredService<MyRouteFactory<DownloadPage>>());
-            Routing.RegisterRoute("Map", ServiceProvider.GetRequiredService<MyRouteFactory<MapPage>>());
-            Routing.RegisterRoute("Coordinates", ServiceProvider.GetRequiredService<MyRouteFactory<CoordinatesPage>>());
-            Routing.RegisterRoute("Tide", ServiceProvider.GetRequiredService<MyRouteFactory<Tide>>());
-            Routing.RegisterRoute("Config", ServiceProvider.GetRequiredService<MyRouteFactory<ConfigPage>>());
+            AddRouteIfNotExist("Download", ServiceProvider.GetRequiredService<MyRouteFactory<DownloadPage>>());
+            AddRouteIfNotExist("Map", ServiceProvider.GetRequiredService<MyRouteFactory<MapPage>>());
+            AddRouteIfNotExist("Coordinates", ServiceProvider.GetRequiredService<MyRouteFactory<CoordinatesPage>>());
+            AddRouteIfNotExist("Tide", ServiceProvider.GetRequiredService<MyRouteFactory<Tide>>());
+            AddRouteIfNotExist("Config", ServiceProvider.GetRequiredService<MyRouteFactory<ConfigPage>>());
 
             InitializeComponent();
             BindingContext = ServiceProvider.GetRequiredService<AppShellViewModel>();
+        }
+
+        private void AddRouteIfNotExist(string route, RouteFactory factory)
+        {
+            if(Routing.GetOrCreateContent(route) == null)
+            {
+                Routing.RegisterRoute(route, factory);
+            }
         }
 
         public IServiceProvider ServiceProvider { get; }

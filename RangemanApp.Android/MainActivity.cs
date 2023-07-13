@@ -17,7 +17,6 @@ using Android;
 using AndroidX.Core.Content;
 using AndroidX.Core.App;
 using Google.Android.Vending.Licensing;
-using Rangeman.Services.BackgroundTimeSyncService;
 using AndroidProvider = Android.Provider;
 using AndroidNet = Android.Net;
 

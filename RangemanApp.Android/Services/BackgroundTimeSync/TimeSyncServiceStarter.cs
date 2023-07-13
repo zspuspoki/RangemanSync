@@ -1,6 +1,4 @@
-﻿using Android.App;
-using Android.Content;
-using Android.OS;
+﻿using Android.Content;
 using Microsoft.Extensions.Logging;
 using Rangeman;
 using Rangeman.Services.BackgroundTimeSyncService;
@@ -15,6 +13,9 @@ namespace RangemanSync.Android.Services.BackgroundTimeSync
         private Intent startServiceIntent;
         private ILoggerFactory loggerFactory;
         private ILogger<TimeSyncServiceStarter> logger;
+
+        private string ntpServer;
+        private double? compensationSeconds;
 
         public TimeSyncServiceStarter()
         {
@@ -32,50 +33,36 @@ namespace RangemanSync.Android.Services.BackgroundTimeSync
             startServiceIntent.SetAction(Constants.ACTION_START_SERVICE);
         }
 
-        public void Start(string ntpServer, double compensationSeconds)
+        public void StartWithLastUsedParameters()
         {
-            var alarmIntent = new Intent(mainActivity, typeof(AlarmReceiver));
-            alarmIntent.PutExtra(Constants.START_SERVICE_COMPENSATION_SECONDS, compensationSeconds);
-            alarmIntent.PutExtra(Constants.START_SERVICE_NTP_SERVER, ntpServer);
-
-            var alarmManager = (AlarmManager)Application.Context.GetSystemService(Context.AlarmService);
-
-            CancelAlreadyScheduledAlarm(alarmIntent, alarmManager);
-
-            var pending = (Build.VERSION.SdkInt >= BuildVersionCodes.M) ?
-                PendingIntent.GetBroadcast(mainActivity, 0, alarmIntent, PendingIntentFlags.UpdateCurrent | PendingIntentFlags.Immutable) :
-                PendingIntent.GetBroadcast(mainActivity, 0, alarmIntent, PendingIntentFlags.UpdateCurrent);
-
             using (LogContext.PushProperty("BackgroundTimeSyncService", 1))
             {
-                try
-                {
-                    logger.LogDebug("Scheduling next time sync ... ( the device will be woken up if necessary )");
+                logger.LogDebug("Starting alarm on destroying app's main activity.");
 
-                    var timeSyncScheduler = new TimeSyncScheduler();
-                    alarmManager.SetExactAndAllowWhileIdle(AlarmType.ElapsedRealtimeWakeup, timeSyncScheduler.GetTriggerMilis(), pending);
-                }
-                catch
+                if(ntpServer != null && compensationSeconds.HasValue)
                 {
-                    logger.LogDebug("An unexpected error occured during scheduling next sync");
+                    Start(ntpServer, compensationSeconds.Value, true);
                 }
             }
         }
 
-        private void CancelAlreadyScheduledAlarm(Intent alarmIntent, AlarmManager alarmManager)
+        public void Start(string ntpServer, double compensationSeconds, bool cancelPrevious)
         {
-            var alreadyUsedPendingIntent = (Build.VERSION.SdkInt >= BuildVersionCodes.M) ?
-                PendingIntent.GetBroadcast(mainActivity, 0, alarmIntent, PendingIntentFlags.NoCreate | PendingIntentFlags.Immutable) :
-                PendingIntent.GetBroadcast(mainActivity, 0, alarmIntent, PendingIntentFlags.NoCreate);
-
-            if (alreadyUsedPendingIntent != null)
+            using (LogContext.PushProperty("BackgroundTimeSyncService", 1))
             {
-                using (LogContext.PushProperty("BackgroundTimeSyncService", 1))
-                {
-                    logger.LogDebug("Found already scheduled sync, so cancelling it now ...");
-                    alarmManager.Cancel(alreadyUsedPendingIntent);
-                }
+                var startServiceIntent = new Intent(mainActivity, typeof(BackgroundTimeSyncService));
+                startServiceIntent.SetAction(Constants.ACTION_START_SERVICE);
+
+                startServiceIntent.PutExtra(Constants.START_SERVICE_COMPENSATION_SECONDS, compensationSeconds);
+                startServiceIntent.PutExtra(Constants.START_SERVICE_NTP_SERVER, ntpServer);
+
+                logger.LogDebug("Before starting foreground service");
+
+                mainActivity.StartForegroundService(startServiceIntent);
+
+                logger.LogDebug("After starting foreground service");
             }
         }
+
     }
 }

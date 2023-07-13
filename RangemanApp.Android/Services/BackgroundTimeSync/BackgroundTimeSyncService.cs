@@ -1,18 +1,17 @@
 ﻿using Android.App;
 using Android.Content;
 using Android.OS;
+using Android.Widget;
 using AndroidX.Core.App;
 using Java.Lang;
 using Microsoft.Extensions.Logging;
 using Rangeman;
-using Rangeman.Services.BackgroundTimeSyncService;
 using Rangeman.Services.BluetoothConnector;
 using Rangeman.Services.NTP;
 using Rangeman.Services.WatchDataSender;
 using RangemanSync.Android.Services.BackgroundTimeSync;
 using Serilog.Context;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xamarin.Essentials;
 using static Android.OS.PowerManager;
@@ -20,10 +19,13 @@ using Handler = Android.OS.Handler;
 
 namespace RangemanSync.Android.Services
 {
-    [Service]
+    [Service(Label = "BackgroundTimeSyncService", Name = "com.Szilamer.RangemanSync.BackgroundTimeSyncService")]
     public class BackgroundTimeSyncService : Service
     {
+        public const string AlarmIntentName = "AlarmIntent";
+
         private const string ChannelId = "channel_01";
+
         private static readonly string TAG = typeof(BackgroundTimeSyncService).FullName;
 
         /// <summary>
@@ -41,15 +43,15 @@ namespace RangemanSync.Android.Services
 
         private double compensationSeconds;
 
-        private ITimeSyncServiceStarter timeSyncServiceStarter;
+        private AlarmBroadcastReceiver alarmBroadcastReceiver;
+
+        private IBinder binder;
 
         Handler handler;
         Action runnable;
 
-        public override void OnCreate()
+        public BackgroundTimeSyncService()
         {
-            base.OnCreate();
-
             var appShell = ((AppShell)App.Current.MainPage);
 
             this.loggerFactory =
@@ -60,8 +62,14 @@ namespace RangemanSync.Android.Services
             bluetoothConnectorService =
                 (BluetoothConnectorService)appShell.ServiceProvider.GetService(typeof(BluetoothConnectorService));
 
-            timeSyncServiceStarter =
-                (ITimeSyncServiceStarter)appShell.ServiceProvider.GetService(typeof(ITimeSyncServiceStarter));
+            alarmBroadcastReceiver = new AlarmBroadcastReceiver(this, logger);
+            
+            Application.Context.RegisterReceiver(this.alarmBroadcastReceiver, new IntentFilter(AlarmIntentName));
+        }
+
+        public override void OnCreate()
+        {
+            base.OnCreate();
 
             var handlerThread = new HandlerThread(TAG);
             handlerThread.Start();
@@ -82,7 +90,7 @@ namespace RangemanSync.Android.Services
             }
 
             // This Action is only for demonstration purposes.
-            runnable = new Action(() =>
+            runnable = new Action(async () =>
             {
                 if (bluetoothConnectorService == null)
                 {
@@ -93,21 +101,13 @@ namespace RangemanSync.Android.Services
                 }
                 else
                 {
-                    SendTime();
+                    await SendTime();
 
-                    timeSyncServiceStarter.Start(ntpServer, compensationSeconds);
+                    ScheduleSystemAlarm(cancelAlreadyScheduledAlarm: false);
 
-                    StopCurrentService();
+                    this.alarmBroadcastReceiver.ReleaseWakeLock();
                 }
             });
-        }
-
-        private void StopCurrentService()
-        {
-            logger.LogDebug("OnStartCommand: The background time sync service is stopping");
-            bluetoothConnectorService = null;
-            StopForeground(true);
-            StopSelf();
         }
 
         public override void OnDestroy()
@@ -123,8 +123,6 @@ namespace RangemanSync.Android.Services
             // Remove the notification from the status bar.
             var notificationManager = (NotificationManager)GetSystemService(NotificationService);
             notificationManager.Cancel(Constants.SERVICE_RUNNING_NOTIFICATION_ID);
-
-            AlarmReceiver.ReleaseWakeLock();
 
             bluetoothConnectorService = null;
 
@@ -143,14 +141,70 @@ namespace RangemanSync.Android.Services
                     compensationSeconds = intent.Extras.GetDouble(Constants.START_SERVICE_COMPENSATION_SECONDS);
 
                     RegisterForegroundService();
-                    handler.PostDelayed(runnable, Constants.SHORT_DELAY_BETWEEN_CHECKSYNCTIME);
+
+                    ScheduleSystemAlarm(cancelAlreadyScheduledAlarm: true);
                 }
             }
 
             // This tells Android not to restart the service if it is killed to reclaim resources.
             return StartCommandResult.Sticky;
         }
-        private async void SendTime()
+
+        private void ScheduleSystemAlarm(bool cancelAlreadyScheduledAlarm)
+        {
+            var alarmIntent = new Intent(AlarmIntentName);
+            alarmIntent.PutExtra(Constants.START_SERVICE_COMPENSATION_SECONDS, compensationSeconds);
+            alarmIntent.PutExtra(Constants.START_SERVICE_NTP_SERVER, ntpServer);
+
+            var alarmManager = (AlarmManager)Application.Context.GetSystemService(Context.AlarmService);
+
+            if (cancelAlreadyScheduledAlarm)
+            {
+                CancelAlreadyScheduledAlarm(alarmIntent, alarmManager);
+            }
+
+            var pending = (Build.VERSION.SdkInt >= BuildVersionCodes.M) ?
+                PendingIntent.GetBroadcast(this, 0, alarmIntent, PendingIntentFlags.Immutable) :
+                PendingIntent.GetBroadcast(this, 0, alarmIntent, PendingIntentFlags.UpdateCurrent);
+
+            using (LogContext.PushProperty("BackgroundTimeSyncService", 1))
+            {
+                try
+                {
+                    logger.LogDebug("Scheduling next time sync ... ( the device will be woken up if necessary )");
+
+                    var timeSyncScheduler = new TimeSyncScheduler();
+                    if (alarmManager.CanScheduleExactAlarms())
+                    {
+                        logger.LogDebug("Can schedule exact alarms");
+                    }
+
+                    alarmManager.SetExactAndAllowWhileIdle(AlarmType.ElapsedRealtimeWakeup, timeSyncScheduler.GetTriggerMilis(), pending);
+                }
+                catch
+                {
+                    logger.LogDebug("An unexpected error occured during scheduling next sync");
+                }
+            }
+        }
+
+        private void CancelAlreadyScheduledAlarm(Intent alarmIntent, AlarmManager alarmManager)
+        {
+            var alreadyUsedPendingIntent = (Build.VERSION.SdkInt >= BuildVersionCodes.M) ?
+                PendingIntent.GetBroadcast(this, 0, alarmIntent, PendingIntentFlags.NoCreate | PendingIntentFlags.Immutable) :
+                PendingIntent.GetBroadcast(this, 0, alarmIntent, PendingIntentFlags.NoCreate);
+
+            if (alreadyUsedPendingIntent != null)
+            {
+                using (LogContext.PushProperty("BackgroundTimeSyncService", 1))
+                {
+                    logger.LogDebug("Found already scheduled sync, so cancelling it now ...");
+                    alarmManager.Cancel(alreadyUsedPendingIntent);
+                }
+            }
+        }
+
+        private async Task SendTime()
         {
             using (LogContext.PushProperty("BackgroundTimeSyncService", 1))
             {
@@ -253,9 +307,58 @@ namespace RangemanSync.Android.Services
 
         public override IBinder OnBind(Intent intent)
         {
-            // Return null because this is a pure started service. A hybrid service would return a binder that would
-            // allow access to the GetFormattedStamp() method.
-            return null;
+            binder = new BackgroundTimeSyncServiceBinder(this);
+            return binder;
+        }
+
+        public void StartTimeSyncAtScheduledTime()
+        {
+            handler.PostDelayed(runnable, Constants.SHORT_DELAY_BETWEEN_CHECKSYNCTIME);
+        }
+
+        [IntentFilter(new[] { AlarmIntentName })]
+        public class AlarmBroadcastReceiver : BroadcastReceiver
+        {
+            private static WakeLock wakeLock;
+            private readonly BackgroundTimeSyncService backgroundTimeSyncService;
+            private readonly ILogger<BackgroundTimeSyncService> logger;
+
+            public AlarmBroadcastReceiver(BackgroundTimeSyncService backgroundTimeSyncService, ILogger<BackgroundTimeSyncService> logger)
+            {
+                this.backgroundTimeSyncService = backgroundTimeSyncService;
+                this.logger = logger;
+            }
+
+            public override void OnReceive(Context context, Intent intent)
+            {
+                using (LogContext.PushProperty("BackgroundTimeSyncService", 1))
+                {
+                    try
+                    {
+                        PowerManager powerManager = Application.Context.GetSystemService(Context.PowerService) as PowerManager;
+                        wakeLock = powerManager.NewWakeLock(WakeLockFlags.Partial, "ServiceWakeLock");
+                        wakeLock.SetReferenceCounted(false);
+
+                        logger.LogDebug("Received signal in broadcast receiver. Starting time sync routine ...");
+
+                        this.backgroundTimeSyncService.StartTimeSyncAtScheduledTime();
+
+                    }
+                    catch (System.Exception ex)
+                    {
+                        logger.LogDebug("An unexpected error occured during starting sync routine in the broadcast receiver");
+                    }
+                }
+            }
+
+            public void ReleaseWakeLock()
+            {
+                if (wakeLock != null)
+                {
+                    wakeLock.Release();
+                    wakeLock = null;
+                }
+            }
         }
     }
 }

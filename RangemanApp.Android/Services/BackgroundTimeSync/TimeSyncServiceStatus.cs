@@ -21,7 +21,7 @@ namespace RangemanSync.Android.Services.BackgroundTimeSync
 
         public bool IsRunning()
         {
-            var alarmIntent = new Intent(mainActivity, typeof(AlarmReceiver));
+            var alarmIntent = new Intent(BackgroundTimeSyncService.AlarmIntentName);
 
             var alreadyUsedPendingIntent = (Build.VERSION.SdkInt >= BuildVersionCodes.M) ?
                 PendingIntent.GetBroadcast(mainActivity, 0, alarmIntent, PendingIntentFlags.NoCreate | PendingIntentFlags.Immutable) :

@@ -1,13 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
 using Rangeman.Services.BackgroundTimeSyncService;
 using Rangeman.Services.BluetoothConnector;
-using Rangeman.Services.LicenseDistributor;
 using Rangeman.Services.NTP;
 using Rangeman.Services.SharedPreferences;
 using Rangeman.Services.WatchDataSender;
 using System;
 using System.ComponentModel;
-using System.Globalization;
 using System.Threading.Tasks;
 using Xamarin.Essentials;
 using Xamarin.Forms;
@@ -57,6 +55,12 @@ namespace Rangeman.Views.Time
 
             MessagingCenter.Subscribe<ITimeSyncServiceStatus>(this, TimeSyncServiceMessages.ServiceStateChanged.ToString(),
                 HandleTimeSyncServiceStateChange);
+        }
+
+        public void RefreshServiceButtonStates()
+        {
+            StopServiceButtonIsEnabled = timeSyncServiceStatus.GetState() == TimeSyncServiceState.Started;
+            StartServiceButtonIsEnabled = !StopServiceButtonIsEnabled;
         }
 
         private void HandleTimeSyncServiceStateChange(ITimeSyncServiceStatus status)
@@ -196,16 +200,11 @@ namespace Rangeman.Views.Time
             SaveUserSetValues();
 
             timeSyncServiceStarter.Start(ntpTimeInfo.NTPServer, ntpTimeInfo.SecondsCompensation.Value);
-
-            StartServiceButtonIsEnabled = false;
-            StopServiceButtonIsEnabled = true;
         }
 
         private async void OnStopService()
         {
             timeSyncServiceStarter.Stop();
-            StartServiceButtonIsEnabled = true;
-            StopServiceButtonIsEnabled = false;
         }
 
         private async Task SendTimeToTheWatch()

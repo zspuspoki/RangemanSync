@@ -11,6 +11,12 @@ namespace Rangeman.Views.Time
             InitializeComponent();
         }
 
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+            ViewModel.RefreshServiceButtonStates();
+        }
+
         public NTPTimeViewModel ViewModel
         {
             get

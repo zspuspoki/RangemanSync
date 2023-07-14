@@ -1,38 +1,25 @@
-﻿using Android.App;
-using Android.Content;
-using Android.OS;
-using Rangeman;
-using Rangeman.Services.BackgroundTimeSyncService;
-using Xamarin.Forms.Platform.Android;
+﻿using Rangeman.Services.BackgroundTimeSyncService;
+using Xamarin.Forms;
 
 namespace RangemanSync.Android.Services.BackgroundTimeSync
 {
     public class TimeSyncServiceStatus : ITimeSyncServiceStatus
     {
-        private readonly FormsAppCompatActivity mainActivity;
+        private TimeSyncServiceState state;
 
         public TimeSyncServiceStatus()
         {
-            var appShell = ((AppShell)App.Current.MainPage);
-
-            this.mainActivity =
-                (FormsAppCompatActivity)appShell.ServiceProvider.GetService(typeof(FormsAppCompatActivity));
         }
 
-        public bool IsRunning()
+        public TimeSyncServiceState GetState()
         {
-            var alarmIntent = new Intent(BackgroundTimeSyncService.AlarmIntentName);
+            return state;
+        }
 
-            var alreadyUsedPendingIntent = (Build.VERSION.SdkInt >= BuildVersionCodes.M) ?
-                PendingIntent.GetBroadcast(mainActivity, 0, alarmIntent, PendingIntentFlags.NoCreate | PendingIntentFlags.Immutable) :
-                PendingIntent.GetBroadcast(mainActivity, 0, alarmIntent, PendingIntentFlags.NoCreate);
-
-            if (alreadyUsedPendingIntent != null)
-            {
-                return true;
-            }
-
-            return false;
+        public void SetState(TimeSyncServiceState state)
+        {
+            MessagingCenter.Send<ITimeSyncServiceStatus>(this, TimeSyncServiceMessages.ServiceStateChanged.ToString());
+            this.state = state;
         }
     }
 }

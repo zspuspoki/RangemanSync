@@ -3,7 +3,6 @@ using Rangeman.Views.Map;
 using Xamarin.Forms;
 using Rangeman.Services.BluetoothConnector;
 using Rangeman.WatchDataSender;
-using System.Diagnostics;
 using System.Windows.Input;
 using Microsoft.Extensions.Logging;
 using Xamarin.Essentials;

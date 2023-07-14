@@ -40,6 +40,8 @@ namespace RangemanSync.Android.Services
 
         private ILogger<BackgroundTimeSyncService> logger;
 
+        private ITimeSyncServiceStatus timeSyncServiceStatus;
+
         private string ntpServer;
 
         private double compensationSeconds;
@@ -54,6 +56,9 @@ namespace RangemanSync.Android.Services
         public BackgroundTimeSyncService()
         {
             var appShell = ((AppShell)App.Current.MainPage);
+
+            this.timeSyncServiceStatus =
+              (ITimeSyncServiceStatus)appShell.ServiceProvider.GetService(typeof(ITimeSyncServiceStatus));
 
             this.loggerFactory =
                 (ILoggerFactory)appShell.ServiceProvider.GetService(typeof(ILoggerFactory));
@@ -128,6 +133,8 @@ namespace RangemanSync.Android.Services
             bluetoothConnectorService = null;
 
             CancelAlreadyScheduledAlarm();
+
+            this.timeSyncServiceStatus.SetState(TimeSyncServiceState.Closed);
 
             base.OnDestroy();
         }
@@ -319,6 +326,8 @@ namespace RangemanSync.Android.Services
 
             // Enlist this instance of the service as a foreground service
             StartForeground(Constants.SERVICE_RUNNING_NOTIFICATION_ID, builder.Build());
+
+            this.timeSyncServiceStatus.SetState(TimeSyncServiceState.Started);
         }
 
         public override IBinder OnBind(Intent intent)

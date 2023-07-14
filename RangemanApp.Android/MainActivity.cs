@@ -19,6 +19,7 @@ using AndroidX.Core.App;
 using Google.Android.Vending.Licensing;
 using AndroidProvider = Android.Provider;
 using AndroidNet = Android.Net;
+using Rangeman.Services.BackgroundTimeSyncService;
 
 namespace RangemanSync.Android
 {
@@ -75,6 +76,7 @@ namespace RangemanSync.Android
             }
 
             CheckBatteryOptimization();
+            CheckIfTimeSyncServiceIsRunning(savedInstanceState);
         }
 
         #region EULA checking
@@ -314,6 +316,34 @@ namespace RangemanSync.Android
         }
         #endregion
 
+        #region Check if background time sync service is running
+        private void CheckIfTimeSyncServiceIsRunning(Bundle savedInstanceState)
+        {
+            var appShell = ((AppShell)App.Current.MainPage);
+
+            var timeSyncServiceStatus =
+                (ITimeSyncServiceStatus)appShell.ServiceProvider.GetService(typeof(ITimeSyncServiceStatus));
+
+            if (savedInstanceState != null)
+            {
+                var isStarted = savedInstanceState.GetBoolean(Constants.SERVICE_STARTED_KEY, false);
+
+                if(isStarted)
+                {
+                    timeSyncServiceStatus.SetState(TimeSyncServiceState.Started);
+                }
+                else
+                {
+                    timeSyncServiceStatus.SetState(TimeSyncServiceState.Closed);
+                }
+            }
+            else
+            {
+                timeSyncServiceStatus.SetState(TimeSyncServiceState.Closed);
+            }
+        }
+        #endregion
+
         #region Check battery optimization setting
         private void CheckBatteryOptimization()
         {
@@ -361,6 +391,13 @@ namespace RangemanSync.Android
 
         protected override void OnSaveInstanceState(Bundle outState)
         {
+            var appShell = ((AppShell)App.Current.MainPage);
+
+            var timeSyncServiceStatus =
+                (ITimeSyncServiceStatus)appShell.ServiceProvider.GetService(typeof(ITimeSyncServiceStatus));
+
+            outState.PutBoolean(Constants.SERVICE_STARTED_KEY, 
+                timeSyncServiceStatus.GetState() == TimeSyncServiceState.Started);
             base.OnSaveInstanceState(outState);
         }
 

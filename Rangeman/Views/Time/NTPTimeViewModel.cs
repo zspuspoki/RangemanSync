@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Rangeman.Services.BackgroundTimeSyncService;
 using Rangeman.Services.BluetoothConnector;
+using Rangeman.Services.LicenseDistributor;
 using Rangeman.Services.NTP;
 using Rangeman.Services.SharedPreferences;
 using Rangeman.Services.WatchDataSender;
@@ -53,6 +54,33 @@ namespace Rangeman.Views.Time
             this.timeSyncServiceStarter = timeSyncServiceStarter;
             this.timeSyncServiceStatus = timeSyncServiceStatus;
             this.sharedPreferencesService = sharedPreferencesService;
+
+            MessagingCenter.Subscribe<ITimeSyncServiceStatus>(this, TimeSyncServiceMessages.ServiceStateChanged.ToString(),
+                HandleTimeSyncServiceStateChange);
+        }
+
+        private void HandleTimeSyncServiceStateChange(ITimeSyncServiceStatus status)
+        {
+            var currentState = status.GetState();
+
+            switch(currentState)
+            {
+                case TimeSyncServiceState.Closing:
+                case TimeSyncServiceState.Starting:
+                    StartServiceButtonIsEnabled = false;
+                    StopServiceButtonIsEnabled = false;
+                    break;
+
+                case TimeSyncServiceState.Started:
+                    StopServiceButtonIsEnabled = true;
+                    StartServiceButtonIsEnabled = false;
+                    break;
+
+                case TimeSyncServiceState.Closed:
+                    StopServiceButtonIsEnabled = false;
+                    StartServiceButtonIsEnabled = true;
+                    break;
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -117,12 +145,6 @@ namespace Rangeman.Views.Time
         public Command<object> StartServiceCommad { get; set; }
 
         public Command StopServiceCommand { get; set; }
-
-        public void RefreshServiceButtonStates()
-        {
-            StartServiceButtonIsEnabled = !timeSyncServiceStatus.IsRunning();
-            StopServiceButtonIsEnabled = !StartServiceButtonIsEnabled;
-        }
 
         private async void OnCommit(object dataForm)
         {

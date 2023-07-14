@@ -14,8 +14,10 @@ namespace RangemanSync.Android.Services.BackgroundTimeSync
         private readonly FormsAppCompatActivity mainActivity;
         private Intent startServiceIntent;
         private Intent stopServiceIntent;
+
         private ILoggerFactory loggerFactory;
         private ILogger<TimeSyncServiceStarter> logger;
+        private ITimeSyncServiceStatus timeSyncServiceStatus;
 
         private string ntpServer;
         private double? compensationSeconds;
@@ -26,6 +28,9 @@ namespace RangemanSync.Android.Services.BackgroundTimeSync
 
             this.mainActivity =
                 (FormsAppCompatActivity)appShell.ServiceProvider.GetService(typeof(FormsAppCompatActivity));
+
+            this.timeSyncServiceStatus =
+              (ITimeSyncServiceStatus)appShell.ServiceProvider.GetService(typeof(ITimeSyncServiceStatus));
 
             this.loggerFactory =
               (ILoggerFactory)appShell.ServiceProvider.GetService(typeof(ILoggerFactory));
@@ -66,6 +71,8 @@ namespace RangemanSync.Android.Services.BackgroundTimeSync
 
                 mainActivity.StartForegroundService(startServiceIntent);
 
+                this.timeSyncServiceStatus.SetState(TimeSyncServiceState.Starting);
+
                 logger.LogDebug("After starting foreground service");
             }
         }
@@ -81,6 +88,8 @@ namespace RangemanSync.Android.Services.BackgroundTimeSync
                     mainActivity.StopService(stopServiceIntent);
 
                     CancelPendingAlarm();
+
+                    this.timeSyncServiceStatus.SetState(TimeSyncServiceState.Closing);
                 }
             }
             catch(System.Exception ex)

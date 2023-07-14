@@ -2,6 +2,8 @@
 {
     public interface ITimeSyncServiceStatus
     {
-        bool IsRunning();
+        TimeSyncServiceState GetState();
+
+        void SetState(TimeSyncServiceState state);
     }
 }
